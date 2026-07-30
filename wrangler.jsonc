@@ -1,0 +1,17 @@
+{
+  "name": "hono-bbs",
+  "compatibility_date": "2025-03-04",
+  "pages_build_output_dir": "./dist",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "JWT_SECRET": "b3597f13-df80-4685-87fe-abd54f5efbc6",
+    "GRAVATAR_BASE_URL": "https://cdn.sep.cc/avatar/"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "hono-bbs-db",
+      "database_id": "b3597f13-df80-4685-87fe-xxxxxxxxxxxx"
+    }
+  ]
+}
