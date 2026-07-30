@@ -16,6 +16,9 @@ export type Bindings = {
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
+app.onError((err, c) => {
+  return c.text(`Error: ${err.message}\n\nStack: ${err.stack}`, 500);
+});
 
 // 添加静态文件处理
 // serveStatic 中间件会自动处理开发环境和生产环境的差异
