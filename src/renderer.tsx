@@ -67,21 +67,14 @@ const Header = ({ user }: HeaderProps) => {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <header style={{ position: 'relative', overflow: 'hidden' }}>
-      {/* 背景层：带模糊效果 */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundImage: 'url(/static/01.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        filter: 'blur(6px)',
-        zIndex: 0,
-      }} />
-      {/* 内容层 */}
+    <header style={{
+      position: 'relative',
+      overflow: 'hidden',
+      backgroundImage: 'url(/static/01.jpg)',
+      backgroundSize: '100% 100%',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }}>
       <nav style={{ position: 'relative', zIndex: 1, padding: '0.5rem 0' }}>
         <ul className="flex items-center space-x-2" style={{ textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>
           <li><strong style={{ color: 'white' }}>凉宫数据|社区中心</strong></li>
