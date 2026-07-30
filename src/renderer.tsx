@@ -67,18 +67,32 @@ const Header = ({ user }: HeaderProps) => {
   const isAdmin = user?.role === 'admin';
 
   return (
-    <header>
-      <nav>
-        <ul className="flex items-center space-x-2">
-          <li><strong>凉宫数据|社区中心</strong></li>
+    <header style={{ position: 'relative', overflow: 'hidden' }}>
+      {/* 背景层：带模糊效果 */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundImage: 'url(/static/01.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        filter: 'blur(6px)',
+        zIndex: 0,
+      }} />
+      {/* 内容层 */}
+      <nav style={{ position: 'relative', zIndex: 1, padding: '0.5rem 0' }}>
+        <ul className="flex items-center space-x-2" style={{ textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>
+          <li><strong style={{ color: 'white' }}>凉宫数据|社区中心</strong></li>
           <li>
-            <a href="/" class="secondary flex items-center space-x-2">
+            <a href="/" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
               <span class="flex items-center justify-center"><HomeIcon /></span>
               <span class="hidden md:inline-block">首页</span>
             </a>
           </li>
           <li>
-            <a href="/tags" class="secondary flex items-center space-x-2">
+            <a href="/tags" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
               <span class="flex items-center justify-center"><TagIcon /></span>
               <span class="hidden md:inline-block">标签</span>
             </a>
@@ -86,29 +100,29 @@ const Header = ({ user }: HeaderProps) => {
           {isLoggedIn && (
             <>
               <li>
-                <a href="/posts/new" class="secondary flex items-center space-x-2">
+                <a href="/posts/new" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
                   <span class="flex items-center justify-center"><PostIcon /></span>
                   <span class="hidden md:inline-block">发布</span>
                 </a>
               </li>
               <li>
-                <a href={`/profile/${user.username}`} class="secondary flex items-center space-x-2">
+                <a href={`/profile/${user.username}`} class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
                   <span class="flex items-center justify-center"><UserIcon /></span>
                   <span class="hidden md:inline-block">{user.username}</span>
                 </a>
-              </li>             
+              </li>
             </>
           )}
           {!isLoggedIn && (
             <>
               <li>
-                <a href="/user/reg" class="secondary flex items-center space-x-2">
+                <a href="/user/reg" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
                   <span class="flex items-center justify-center"><RegisterIcon /></span>
                   <span class="hidden md:inline-block">注册</span>
                 </a>
               </li>
               <li>
-                <a href="/user/login" class="secondary flex items-center space-x-2">
+                <a href="/user/login" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
                   <span class="flex items-center justify-center"><LoginIcon /></span>
                   <span class="hidden md:inline-block">登录</span>
                 </a>
@@ -117,7 +131,7 @@ const Header = ({ user }: HeaderProps) => {
           )}
           {isLoggedIn && (
             <li>
-              <a href="/user/logout" class="secondary flex items-center space-x-2">
+              <a href="/user/logout" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
                 <span class="flex items-center justify-center"><LogoutIcon /></span>
                 <span class="hidden md:inline-block">退出</span>
               </a>
