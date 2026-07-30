@@ -70,7 +70,7 @@ const Header = ({ user }: HeaderProps) => {
     <header>
       <nav>
         <ul className="flex items-center space-x-2">
-          <li><strong>Acme Corp</strong></li>
+          <li><strong>凉宫数据|社区中心</strong></li>
           <li>
             <a href="/" class="secondary flex items-center space-x-2">
               <span class="flex items-center justify-center"><HomeIcon /></span>
