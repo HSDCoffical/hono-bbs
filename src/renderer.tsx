@@ -70,7 +70,7 @@ const Header = ({ user }: HeaderProps) => {
       position: 'relative',
       overflow: 'hidden',
       backgroundImage: 'url(/static/01.jpg)',
-      backgroundSize: '100% 100%',
+      backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
       width: '100%',
