@@ -69,7 +69,7 @@ const Header = ({ user }: HeaderProps) => {
     <header style={{
       position: 'relative',
       overflow: 'hidden',
-      backgroundImage: 'url(/static/02.jpg)',
+      backgroundImage: 'url(/static/01.jpg)',
       backgroundSize: 'cover',
       backgroundPosition: 'top',
       backgroundRepeat: 'no-repeat',
@@ -163,9 +163,11 @@ export const renderer = jsxRenderer(({ children, title, user }) => {
           marginTop: '1rem',
         }}>
           <div style={{
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            backgroundColor: 'rgba(255,255,255,0.2)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            backgroundColor: 'rgba(255,255,255,0.3)',
+            border: '1px solid rgba(255,255,255,0.4)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
             borderRadius: '12px',
             padding: '1.5rem',
             minHeight: 'calc(100vh - 260px)',
