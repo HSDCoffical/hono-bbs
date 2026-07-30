@@ -71,7 +71,7 @@ const Header = ({ user }: HeaderProps) => {
       overflow: 'hidden',
       backgroundImage: 'url(/static/01.jpg)',
       backgroundSize: 'cover',
-      backgroundPosition: 'center',
+      backgroundPosition: 'top',        // ← 改为 top，显示图片顶部
       backgroundRepeat: 'no-repeat',
       width: '100%',
       padding: '0.5rem 1rem',
