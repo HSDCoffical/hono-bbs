@@ -168,8 +168,8 @@ export const renderer = jsxRenderer(({ children, title, user }) => {
         }}>
           {/* 内容卡片：宽度90%，最大550px，居中，左右自动留白 */}
           <div style={{
-            width: '90%',
-            maxWidth: '550px',
+            width: '96%',
+            maxWidth: '700px',
             margin: '0 auto',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
