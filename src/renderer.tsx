@@ -166,18 +166,18 @@ export const renderer = jsxRenderer(({ children, title, user }) => {
           alignItems: 'flex-start',
           justifyContent: 'center',
         }}>
-          {/* 内容卡片：更大面积，毛玻璃效果 */}
+          {/* 内容卡片：宽度90%，最大550px，居中，左右自动留白 */}
           <div style={{
-            width: '100%',
-            maxWidth: '600px',
-            margin: '0 0.5rem',
+            width: '90%',
+            maxWidth: '550px',
+            margin: '0 auto',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             backgroundColor: 'rgba(255,255,255,0.5)',
             border: '1px solid rgba(255,255,255,0.4)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
             borderRadius: '16px',
-            padding: '2rem',
+            padding: '1.5rem',
             minHeight: 'calc(100vh - 180px)',
           }}>
             {children}
