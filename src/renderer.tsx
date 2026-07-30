@@ -152,29 +152,39 @@ export const renderer = jsxRenderer(({ children, title, user }) => {
       </head>
       <body un-cloak>
         <Header user={user} />
-        <main class="container" style={{
+        {/* 外层背景容器：全屏铺满 */}
+        <div style={{
           backgroundImage: 'url(/static/02.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          borderRadius: '16px',
-          overflow: 'hidden',
-          padding: '1rem',
-          marginTop: '1rem',
+          width: '100%',
+          minHeight: 'calc(100vh - 80px)',
+          padding: '1rem 0',
+          boxSizing: 'border-box',
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'center',
         }}>
-          <div style={{
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            backgroundColor: 'rgba(255,255,255,0.3)',
-            border: '1px solid rgba(255,255,255,0.4)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-            borderRadius: '12px',
-            padding: '1.5rem',
-            minHeight: 'calc(100vh - 260px)',
+          {/* 内容卡片：带毛玻璃效果，居中显示 */}
+          <main class="container" style={{
+            margin: '0 auto',
+            padding: '0 1rem',
           }}>
-            {children}
-          </div>
-        </main>
+            <div style={{
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              backgroundColor: 'rgba(255,255,255,0.3)',
+              border: '1px solid rgba(255,255,255,0.4)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+              borderRadius: '16px',
+              padding: '1.5rem',
+              minHeight: 'calc(100vh - 260px)',
+            }}>
+              {children}
+            </div>
+          </main>
+        </div>
         <script src="/static/js/client.js"></script>
       </body>
     </html>
