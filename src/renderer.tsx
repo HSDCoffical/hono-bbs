@@ -79,7 +79,7 @@ const Header = ({ user }: HeaderProps) => {
     }}>
       <nav style={{ position: 'relative', zIndex: 1 }}>
         <ul className="flex items-center space-x-2 flex-wrap" style={{ textShadow: '0 0 8px rgba(0,0,0,0.7)', margin: 0, padding: 0 }}>
-          <li><strong style={{ color: 'white', whiteSpace: 'nowrap' }}>凉宫数据|社区中心</strong></li>
+          <li><strong style={{ color: 'white', whiteSpace: 'nowrap' }}>凉宫社区</strong></li>
           <li>
             <a href="/" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
               <span class="flex items-center justify-center"><HomeIcon /></span>
