@@ -1,190 +1,164 @@
-import { jsxRenderer } from 'hono/jsx-renderer'
-import { ExtendedJWTPayload } from './types';
-import { generateClientScripts } from './utils/clientScripts';
+import { Hono } from "hono";
+import { getCookie } from "hono/cookie";
+import { verify } from "hono/jwt";
+import { PostService } from "../services/post.service";
+import { UserService } from "../services/user.service";
+import { TagService } from "../services/tag.service";
+import type { Bindings, Variables } from "../types";
+import { ExtendedJWTPayload } from "../types";
 
-// SVG图标组件（完整实现）
-const HomeIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-  </svg>
-);
+const index = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-const TagIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"></path>
-    <path d="M7 7h.01"></path>
-  </svg>
-);
+// 统一的帖子列表路由，tag参数可选
+index.get("/posts", async (c) => {
+  const tagName = c.req.query("tag");
+  const username = c.req.query("username");
 
-const PostIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-    <polyline points="14 2 14 8 20 8"></polyline>
-    <line x1="12" y1="18" x2="12" y2="12"></line>
-    <line x1="9" y1="15" x2="15" y2="15"></line>
-  </svg>
-);
+  const postService = PostService.getInstance(c.env.DB);
+  const userService = UserService.getInstance(c.env.DB);
+  const tagService = TagService.getInstance(c.env.DB);
 
-const UserIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-    <circle cx="12" cy="7" r="4"></circle>
-  </svg>
-);
+  // 获取所有标签及其帖子数量
+  const allTags = await tagService.getAllTagsWithPostCount();
 
-const LoginIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-    <polyline points="10 17 15 12 10 7"></polyline>
-    <line x1="15" y1="12" x2="3" y2="12"></line>
-  </svg>
-);
+  let posts = [];
+  if (username) {
+    // 如果指定了用户名，获取该用户的帖子
+    posts = await postService.getPostsByAuthor(username);
+  } else if (tagName) {
+    // 如果指定了标签，获取该标签的帖子
+    posts = await postService.getPostsByTag(tagName);
+  } else {
+    // 否则获取所有帖子
+    posts = await postService.getAllPosts();
+  }
 
-const RegisterIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-    <circle cx="9" cy="7" r="4"></circle>
-    <line x1="19" y1="8" x2="19" y2="14"></line>
-    <line x1="16" y1="11" x2="22" y2="11"></line>
-  </svg>
-);
+  // 获取所有帖子作者的用户信息
+  const authorUsernames = [...new Set(posts.map((post) => post.author))];
+  const authors = await userService.getUsersByUsernames(authorUsernames);
 
-const LogoutIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-    <polyline points="16 17 21 12 16 7"></polyline>
-    <line x1="21" y1="12" x2="9" y2="12"></line>
-  </svg>
-);
+  // 创建用户名到头像的映射
+  const usernameToAvatar: Record<string, string> = {};
+  authors.forEach((author) => {
+    usernameToAvatar[author.username] =
+      c.env.GRAVATAR_BASE_URL + author.email_hash + "?d=identicon";
+  });
 
-interface HeaderProps {
-  user?: ExtendedJWTPayload | null;
-}
+  // 检查用户是否已登录
+  const token = getCookie(c, "auth_token");
+  let currentUser: ExtendedJWTPayload | null = null;
+  if (token) {
+    try {
+      currentUser = (await verify(
+        token,
+        c.env.JWT_SECRET
+      )) as ExtendedJWTPayload;
+    } catch (e) {
+      // Token 无效，不做任何处理
+    }
+  }
 
-const Header = ({ user }: HeaderProps) => {
-  const isLoggedIn = !!user;
+  const isAdmin = currentUser?.role === "admin";
 
-  return (
-    <header style={{
-      position: 'relative',
-      overflow: 'hidden',
-      backgroundImage: 'url(/static/01.jpg)',
-      backgroundSize: 'cover',
-      backgroundPosition: 'top',
-      backgroundRepeat: 'no-repeat',
-      width: '100%',
-      padding: '0.5rem 1rem',
-      boxSizing: 'border-box',
-    }}>
-      <nav style={{ position: 'relative', zIndex: 1 }}>
-        <ul className="flex items-center space-x-2 flex-wrap" style={{ textShadow: '0 0 8px rgba(0,0,0,0.7)', margin: 0, padding: 0 }}>
-          <li><strong style={{ color: 'white', whiteSpace: 'nowrap' }}>凉宫社区</strong></li>
-          <li>
-            <a href="/" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
-              <span class="flex items-center justify-center"><HomeIcon /></span>
-              <span class="hidden md:inline-block">首页</span>
+  // 构建页面标题
+  let pageTitle = "所有帖子 - Hono BBS";
+  if (tagName) {
+    pageTitle = `标签: ${tagName} - Hono BBS`;
+  } else if (username) {
+    pageTitle = `${username} 的帖子 - Hono BBS`;
+  }
+
+  return c.render(
+    <article>
+      <header class="mb-2">
+        <div class="flex items-center text-sm flex-wrap gap-1">
+          <a
+            href="/posts"
+            class={`py-1 px-2 color-[var(--primary-inverse)] no-underline rounded ${
+              !tagName && !username ? "bg-gray-2" : ""
+            }`}
+          >
+            全部
+          </a>
+          {allTags.map((tag) => (
+            <a
+              key={tag.id}
+              href={`/posts?tag=${tag.name}`}
+              class={`py-1 px-2 color-[var(--primary-inverse)] rounded no-underline ${
+                tagName === tag.name ? "bg-gray-2" : ""
+              }`}
+            >
+              {tag.name}({tag.post_count})
             </a>
-          </li>
-          <li>
-            <a href="/tags" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
-              <span class="flex items-center justify-center"><TagIcon /></span>
-              <span class="hidden md:inline-block">标签</span>
-            </a>
-          </li>
-          {isLoggedIn && (
-            <>
-              <li>
-                <a href="/posts/new" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
-                  <span class="flex items-center justify-center"><PostIcon /></span>
-                  <span class="hidden md:inline-block">发布</span>
-                </a>
-              </li>
-              <li>
-                <a href={`/profile/${user.username}`} class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
-                  <span class="flex items-center justify-center"><UserIcon /></span>
-                  <span class="hidden md:inline-block">{user.username}</span>
-                </a>
-              </li>
-            </>
-          )}
-          {!isLoggedIn && (
-            <>
-              <li>
-                <a href="/user/reg" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
-                  <span class="flex items-center justify-center"><RegisterIcon /></span>
-                  <span class="hidden md:inline-block">注册</span>
-                </a>
-              </li>
-              <li>
-                <a href="/user/login" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
-                  <span class="flex items-center justify-center"><LoginIcon /></span>
-                  <span class="hidden md:inline-block">登录</span>
-                </a>
-              </li>
-            </>
-          )}
-          {isLoggedIn && (
-            <li>
-              <a href="/user/logout" class="secondary flex items-center space-x-2" style={{ color: 'white' }}>
-                <span class="flex items-center justify-center"><LogoutIcon /></span>
-                <span class="hidden md:inline-block">退出</span>
-              </a>
-            </li>
-          )}
-        </ul>
-      </nav>
-    </header>
-  )
-}
-
-export const renderer = jsxRenderer(({ children, title, user }) => {
-  return (
-    <html lang="zh_CN">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="color-scheme" content="light dark" />
-        <title>{title}</title>
-        <link rel="stylesheet" href="/static/main.css?v=1.0.3" />
-        <link rel="icon" href="/static/favicon.ico" />
-        <script src="https://cdn.jsdelivr.net/npm/@unocss/runtime"></script>
-        <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"></script>
-      </head>
-      <body un-cloak>
-        <Header user={user} />
-        {/* 外层背景容器：全屏铺满 */}
-        <div style={{
-          backgroundImage: 'url(/static/02.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          width: '100%',
-          minHeight: 'calc(100vh - 80px)',
-          padding: '0.5rem 0',
-          boxSizing: 'border-box',
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'center',
-        }}>
-          {/* 内容卡片：宽度90%，最大550px，居中，左右自动留白 */}
-          <div style={{
-            width: '96%',
-            maxWidth: '700px',
-            margin: '0 auto',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            backgroundColor: 'rgba(255,255,255,0.5)',
-            border: '1px solid rgba(255,255,255,0.4)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-            borderRadius: '16px',
-            padding: '1.5rem',
-            minHeight: 'calc(100vh - 180px)',
-          }}>
-            {children}
-          </div>
+          ))}
         </div>
-        <script src="/static/js/client.js"></script>
-      </body>
-    </html>
-  )
-})
+      </header>
+      {tagName && <h6>标签: {tagName}</h6>}
+      {username && <h6>用户: {username} 的帖子</h6>}
+      {posts.length > 0 ? (
+        <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 pl-0">
+          {posts.map((post) => (
+            <li
+              key={post.id}
+              class="list-none border rounded p-3 flex flex-col justify-between"
+            >
+              <div>
+                <a
+                  class="text-normal no-underline font-medium"
+                  href={`/posts/${post.id}`}
+                >
+                  {post.title}
+                  {post.comment_count !== undefined && post.comment_count > 0 && (
+                    <span class="text-sm text-gray-500 ml-1">({post.comment_count}条评论)</span>
+                  )}
+                </a>
+                <div class="flex items-center text-sm text-gray-500 mt-1 flex-wrap gap-1">
+                  {post.tag && (
+                    <a
+                      class="bg-gray-2 p-1 rounded text-xs no-underline color-[var(--primary-inverse)]"
+                      href={`/posts?tag=${post.tag}`}
+                    >
+                      {post.tag}
+                    </a>
+                  )}
+                  <span class="post-time" data-timestamp={post.created_at}>
+                    {new Date(post.created_at + "Z").toLocaleString()}
+                  </span>
+                  {usernameToAvatar[post.author] && (
+                    <img
+                      hx-get={`profile/${post.author}`}
+                      hx-target="body"
+                      hx-push-url="true"
+                      src={usernameToAvatar[post.author]}
+                      alt={`${post.author}'s avatar`}
+                      class="w-5 h-5 rounded-full cursor-pointer ml-auto"
+                    />
+                  )}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="text-center text-gray-500 py-8">
+          {tagName
+            ? `该标签下暂无帖子`
+            : username
+            ? `该用户暂无帖子`
+            : `暂无帖子，快来发布第一条吧！`}
+        </p>
+      )}
+    </article>,
+    {
+      title: pageTitle,
+      user: currentUser,
+    }
+  );
+});
+
+// 主页路由，重定向到/posts
+index.get("/", (c) => {
+  return c.redirect("/posts");
+});
+
+export { index };
