@@ -69,9 +69,9 @@ const Header = ({ user }: HeaderProps) => {
     <header style={{
       position: 'relative',
       overflow: 'hidden',
-      backgroundImage: 'url(/static/01.jpg)',
+      backgroundImage: 'url(/static/02.jpg)',
       backgroundSize: 'cover',
-      backgroundPosition: 'top',        // ← 改为 top，显示图片顶部
+      backgroundPosition: 'top',
       backgroundRepeat: 'no-repeat',
       width: '100%',
       padding: '0.5rem 1rem',
@@ -152,8 +152,26 @@ export const renderer = jsxRenderer(({ children, title, user }) => {
       </head>
       <body un-cloak>
         <Header user={user} />
-        <main class="container">
-          {children}
+        <main class="container" style={{
+          backgroundImage: 'url(/static/02.jpg)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          padding: '1rem',
+          marginTop: '1rem',
+        }}>
+          <div style={{
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            minHeight: 'calc(100vh - 260px)',
+          }}>
+            {children}
+          </div>
         </main>
         <script src="/static/js/client.js"></script>
       </body>
