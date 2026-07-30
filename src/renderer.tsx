@@ -169,7 +169,7 @@ export const renderer = jsxRenderer(({ children, title, user }) => {
           {/* 内容卡片：更大面积，毛玻璃效果 */}
           <div style={{
             width: '100%',
-            maxWidth: '1200px',
+            maxWidth: '1000px',
             margin: '0 0.5rem',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
