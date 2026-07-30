@@ -62,7 +62,7 @@ index.get("/posts", async (c) => {
   const isAdmin = currentUser?.role === "admin";
 
   // 构建页面标题
-  let pageTitle = "所有帖子 - Hono BBS";
+  let pageTitle = "社区中心-凉宫数据";
   if (tagName) {
     pageTitle = `标签: ${tagName} - Hono BBS`;
   } else if (username) {
