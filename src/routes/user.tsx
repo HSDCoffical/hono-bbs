@@ -61,7 +61,7 @@ user.get('/reg', async (c) => {
       <p>已有账号？<a href="/user/login">登录</a></p>
     </article>,
     { 
-      title: '用户注册 - Hono BBS',
+      title: '用户注册 - 凉宫社区',
       user: currentUser
     }
   )
@@ -83,7 +83,7 @@ user.post('/reg', async (c) => {
         <p>用户名、密码、确认密码和邮箱是必填的</p>
         <a href="/user/reg" class="button">返回</a>
       </div>,
-      { title: 'Hono BBS - 错误' }
+      { title: '凉宫社区 - 错误' }
     )
   }
   
@@ -94,7 +94,7 @@ user.post('/reg', async (c) => {
         <p>密码和确认密码不一致</p>
         <a href="/user/reg" class="button">返回</a>
       </div>,
-      { title: 'Hono BBS - 错误' }
+      { title: '凉宫社区 - 错误' }
     )
   }
   
@@ -110,7 +110,7 @@ user.post('/reg', async (c) => {
         <p>用户名已存在</p>
         <a href="/user/reg" class="button">返回</a>
       </div>,
-      { title: 'Hono BBS - 错误' }
+      { title: '凉宫社区 - 错误' }
     )
   }
   
@@ -133,7 +133,7 @@ user.post('/reg', async (c) => {
       <p>您已成功注册，现在可以登录了</p>
       <a href="/user/login" class="button">去登录</a>
     </div>,
-    { title: 'Hono BBS - 注册成功' }
+    { title: '凉宫社区 - 注册成功' }
   )
 })
 
@@ -176,7 +176,7 @@ user.get('/login', async (c) => {
       <p>没有账号？<a href="/user/reg">注册</a></p>
     </article>,
     { 
-      title: '用户登录 - Hono BBS',
+      title: '用户登录|欢迎！ - 凉宫社区',
       user: currentUser
     }
   )
@@ -195,7 +195,7 @@ user.post('/login', async (c) => {
         <p>用户名和密码都是必填的</p>
         <a href="/user/login" class="button">返回</a>
       </div>,
-      { title: 'Hono BBS - 错误' }
+      { title: '凉宫社区 - 错误' }
     )
   }
   
@@ -211,7 +211,7 @@ user.post('/login', async (c) => {
         <p>用户名或密码不正确</p>
         <a href="/user/login" class="button">返回</a>
       </div>,
-      { title: 'Hono BBS - 错误' }
+      { title: '凉宫社区 - 错误' }
     )
   }
   
