@@ -21,7 +21,6 @@ profile.get("/:username", async (c) => {
 
   if (token) {
     try {
-      // 尝试从token中获取用户信息
       const payload = (await verify(
         token,
         c.env.JWT_SECRET
@@ -41,9 +40,7 @@ profile.get("/:username", async (c) => {
       <div>
         <h1>错误</h1>
         <p>用户不存在</p>
-        <a href="/" class="button">
-          返回首页
-        </a>
+        <a href="/" class="button">返回首页</a>
       </div>,
       { title: "Hono BBS - 错误", user: currentUser }
     );
@@ -59,7 +56,6 @@ profile.get("/:username", async (c) => {
   if (tab === "posts") {
     posts = await postService.getPostsByAuthor(username);
   } else if (tab === "comments") {
-    // 获取用户的评论
     const { results } = await c.env.DB.prepare(
       `
       SELECT c.id, c.post_id, c.content, c.raw_content, c.author, c.created_at, p.title as post_title
@@ -84,11 +80,13 @@ profile.get("/:username", async (c) => {
   }?d=identicon&s=200`;
 
   return c.render(
-    <article>
+    // ===== 外层容器：最小高度铺满视口，自适应宽度 =====
+    <article style={{ minHeight: 'calc(100vh - 200px)', paddingBottom: '2rem' }}>
       <header class="mb-2 text-xl font-bold">用户资料</header>
 
       <div>
-        <div class="flex flex-row space-x-4 py-4">
+        {/* 头像和基本信息 */}
+        <div class="flex flex-row flex-wrap items-center gap-4 py-4">
           <img
             class="w-24 h-24 rounded-full"
             src={avatarUrl}
@@ -105,8 +103,9 @@ profile.get("/:username", async (c) => {
           </div>
         </div>
 
-        <div class="mt-10 w-[500px]">
-          <div role="group">
+        {/* 选项卡按钮 - 自适应宽度 */}
+        <div class="mt-6 w-full overflow-x-auto">
+          <div role="group" class="flex flex-wrap gap-2">
             <button
               hx-get={`/profile/${username}?tab=posts`}
               hx-target="body"
@@ -123,10 +122,11 @@ profile.get("/:username", async (c) => {
             >
               评论记录
             </button>
-          </div>        
+          </div>
         </div>
 
-        <div>
+        {/* 内容列表 */}
+        <div class="mt-4 w-full">
           {tab === "posts" && (
             <div class="text-sm">
               {posts.length > 0 ? (
