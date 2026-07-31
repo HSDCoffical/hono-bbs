@@ -72,12 +72,18 @@ profile.get("/:username", async (c) => {
     comments = results;
   }
 
-  // 获取Gravatar头像URL
+  // ===== 修复头像逻辑：优先使用 avatar 字段，回退到 Gravatar =====
   const gravatarBaseUrl =
     process.env.GRAVATAR_BASE_URL || "https://www.gravatar.com/avatar/";
-  const avatarUrl = `${gravatarBaseUrl}${
-    profileUser.avatar || profileUser.email_hash
-  }?d=identicon&s=200`;
+
+  let avatarUrl: string;
+  // 如果 avatar 字段存在且不是空字符串，直接使用（它应该是完整的 URL）
+  if (profileUser.avatar && profileUser.avatar.trim() !== "") {
+    avatarUrl = profileUser.avatar;
+  } else {
+    // 否则回退到 Gravatar
+    avatarUrl = `${gravatarBaseUrl}${profileUser.email_hash}?d=identicon&s=200`;
+  }
 
   return c.render(
     // ===== 外层容器：最小高度铺满视口，自适应宽度 =====
@@ -188,7 +194,8 @@ profile.get("/:username", async (c) => {
                           评论于: {comment.post_title}
                         </a>
                       </div>
-                      <div class="bg-gray-1 rounded p-4"
+                      <div
+                        class="bg-gray-1 rounded p-4"
                         dangerouslySetInnerHTML={{ __html: comment.content }}
                       ></div>
                     </li>
