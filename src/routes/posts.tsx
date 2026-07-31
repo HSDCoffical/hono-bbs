@@ -34,13 +34,13 @@ posts.get("/new", jwtAuth, async (c) => {
             name="content"
             required
             rows={20}
-            placeholder="在此输入内容，支持 Markdown 格式..."
+            placeholder="请在此输入内容，支持 Markdown 格式"
           ></textarea>
         </div>
         <div>
           <label for="tag">标签</label>
           <select id="tag" name="tag" required>
-            <option value="">-- 选择标签 --</option>
+            <option value="">-- 请选择标签 --</option>
             {tags.map((tag) => (
               <option value={tag.name}>{tag.name}</option>
             ))}
@@ -73,7 +73,7 @@ posts.post("/", jwtAuth, async (c) => {
         <p>标题、内容和标签都不能为空</p>
         <a href="/posts/new" className="button">返回</a>
       </div>,
-      { title: "发布失败 - Hono BBS", user }
+      { title: "发布失败 - 凉宫社区", user }
     );
   }
 
@@ -128,7 +128,7 @@ posts.get("/:id", async (c) => {
         <p>您请求的帖子不存在或已被删除</p>
         <a href="/">返回首页</a>
       </div>,
-      { title: "帖子不存在 - Hono BBS" }
+      { title: "帖子不存在 - 凉宫社区" }
     );
   }
 
@@ -376,7 +376,7 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
         <p>标题和内容不能为空</p>
         <a href={`/posts/${id}/edit`} class="button">返回</a>
       </div>,
-      { title: "编辑失败 - Hono BBS", user }
+      { title: "编辑失败 - 凉宫社区", user }
     );
   }
 
@@ -410,7 +410,7 @@ posts.get("/:id/delete", jwtAuth, async (c) => {
         <p>您没有权限删除此帖子</p>
         <a href={`/posts/${id}`}>返回帖子</a>
       </div>,
-      { title: "权限不足 - Hono BBS", user }
+      { title: "权限不足 - 凉宫社区", user }
     );
   }
 
@@ -428,7 +428,7 @@ posts.get("/:id/delete", jwtAuth, async (c) => {
         <button hx-get={`/posts/${id}`} hx-target="body" hx-push-url="true" class="contrast">取消</button>
       </footer>
     </article>,
-    { title: "删除帖子 - Hono BBS", user }
+    { title: "删除帖子 - 凉宫社区", user }
   );
 });
 
@@ -483,7 +483,7 @@ posts.get("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
         <p>您请求的评论不存在或已被删除</p>
         <a href={`/posts/${postId}`}>返回帖子</a>
       </div>,
-      { title: "评论不存在 - Hono BBS" }
+      { title: "评论不存在 - 凉宫社区" }
     );
   }
 
@@ -494,7 +494,7 @@ posts.get("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
         <p>您没有权限编辑此评论</p>
         <a href={`/posts/${postId}`}>返回帖子</a>
       </div>,
-      { title: "权限错误 - Hono BBS", user }
+      { title: "权限错误 - 凉宫社区", user }
     );
   }
 
@@ -512,7 +512,7 @@ posts.get("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">更新评论</button>
       </form>
     </article>,
-    { title: "编辑评论 - Hono BBS", user: c.get("user") }
+    { title: "编辑评论 - 凉宫社区", user: c.get("user") }
   );
 });
 
@@ -532,7 +532,7 @@ posts.post("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
         <p>评论内容不能为空</p>
         <a href={`/posts/${postId}/comment/${commentId}/edit`}>返回</a>
       </div>,
-      { title: "编辑评论失败 - Hono BBS" }
+      { title: "编辑评论失败 - 凉宫社区" }
     );
   }
 
@@ -546,7 +546,7 @@ posts.post("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
         <p>您请求的评论不存在或已被删除</p>
         <a href={`/posts/${postId}`}>返回帖子</a>
       </div>,
-      { title: "评论不存在 - Hono BBS" }
+      { title: "评论不存在 - 凉宫社区" }
     );
   }
 
@@ -557,7 +557,7 @@ posts.post("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
         <p>您没有权限编辑此评论</p>
         <a href={`/posts/${postId}`}>返回帖子</a>
       </div>,
-      { title: "权限错误 - Hono BBS", user }
+      { title: "权限错误 - 凉宫社区", user }
     );
   }
 
@@ -571,7 +571,7 @@ posts.post("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
         <p>评论更新失败，请稍后再试</p>
         <a href={`/posts/${postId}`}>返回帖子</a>
       </div>,
-      { title: "编辑评论失败 - Hono BBS" }
+      { title: "编辑评论失败 - 凉宫社区" }
     );
   }
 
@@ -596,7 +596,7 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
         <p>您请求的评论不存在或已被删除</p>
         <a href={`/posts/${postId}`}>返回帖子</a>
       </div>,
-      { title: "评论不存在 - Hono BBS" }
+      { title: "评论不存在 - 凉宫社区" }
     );
   }
 
@@ -615,7 +615,7 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
         <button hx-get={`/posts/${postId}`} hx-target="body" hx-push-url="true">取消</button>
       </footer>
     </article>,
-    { title: "删除评论 - Hono BBS", user: c.get("user") }
+    { title: "删除评论 - 凉宫社区", user: c.get("user") }
   );
 });
 
@@ -634,7 +634,7 @@ posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =
         <p>评论删除失败，请稍后再试</p>
         <a href={`/posts/${postId}`}>返回帖子</a>
       </div>,
-      { title: "删除评论失败 - Hono BBS" }
+      { title: "删除评论失败 - 凉宫社区" }
     );
   }
 
