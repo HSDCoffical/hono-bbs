@@ -42,7 +42,7 @@ profile.get("/:username", async (c) => {
         <p>用户不存在</p>
         <a href="/" class="button">返回首页</a>
       </div>,
-      { title: "Hono BBS - 错误", user: currentUser }
+      { title: "凉宫社区 - 错误", user: currentUser }
     );
   }
 
@@ -104,7 +104,7 @@ profile.get("/:username", async (c) => {
               加入时间: <span data-timestamp={profileUser.created_at}></span>
             </p>
             <p class="text-sm">
-              {profileUser.bio || "这个人很懒，什么都没写~"}
+              {profileUser.bio || "杂鱼～赶快来写一个简介吧"}
             </p>
           </div>
         </div>
@@ -210,7 +210,7 @@ profile.get("/:username", async (c) => {
       </div>
     </article>,
     {
-      title: `${profileUser.username}的个人资料 - Hono BBS`,
+      title: `${profileUser.username}的个人资料 - 凉宫社区`,
       user: currentUser,
     }
   );
