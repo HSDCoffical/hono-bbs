@@ -75,7 +75,7 @@ tags.get("/", async (c) => {
       )}
     </article>,
     {
-      title: "标签列表 - Hono BBS",
+      title: "标签列表 - 凉宫社区",
       user: currentUser,
     }
   );
@@ -100,7 +100,7 @@ tags.get("/new", jwtAuth, adminOnly, async (c) => {
       </form>
     </article>,
     {
-      title: "添加新标签 - Hono BBS",
+      title: "添加新标签 - 凉宫社区",
       user: c.get("user"),
     }
   );
@@ -119,7 +119,7 @@ tags.post("/new", jwtAuth, adminOnly, async (c) => {
         <a href="/tags/new">返回</a>
       </div>,
       {
-        title: "添加标签失败 - Hono BBS",
+        title: "添加标签失败 - 凉宫社区",
         user,
       }
     );
@@ -138,7 +138,7 @@ tags.post("/new", jwtAuth, adminOnly, async (c) => {
         <a href="/tags/new">返回</a>
       </div>,
       {
-        title: "添加标签失败 - Hono BBS",
+        title: "添加标签失败 - 凉宫社区",
         user,
       }
     );
@@ -165,7 +165,7 @@ tags.get("/edit/:id", jwtAuth, adminOnly, async (c) => {
         <a href="/tags">返回标签列表</a>
       </div>,
       {
-        title: "标签不存在 - Hono BBS",
+        title: "标签不存在 - 凉宫社区",
         user: c.get("user"),
       }
     );
@@ -190,7 +190,7 @@ tags.get("/edit/:id", jwtAuth, adminOnly, async (c) => {
       </form>
     </article>,
     {
-      title: "编辑标签 - Hono BBS",
+      title: "编辑标签 - 凉宫社区",
       user,
     }
   );
@@ -209,7 +209,7 @@ tags.post("/edit/:id", jwtAuth, adminOnly, async (c) => {
         <a href={`/tags/edit/${id}`}>返回</a>
       </div>,
       {
-        title: "编辑标签失败 - Hono BBS",
+        title: "编辑标签失败 - 凉宫社区",
         user: c.get("user"),
       }
     );
@@ -226,7 +226,7 @@ tags.post("/edit/:id", jwtAuth, adminOnly, async (c) => {
         <a href="/tags">返回标签列表</a>
       </div>,
       {
-        title: "标签不存在 - Hono BBS",
+        title: "标签不存在 - 凉宫社区",
         user: c.get("user"),
       }
     );
@@ -243,7 +243,7 @@ tags.post("/edit/:id", jwtAuth, adminOnly, async (c) => {
         <a href={`/tags/edit/${id}`}>返回</a>
       </div>,
       {
-        title: "编辑标签失败 - Hono BBS",
+        title: "编辑标签失败 - 凉宫社区",
         user: c.get("user"),
       }
     );
@@ -270,7 +270,7 @@ tags.get("/delete/:id", jwtAuth, adminOnly, async (c) => {
         <a href="/tags">返回标签列表</a>
       </div>,
       {
-        title: "标签不存在 - Hono BBS",
+        title: "标签不存在 - 凉宫社区",
         user: c.get("user"),
       }
     );
@@ -310,7 +310,7 @@ tags.get("/delete/:id", jwtAuth, adminOnly, async (c) => {
       </div>
     </div>,
     {
-      title: "删除标签 - Hono BBS",
+      title: "删除标签 - 凉宫社区",
       user: c.get("user"),
     }
   );
@@ -331,7 +331,7 @@ tags.post("/delete/:id", jwtAuth, adminOnly, async (c) => {
         <a href="/tags">返回标签列表</a>
       </div>,
       {
-        title: "标签不存在 - Hono BBS",
+        title: "标签不存在 - 凉宫社区",
         user: c.get("user"),
       }
     );
