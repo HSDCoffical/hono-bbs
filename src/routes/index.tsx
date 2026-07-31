@@ -64,9 +64,9 @@ index.get("/posts", async (c) => {
   // 构建页面标题
   let pageTitle = "社区中心-凉宫数据";
   if (tagName) {
-    pageTitle = `标签: ${tagName} - Hono BBS`;
+    pageTitle = `标签: ${tagName} - 凉宫社区`;
   } else if (username) {
-    pageTitle = `${username} 的帖子 - Hono BBS`;
+    pageTitle = `${username} 的帖子 - 凉宫社区`;
   }
 
   return c.render(
