@@ -5,19 +5,31 @@ const app = new Hono();
 app.post('/upload', async (c) => {
   try {
     const GITHUB_TOKEN = c.env.GITHUB_TOKEN;
-    if (!GITHUB_TOKEN) {
-      return c.json({ error: '服务器配置错误：未配置 GITHUB_TOKEN 环境变量' }, 500);
-    }
 
-    // 验证 Token 格式（简单检查是否以 ghp_ 开头）
-    if (!GITHUB_TOKEN.startsWith('ghp_') && !GITHUB_TOKEN.startsWith('github_pat_')) {
+    // ---------- 调试信息（仅用于定位问题，后续可删除） ----------
+    const tokenMask = GITHUB_TOKEN 
+      ? `${GITHUB_TOKEN.substring(0, 4)}...${GITHUB_TOKEN.substring(GITHUB_TOKEN.length - 4)}`
+      : '未设置';
+    // 检查 Token 格式
+    const tokenValid = GITHUB_TOKEN && (GITHUB_TOKEN.startsWith('ghp_') || GITHUB_TOKEN.startsWith('github_pat_'));
+    // ------------------------------------------------------------
+
+    if (!GITHUB_TOKEN) {
       return c.json({ 
-        error: 'GitHub Token 格式无效', 
-        detail: 'Token 应以 ghp_ 或 github_pat_ 开头，请检查环境变量设置' 
+        error: '服务器配置错误：未配置 GITHUB_TOKEN 环境变量',
+        debug: { tokenMask, tokenValid }
       }, 500);
     }
 
-    // 从环境变量获取仓库路径，默认使用 HSDCofficial/astrowind
+    if (!tokenValid) {
+      return c.json({
+        error: 'GITHUB_TOKEN 格式无效',
+        detail: 'Token 应以 ghp_ 或 github_pat_ 开头，请检查环境变量设置',
+        debug: { tokenMask, tokenValid }
+      }, 500);
+    }
+
+    // 从环境变量获取仓库路径
     const repo = c.env.GITHUB_REPO || 'HSDCofficial/astrowind';
     const uploadDir = c.env.GITHUB_UPLOAD_DIR || 'workshop';
 
@@ -64,11 +76,11 @@ app.post('/upload', async (c) => {
         detail = json.message || json.errors || detail;
       } catch (_) { /* 保持原样 */ }
 
-      // 针对 401 特别提示
       if (resp.status === 401) {
         return c.json({
           error: 'GitHub 认证失败（401）',
-          detail: '请检查 GITHUB_TOKEN 是否过期、被撤销或权限不足。需要 repo 或 public_repo 权限。',
+          detail: '请检查 GITHUB_TOKEN 是否正确、未过期且拥有 repo 或 public_repo 权限。',
+          debug: { tokenMask, tokenValid, repo, uploadDir },
           github_response: detail
         }, 500);
       }
@@ -77,6 +89,7 @@ app.post('/upload', async (c) => {
         { 
           error: `GitHub 上传失败: ${resp.status}`, 
           detail,
+          debug: { tokenMask, tokenValid, repo, uploadDir },
           status: resp.status,
           statusText: resp.statusText
         }, 
