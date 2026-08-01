@@ -512,20 +512,8 @@ posts.get("/:id/edit", jwtAuth, async (c) => {
         </button>
       </form>
 
-      {/* ===== 编辑页面预览脚本 ===== */}
-      <script>
-        document.getElementById('file').addEventListener('change', function(e) {
-          const preview = document.getElementById('edit-preview');
-          const file = e.target.files[0];
-          if (!file) { preview.innerHTML = ''; return; }
-          const url = URL.createObjectURL(file);
-          if (file.type.startsWith('image/')) {
-            preview.innerHTML = '<img src="' + url + '" style="max-width:300px; max-height:300px; border-radius:8px; border:1px solid #ddd;" />';
-          } else if (file.type.startsWith('video/')) {
-            preview.innerHTML = '<video src="' + url + '" controls style="max-width:300px; max-height:300px; border-radius:8px; border:1px solid #ddd;"></video>';
-          }
-        });
-      </script>
+      {/* ===== 编辑页面预览脚本（外部引用） ===== */}
+      <script src="/static/edit-preview.js"></script>
     </article>,
     { title: "编辑帖子", user }
   );
@@ -891,4 +879,25 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
 });
 
 // 处理评论删除 - 仅管理员可用
-posts.post("/:postId/comment/:commentId/delete", jwtAuth, adm
+posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) => {
+  const postId = parseInt(c.req.param("postId"));
+  const commentId = parseInt(c.req.param("commentId"));
+
+  const commentService = CommentService.getInstance(c.env.DB);
+  const success = await commentService.deleteComment(commentId);
+
+  if (!success) {
+    return c.render(
+      <div>
+        <h1>删除评论失败</h1>
+        <p>评论删除失败，请稍后再试</p>
+        <a href={`/posts/${postId}`}>返回帖子</a>
+      </div>,
+      { title: "删除评论失败 - 凉宫社区" }
+    );
+  }
+
+  return c.redirect(`/posts/${postId}`);
+});
+
+export { posts };
