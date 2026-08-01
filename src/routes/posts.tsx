@@ -904,3 +904,5 @@ posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =
   await commentService.deleteComment(commentId);
   return c.redirect(`/posts/${postId}`);
 });
+
+export default posts;
