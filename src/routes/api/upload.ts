@@ -9,9 +9,9 @@ app.post('/upload', async (c) => {
       return c.json({ error: '服务器配置错误：未配置 GITHUB_TOKEN 环境变量' }, 500);
     }
 
-    // 从环境变量获取仓库路径，务必在 Cloudflare 中设置正确的值
-    const repo = c.env.GITHUB_REPO || 'HSDCofficial/astrowind';   // 修改为您的实际仓库
-    const uploadDir = c.env.GITHUB_UPLOAD_DIR || 'workshop';      // 修改为实际目录
+    // 直接写死，不走环境变量
+    const repo = 'HSDCofficial/astrowind';
+    const uploadDir = 'workshop';
 
     const formData = await c.req.formData();
     const file = formData.get('file') as File | null;
@@ -51,30 +51,28 @@ app.post('/upload', async (c) => {
 
     if (!resp.ok) {
       let detail = await resp.text();
+      // 尝试解析 JSON 获取更具体信息
+      let parsedDetail = detail;
       try {
         const json = JSON.parse(detail);
-        detail = json.message || json.errors || detail;
-      } catch (_) { /* 保持原样 */ }
+        parsedDetail = JSON.stringify(json, null, 2); // 格式化输出
+      } catch (_) { /* 保留原文本 */ }
 
-      // 针对 404 给出明确提示
       if (resp.status === 404) {
         return c.json({
           error: 'GitHub 仓库或路径不存在（404）',
           detail: `请确认仓库 "${repo}" 存在，且目录 "${uploadDir}" 在仓库根目录下。`,
-          debug: { repo, uploadDir, githubUrl },
-          github_response: detail
+          github_full_response: parsedDetail,  // 这里会显示 GitHub 返回的完整错误体
+          requested_url: githubUrl
         }, 500);
       }
 
-      return c.json(
-        { 
-          error: `GitHub 上传失败: ${resp.status}`, 
-          detail,
-          status: resp.status,
-          statusText: resp.statusText
-        }, 
-        500
-      );
+      return c.json({
+        error: `GitHub 上传失败: ${resp.status}`,
+        detail: parsedDetail,
+        status: resp.status,
+        statusText: resp.statusText
+      }, 500);
     }
 
     const data = await resp.json();
