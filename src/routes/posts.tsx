@@ -84,7 +84,6 @@ posts.get("/new", jwtAuth, async (c) => {
 
 // 处理新帖子提交 - 需要登录
 posts.post("/", jwtAuth, async (c) => {
-  // 获取请求的域名，用于构建绝对 URL
   const origin = new URL(c.req.url).origin;
   const uploadUrl = `${origin}/api/upload`;
 
@@ -154,7 +153,23 @@ posts.post("/", jwtAuth, async (c) => {
       method: 'POST',
       body: uploadForm,
     });
-    const result = await response.json();
+
+    // 安全地解析 JSON
+    const responseText = await response.text();
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (parseError) {
+      return c.render(
+        <div class="p-4">
+          <h1>上传失败</h1>
+          <p>服务器返回了无效的响应格式</p>
+          <pre class="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto" style="max-height:200px;">{responseText.substring(0, 500)}</pre>
+          <a href="/posts/new" className="button">返回</a>
+        </div>,
+        { title: "上传失败 - 凉宫社区", user }
+      );
+    }
 
     if (result.success) {
       fileUrl = result.url;
@@ -509,7 +524,6 @@ posts.get("/:id/edit", jwtAuth, async (c) => {
 
 // ===== 处理帖子编辑 - 支持文件上传 =====
 posts.post("/:id/edit", jwtAuth, async (c) => {
-  // 获取请求的域名，用于构建绝对 URL
   const origin = new URL(c.req.url).origin;
   const uploadUrl = `${origin}/api/upload`;
 
@@ -589,7 +603,23 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
         method: 'POST',
         body: uploadForm,
       });
-      const result = await response.json();
+
+      // 安全地解析 JSON
+      const responseText = await response.text();
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (parseError) {
+        return c.render(
+          <div class="p-4">
+            <h1>上传失败</h1>
+            <p>服务器返回了无效的响应格式</p>
+            <pre class="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto" style="max-height:200px;">{responseText.substring(0, 500)}</pre>
+            <a href={`/posts/${id}/edit`} className="button">返回</a>
+          </div>,
+          { title: "上传失败 - 凉宫社区", user }
+        );
+      }
 
       if (result.success) {
         fileUrl = result.url;
@@ -864,30 +894,3 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
         <button hx-get={`/posts/${postId}`} hx-target="body" hx-push-url="true">取消</button>
       </footer>
     </article>,
-    { title: "删除评论 - 凉宫社区", user: c.get("user") }
-  );
-});
-
-// 处理评论删除 - 仅管理员可用
-posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) => {
-  const postId = parseInt(c.req.param("postId"));
-  const commentId = parseInt(c.req.param("commentId"));
-
-  const commentService = CommentService.getInstance(c.env.DB);
-  const success = await commentService.deleteComment(commentId);
-
-  if (!success) {
-    return c.render(
-      <div>
-        <h1>删除评论失败</h1>
-        <p>评论删除失败，请稍后再试</p>
-        <a href={`/posts/${postId}`}>返回帖子</a>
-      </div>,
-      { title: "删除评论失败 - 凉宫社区" }
-    );
-  }
-
-  return c.redirect(`/posts/${postId}`);
-});
-
-export { posts };
