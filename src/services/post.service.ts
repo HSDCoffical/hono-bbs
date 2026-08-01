@@ -59,12 +59,12 @@ export class PostService {
     ).bind(
       post.title,
       post.content,
-      post.rawContent || null,
+      post.rawContent ?? null,   // 改为 ?? null
       post.author,
-      post.tag || null,
-      post.file_url || null,
-      post.file_type || null,
-      post.file_size || null
+      post.tag ?? null,
+      post.file_url ?? null,
+      post.file_type ?? null,
+      post.file_size ?? null
     ).first<{ id: number }>()
     return result?.id || 0
   }
@@ -81,10 +81,16 @@ export class PostService {
     
     if (fields.length === 0) return false;
     
-    const values = fields.map(key => {
-      const k = key === 'raw_content' ? 'rawContent' : key;
+    // ★★★ 关键修复：将所有值用 ?? null 处理，防止 undefined 传入 D1 ★★★
+    const values = fields.map(field => {
+      // field 可能是 'title = ?' 或 'raw_content = ?' 等
+      const key = field.split(' ')[0]; // 提取字段名（如 'title' 或 'raw_content'）
+      // 将数据库字段名映射回 post 对象的键名
+      let objKey = key;
+      if (key === 'raw_content') objKey = 'rawContent';
       // @ts-ignore
-      return post[k];
+      const rawValue = post[objKey];
+      return rawValue ?? null;   // 强制转为 null
     });
     values.push(id);
     
