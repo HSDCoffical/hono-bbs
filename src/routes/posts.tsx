@@ -11,8 +11,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'vi
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 // =================
 
-// ✅ 修改为具名导出，与 app.tsx 的导入匹配
-export const posts = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+const posts = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 // 获取所有帖子（重定向到首页）
 posts.get("/", async (c) => {
@@ -30,7 +29,7 @@ posts.get("/new", jwtAuth, async (c) => {
       <header class="mb-2 text-xl font-bold">📤 发布壁纸</header>
       <form action="/posts" method="post" id="post-form" enctype="multipart/form-data">
         <div>
-          <label for="file" class="block font-medium mb-1">选择壁纸（图片/视频）</label>
+          <label for="file" class="block font-medium mb-1">选择素材（图片/视频）</label>
           <input
             type="file"
             id="file"
@@ -77,7 +76,7 @@ posts.get("/new", jwtAuth, async (c) => {
       <script src="/static/preview.js"></script>
     </article>,
     {
-      title: "发布壁纸 - 凉宫社区",
+      title: "发布壁纸 - 凉宫数据",
       user: user,
     }
   );
@@ -104,7 +103,7 @@ posts.post("/", jwtAuth, async (c) => {
         <p>标题和标签不能为空</p>
         <a href="/posts/new" className="button">返回</a>
       </div>,
-      { title: "发布失败 - 凉宫社区", user }
+      { title: "发布失败 - 凉宫数据", user }
     );
   }
 
@@ -115,7 +114,7 @@ posts.post("/", jwtAuth, async (c) => {
         <p>请选择文件</p>
         <a href="/posts/new" className="button">返回</a>
       </div>,
-      { title: "发布失败 - 凉宫社区", user }
+      { title: "发布失败 - 凉宫数据", user }
     );
   }
 
@@ -126,7 +125,7 @@ posts.post("/", jwtAuth, async (c) => {
         <p>不支持的文件格式。仅支持 JPG、PNG、GIF、WebP、MP4、WebM</p>
         <a href="/posts/new" className="button">返回</a>
       </div>,
-      { title: "发布失败 - 凉宫社区", user }
+      { title: "发布失败 - 凉宫数据", user }
     );
   }
 
@@ -137,7 +136,7 @@ posts.post("/", jwtAuth, async (c) => {
         <p>文件大小超过 10MB 限制</p>
         <a href="/posts/new" className="button">返回</a>
       </div>,
-      { title: "发布失败 - 凉宫社区", user }
+      { title: "发布失败 - 凉宫数据", user }
     );
   }
 
@@ -167,7 +166,7 @@ posts.post("/", jwtAuth, async (c) => {
           <pre class="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto" style="max-height:200px;">{responseText.substring(0, 500)}</pre>
           <a href="/posts/new" className="button">返回</a>
         </div>,
-        { title: "上传失败 - 凉宫社区", user }
+        { title: "上传失败 - 凉宫数据", user }
       );
     }
 
@@ -185,7 +184,7 @@ posts.post("/", jwtAuth, async (c) => {
           {detailMsg && <pre class="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto" style="max-height:200px;">{detailMsg}</pre>}
           <a href="/posts/new" className="button">返回</a>
         </div>,
-        { title: "上传失败 - 凉宫社区", user }
+        { title: "上传失败 - 凉宫数据", user }
       );
     }
   } catch (e) {
@@ -195,7 +194,7 @@ posts.post("/", jwtAuth, async (c) => {
         <p>上传服务异常：{(e as Error).message}</p>
         <a href="/posts/new" className="button">返回</a>
       </div>,
-      { title: "上传失败 - 凉宫社区", user }
+      { title: "上传失败 - 凉宫数据", user }
     );
   }
 
@@ -203,7 +202,7 @@ posts.post("/", jwtAuth, async (c) => {
   const dbUser = await userService.getUserByUsername(author);
   if (!dbUser) {
     return c.render(
-      <div class="p-4">
+      <div>
         <h1>用户不存在</h1>
         <p>无法找到对应的用户记录，请重新登录</p>
         <a href="/user/logout">返回登录</a>
@@ -235,7 +234,7 @@ posts.post("/", jwtAuth, async (c) => {
   return c.redirect(`/posts/${postId}`);
 });
 
-// 查看单个帖子
+// 查看单个壁纸
 posts.get("/:id", async (c) => {
   const id = parseInt(c.req.param("id"));
   const page = parseInt(c.req.query("page") || "1");
@@ -248,11 +247,11 @@ posts.get("/:id", async (c) => {
   if (!post) {
     return c.render(
       <div>
-        <h1>帖子不存在</h1>
-        <p>您请求的帖子不存在或已被删除</p>
+        <h1>壁纸不存在</h1>
+        <p>您请求的壁纸不存在或已被删除</p>
         <a href="/">返回首页</a>
       </div>,
-      { title: "帖子不存在 - 凉宫社区" }
+      { title: "壁纸不存在 - 凉宫数据" }
     );
   }
 
@@ -430,13 +429,12 @@ posts.get("/:id", async (c) => {
       </section>
     </div>,
     {
-      title: `${post.title} - 凉宫社区`,
+      title: `${post.title} - 凉宫数据`,
       user: currentUser,
     }
   );
 });
-
-// ===== 编辑帖子页面 =====
+// ===== 编辑壁纸页面 =====
 posts.get("/:id/edit", jwtAuth, async (c) => {
   const id = parseInt(c.req.param("id"));
   const user = c.get("user");
@@ -453,8 +451,8 @@ posts.get("/:id/edit", jwtAuth, async (c) => {
     return c.render(
       <div>
         <h1>权限错误</h1>
-        <p>您没有权限编辑此帖子</p>
-        <a href={`/posts/${id}`} class="button">返回帖子</a>
+        <p>您没有权限编辑此壁纸</p>
+        <a href={`/posts/${id}`} class="button">返回壁纸</a>
       </div>,
       { title: "权限错误", user }
     );
@@ -465,7 +463,7 @@ posts.get("/:id/edit", jwtAuth, async (c) => {
 
   return c.render(
     <article>
-      <header>编辑帖子</header>
+      <header>编辑壁纸</header>
       <form action={`/posts/${id}/edit`} method="post" id="edit-post-form" enctype="multipart/form-data">
         <div>
           <label for="file" class="block font-medium mb-1">
@@ -512,16 +510,16 @@ posts.get("/:id/edit", jwtAuth, async (c) => {
         </div>
 
         <button type="submit" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-          更新帖子
+          更新壁纸
         </button>
       </form>
 
       <script src="/static/edit-preview.js"></script>
     </article>,
-    { title: "编辑帖子", user }
+    { title: "编辑壁纸", user }
   );
 });
-// ===== 处理帖子编辑 - 支持文件上传 =====
+// ===== 处理壁纸编辑 - 支持文件上传 =====
 posts.post("/:id/edit", jwtAuth, async (c) => {
   const origin = new URL(c.req.url).origin;
   const uploadUrl = `${origin}/api/upload`;
@@ -540,8 +538,8 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
     return c.render(
       <div>
         <h1>权限错误</h1>
-        <p>您没有权限编辑此帖子</p>
-        <a href={`/posts/${id}`} class="button">返回帖子</a>
+        <p>您没有权限编辑此壁纸</p>
+        <a href={`/posts/${id}`} class="button">返回壁纸</a>
       </div>,
       { title: "权限错误", user }
     );
@@ -560,7 +558,7 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
         <p>标题和内容不能为空</p>
         <a href={`/posts/${id}/edit`} class="button">返回</a>
       </div>,
-      { title: "编辑失败 - 凉宫社区", user }
+      { title: "编辑失败 - 凉宫数据", user }
     );
   }
 
@@ -578,7 +576,7 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
           <p>不支持的文件格式。仅支持 JPG、PNG、GIF、WebP、MP4、WebM</p>
           <a href={`/posts/${id}/edit`} className="button">返回</a>
         </div>,
-        { title: "上传失败 - 凉宫社区", user }
+        { title: "上传失败 - 凉宫数据", user }
       );
     }
 
@@ -589,7 +587,7 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
           <p>文件大小超过 10MB 限制</p>
           <a href={`/posts/${id}/edit`} className="button">返回</a>
         </div>,
-        { title: "上传失败 - 凉宫社区", user }
+        { title: "上传失败 - 凉宫数据", user }
       );
     }
 
@@ -615,7 +613,7 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
             <pre class="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto" style="max-height:200px;">{responseText.substring(0, 500)}</pre>
             <a href={`/posts/${id}/edit`} className="button">返回</a>
           </div>,
-          { title: "上传失败 - 凉宫社区", user }
+          { title: "上传失败 - 凉宫数据", user }
         );
       }
 
@@ -633,7 +631,7 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
             {detailMsg && <pre class="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto" style="max-height:200px;">{detailMsg}</pre>}
             <a href={`/posts/${id}/edit`} className="button">返回</a>
           </div>,
-          { title: "上传失败 - 凉宫社区", user }
+          { title: "上传失败 - 凉宫数据", user }
         );
       }
     } catch (e) {
@@ -643,7 +641,7 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
           <p>上传服务异常：{(e as Error).message}</p>
           <a href={`/posts/${id}/edit`} className="button">返回</a>
         </div>,
-        { title: "上传失败 - 凉宫社区", user }
+        { title: "上传失败 - 凉宫数据", user }
       );
     }
   }
@@ -660,7 +658,7 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
   return c.redirect(`/posts/${id}`);
 });
 
-// 删除帖子页面 - 需要是管理员
+// 删除壁纸页面 - 需要是管理员
 posts.get("/:id/delete", jwtAuth, async (c) => {
   const id = parseInt(c.req.param("id"));
   const user = c.get("user");
@@ -671,11 +669,11 @@ posts.get("/:id/delete", jwtAuth, async (c) => {
   if (!post) {
     return c.render(
       <div>
-        <h1>帖子不存在</h1>
-        <p>您请求的帖子不存在或已被删除</p>
+        <h1>壁纸不存在</h1>
+        <p>您请求的壁纸不存在或已被删除</p>
         <a href="/">返回首页</a>
       </div>,
-      { title: "帖子不存在 - 凉宫社区" }
+      { title: "壁纸不存在 - 凉宫数据" }
     );
   }
 
@@ -683,32 +681,32 @@ posts.get("/:id/delete", jwtAuth, async (c) => {
     return c.render(
       <div>
         <h1>权限不足</h1>
-        <p>您没有权限删除此帖子</p>
-        <a href={`/posts/${id}`}>返回帖子</a>
+        <p>您没有权限删除此壁纸</p>
+        <a href={`/posts/${id}`}>返回壁纸</a>
       </div>,
-      { title: "权限不足 - 凉宫社区", user }
+      { title: "权限不足 - 凉宫数据", user }
     );
   }
 
   return c.render(
     <article>
-      <header>删除帖子</header>
+      <header>删除壁纸</header>
       <div class="card">
         <h3>{post.title}</h3>
         <p>作者: {post.author}</p>
         <p>发布时间: {new Date(post.created_at + "Z").toLocaleDateString()}</p>
-        <p class="warning">确定要删除这篇帖子吗？此操作不可撤销。</p>
+        <p class="warning">确定要删除这条壁纸吗？此操作不可撤销。</p>
       </div>
       <footer class="flex space-x-2 items-center">
         <button hx-post={`/posts/${id}/delete`} hx-target="body" hx-push-url="true">确认</button>
         <button hx-get={`/posts/${id}`} hx-target="body" hx-push-url="true" class="contrast">取消</button>
       </footer>
     </article>,
-    { title: "删除帖子 - 凉宫社区", user }
+    { title: "删除壁纸 - 凉宫数据", user }
   );
 });
 
-// 处理帖子删除 - 需要是管理员
+// 处理壁纸删除 - 需要是管理员
 posts.post("/:id/delete", jwtAuth, adminOnly, async (c) => {
   const id = parseInt(c.req.param("id"));
   const postService = PostService.getInstance(c.env.DB);
@@ -757,9 +755,9 @@ posts.get("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
       <div>
         <h1>评论不存在</h1>
         <p>您请求的评论不存在或已被删除</p>
-        <a href={`/posts/${postId}`}>返回帖子</a>
+        <a href={`/posts/${postId}`}>返回壁纸</a>
       </div>,
-      { title: "评论不存在 - 凉宫社区" }
+      { title: "评论不存在 - 凉宫数据" }
     );
   }
 
@@ -768,16 +766,16 @@ posts.get("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
       <div>
         <h1>权限错误</h1>
         <p>您没有权限编辑此评论</p>
-        <a href={`/posts/${postId}`}>返回帖子</a>
+        <a href={`/posts/${postId}`}>返回壁纸</a>
       </div>,
-      { title: "权限错误 - 凉宫社区", user }
+      { title: "权限错误 - 凉宫数据", user }
     );
   }
 
   return c.render(
     <article>
       <header>编辑评论</header>
-      <p>帖子: <a href={`/posts/${postId}`}>{post.title}</a></p>
+      <p>壁纸: <a href={`/posts/${postId}`}>{post.title}</a></p>
       <form action={`/posts/${postId}/comment/${commentId}/edit`} method="post" class="form-card" id="comment-form">
         <div class="form-group">
           <label htmlFor="content">评论内容:</label>
@@ -788,7 +786,7 @@ posts.get("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">更新评论</button>
       </form>
     </article>,
-    { title: "编辑评论 - 凉宫社区", user: c.get("user") }
+    { title: "编辑评论 - 凉宫数据", user: c.get("user") }
   );
 });
 
@@ -808,7 +806,7 @@ posts.post("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
         <p>评论内容不能为空</p>
         <a href={`/posts/${postId}/comment/${commentId}/edit`}>返回</a>
       </div>,
-      { title: "编辑评论失败 - 凉宫社区" }
+      { title: "编辑评论失败 - 凉宫数据", user }
     );
   }
 
@@ -820,9 +818,9 @@ posts.post("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
       <div>
         <h1>评论不存在</h1>
         <p>您请求的评论不存在或已被删除</p>
-        <a href={`/posts/${postId}`}>返回帖子</a>
+        <a href={`/posts/${postId}`}>返回壁纸</a>
       </div>,
-      { title: "评论不存在 - 凉宫社区" }
+      { title: "评论不存在 - 凉宫数据" }
     );
   }
 
@@ -831,9 +829,9 @@ posts.post("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
       <div>
         <h1>权限错误</h1>
         <p>您没有权限编辑此评论</p>
-        <a href={`/posts/${postId}`}>返回帖子</a>
+        <a href={`/posts/${postId}`}>返回壁纸</a>
       </div>,
-      { title: "权限错误 - 凉宫社区", user }
+      { title: "权限错误 - 凉宫数据", user }
     );
   }
 
@@ -845,9 +843,9 @@ posts.post("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
       <div>
         <h1>编辑评论失败</h1>
         <p>评论更新失败，请稍后再试</p>
-        <a href={`/posts/${postId}`}>返回帖子</a>
+        <a href={`/posts/${postId}`}>返回壁纸</a>
       </div>,
-      { title: "编辑评论失败 - 凉宫社区" }
+      { title: "编辑评论失败 - 凉宫数据", user }
     );
   }
 
@@ -870,9 +868,9 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
       <div>
         <h1>评论不存在</h1>
         <p>您请求的评论不存在或已被删除</p>
-        <a href={`/posts/${postId}`}>返回帖子</a>
+        <a href={`/posts/${postId}`}>返回壁纸</a>
       </div>,
-      { title: "评论不存在 - 凉宫社区" }
+      { title: "评论不存在 - 凉宫数据" }
     );
   }
 
@@ -880,7 +878,7 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
     <article>
       <header>确认删除评论</header>
       <p>您确定要删除这条评论吗？此操作不可撤销。</p>
-      <p>帖子: <a href={`/posts/${postId}`}>{post.title}</a></p>
+      <p>壁纸: <a href={`/posts/${postId}`}>{post.title}</a></p>
       <p>评论作者: {comment.author}</p>
       <div class="p-4 border rounded my-4">
         <h4>评论内容:</h4>
@@ -891,7 +889,7 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
         <button hx-get={`/posts/${postId}`} hx-target="body" hx-push-url="true">取消</button>
       </footer>
     </article>,
-    { title: "删除评论 - 凉宫社区", user: c.get("user") }
+    { title: "删除评论 - 凉宫数据", user: c.get("user") }
   );
 });
 
@@ -903,3 +901,6 @@ posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =
   await commentService.deleteComment(commentId);
   return c.redirect(`/posts/${postId}`);
 });
+
+// 关键修复：统一标准具名导出，解决 posts is not exported 报错
+export { posts };
