@@ -894,3 +894,4 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
         <button hx-get={`/posts/${postId}`} hx-target="body" hx-push-url="true">取消</button>
       </footer>
     </article>,
+export { posts };
