@@ -7,7 +7,6 @@ import { ExtendedJWTPayload } from "../types/app";
 import { parseMarkdown } from "../utils/markdown";
 
 // ===== 配置 =====
-const WORKER_UPLOAD_URL = '/api/upload';
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 // =================
@@ -85,6 +84,10 @@ posts.get("/new", jwtAuth, async (c) => {
 
 // 处理新帖子提交 - 需要登录
 posts.post("/", jwtAuth, async (c) => {
+  // 获取请求的域名，用于构建绝对 URL
+  const origin = new URL(c.req.url).origin;
+  const uploadUrl = `${origin}/api/upload`;
+
   const formData = await c.req.formData();
   const title = (formData.get("title") as string)?.trim();
   const content = (formData.get("content") as string)?.trim();
@@ -147,7 +150,7 @@ posts.post("/", jwtAuth, async (c) => {
     uploadForm.append('file', file);
     uploadForm.append('uploader', author);
 
-    const response = await fetch(WORKER_UPLOAD_URL, {
+    const response = await fetch(uploadUrl, {
       method: 'POST',
       body: uploadForm,
     });
@@ -506,6 +509,10 @@ posts.get("/:id/edit", jwtAuth, async (c) => {
 
 // ===== 处理帖子编辑 - 支持文件上传 =====
 posts.post("/:id/edit", jwtAuth, async (c) => {
+  // 获取请求的域名，用于构建绝对 URL
+  const origin = new URL(c.req.url).origin;
+  const uploadUrl = `${origin}/api/upload`;
+
   const id = parseInt(c.req.param("id"));
   const user = c.get("user");
 
@@ -578,7 +585,7 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
       uploadForm.append('file', file);
       uploadForm.append('uploader', user.username);
 
-      const response = await fetch(WORKER_UPLOAD_URL, {
+      const response = await fetch(uploadUrl, {
         method: 'POST',
         body: uploadForm,
       });
