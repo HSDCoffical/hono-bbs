@@ -23,13 +23,10 @@ index.get("/posts", async (c) => {
 
   let posts = [];
   if (username) {
-    // 如果指定了用户名，获取该用户的帖子
     posts = await postService.getPostsByAuthor(username);
   } else if (tagName) {
-    // 如果指定了标签，获取该标签的帖子
     posts = await postService.getPostsByTag(tagName);
   } else {
-    // 否则获取所有帖子
     posts = await postService.getAllPosts();
   }
 
@@ -49,7 +46,6 @@ index.get("/posts", async (c) => {
   let currentUser: ExtendedJWTPayload | null = null;
   if (token) {
     try {
-      // 使用类型断言告诉 TypeScript 返回值是 ExtendedJWTPayload 类型
       currentUser = (await verify(
         token,
         c.env.JWT_SECRET
@@ -71,8 +67,9 @@ index.get("/posts", async (c) => {
 
   return c.render(
     <article>
-      <header class="mb-2">
-        <div class="flex items-center text-sm ">
+      {/* 标签导航 */}
+      <header class="mb-4">
+        <div class="flex items-center text-sm flex-wrap gap-1">
           <a
             href="/posts"
             class={`py-1 px-2 color-[var(--primary-inverse)] no-underline rounded ${
@@ -94,55 +91,76 @@ index.get("/posts", async (c) => {
           ))}
         </div>
       </header>
-      {tagName && <h6>标签: {tagName}</h6>}
-      {username && <h6>用户: {username} 的帖子</h6>}
+
+      {tagName && <h6 class="mb-2">标签: {tagName}</h6>}
+      {username && <h6 class="mb-2">用户: {username} 的帖子</h6>}
+
+      {/* ===== 网格缩略图列表 ===== */}
       {posts.length > 0 ? (
-        <ul class="space-y-1 pl-0">
+        <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pl-0">
           {posts.map((post) => (
-            <li
-              key={post.id}
-              class="flex-wrap space-y-1 md:space-y-0 list-none flex items-center justify-between"
-            >
-              <a
-                class="sm:flex-1 text-normal no-underline"
-                href={`/posts/${post.id}`}
-              >
-                {post.title}
-                {post.comment_count !== undefined && post.comment_count > 0 && (
-                  <span>({post.comment_count}条评论)</span>
-                )}
+            <li key={post.id} class="list-none border rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800">
+              <a href={`/posts/${post.id}`} class="block">
+                {/* 缩略图区域 */}
+                <div class="relative w-full aspect-square bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                  {post.file_url ? (
+                    post.file_type?.startsWith('image/') ? (
+                      <img
+                        src={post.file_url}
+                        alt={post.title}
+                        class="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : post.file_type?.startsWith('video/') ? (
+                      <video
+                        src={post.file_url}
+                        class="w-full h-full object-cover"
+                        muted
+                        loop
+                        playsInline
+                        autoplay
+                      />
+                    ) : (
+                      <div class="flex items-center justify-center h-full text-gray-400">
+                        <span class="text-sm">📄 文件</span>
+                      </div>
+                    )
+                  ) : (
+                    <div class="flex items-center justify-center h-full text-gray-400">
+                      <span class="text-sm">🖼️ 无预览</span>
+                    </div>
+                  )}
+                  {/* 评论数角标 */}
+                  {post.comment_count !== undefined && post.comment_count > 0 && (
+                    <span class="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                      💬 {post.comment_count}
+                    </span>
+                  )}
+                </div>
+
+                {/* 标题和作者信息 */}
+                <div class="p-2">
+                  <h3 class="text-sm font-semibold truncate" title={post.title}>
+                    {post.title}
+                  </h3>
+                  <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <span class="truncate">{post.author}</span>
+                    <span class="text-xs">
+                      {new Date(post.created_at + "Z").toLocaleDateString()}
+                    </span>
+                  </div>
+                  {post.tag && (
+                    <span class="inline-block mt-1 bg-gray-200 dark:bg-gray-700 text-xs px-2 py-0.5 rounded">
+                      #{post.tag}
+                    </span>
+                  )}
+                </div>
               </a>
-
-              <div class="flex items-center text-sm space-x-2">
-                {post.tag && (
-                  <a
-                    class="bg-gray-2 p-1 rounded text-xs no-underline color-[var(--primary-inverse)]"
-                    href={`/posts?tag=${post.tag}`}
-                  >
-                    {post.tag}
-                  </a>
-                )}
-
-                <span class="post-time" data-timestamp={post.created_at}>
-                  {new Date(post.created_at + "Z").toLocaleString()}
-                </span>
-
-                {usernameToAvatar[post.author] && (
-                  <img
-                    hx-get={`profile/${post.author}`}
-                    hx-target="body"
-                    hx-push-url="true"
-                    src={usernameToAvatar[post.author]}
-                    alt={`${post.author}'s avatar`}
-                    class="w-5 h-5 rounded-full cursor-pointer"
-                  />
-                )}
-              </div>
             </li>
           ))}
         </ul>
       ) : (
-        <p>
+        <p class="text-center text-gray-500 py-8">
           {tagName
             ? `该标签下暂无帖子`
             : username
