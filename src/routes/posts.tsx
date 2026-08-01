@@ -1,39 +1,39 @@
-import { Hono } from "hono";
-import { getCookie } from "hono/cookie";
-import { adminOnly, jwtAuth, verify } from "../middleware/auth";
-import { CommentService, PostService, TagService, UserService } from "../services";
-import type { Bindings, Variables } from "../types/app";
-import { ExtendedJWTPayload } from "../types/app";
-import { parseMarkdown } from "../utils/markdown";
+进口从导入"hono"{Hono}； 霍诺 } 从……起 "hono";
+进口 { getCookie } 从……起 "hono/cookie";
+进口 { adminOnly, jwtAuth, 核实 } 从……起 "../middleware/auth";
+进口 { CommentService, 邮政服务, TagService, UserService } 从……起 "../services";
+进口 类型 { 绑定, 变量 } 从……起 "../types/app";
+进口 { ExtendedJWTPayload } 从……起 "../types/app";
+进口 { parseMarkdown } 从……起 "../utils/markdown";
 
 // ===== 配置 =====
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+Const allowed_TYPES=['image/jpeg', 'image/png', 'image/gif', '图像/webp‘，'视频/mp4', '视频/webm'];
+Const Max_FILE_SIZE=10 * 1024 * 1024; // 10MB
 // =================
 
-const posts = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+Const帖子=新的Hono<{ 绑定：绑定；变量：变量}>();
 
 // 获取所有帖子（重定向到首页）
-posts.get("/", async (c) => {
-  return c.redirect("/");
+员额。得到("/", async (c) => {
+  返回c.redirect("/");
 });
 
 // 创建新帖子页面 - 需要登录
-posts.get("/new", jwtAuth, async (c) => {
-  const tagService = TagService.getInstance(c.env.DB);
-  const tags = await tagService.getAllTags();
-  const user = c.get("user");
+员额。得到("/new"，jwtAuth，异步 (c) => {
+  Const tagService=TagService。getInstance(c.env.DB);
+  Const 标签=等候tagService.getAllTags();
+  Const 用户=c.get("user");
 
-  return c.render(
+  返回c。提供(
     <article>
-      <header class="mb-2 text-xl font-bold">📤 发布壁纸</header>
-      <form action="/posts" method="post" id="post-form" enctype="multipart/form-data">
+      <页眉班级="MB-2文本-xl字体-粗体">📤  发布壁纸</header >
+      <形式行动="/posts" 方法="post" 身份标识="post-form" enctype="multipart/form-data">
         <div>
-          <label for="file" class="block font-medium mb-1">选择素材（图片/视频）</label>
-          <input
-            type="file"
-            id="file"
-            name="file"
+          <标签为="文件" 班级="块字体-介质MB-1">选择素材（图片/视频）</tab>
+          <输入
+            类型="file"
+            身份标识="file"
+            姓名="file"
             accept="image/*,video/mp4,video/webm"
             required
             class="block w-full text-sm border border-gray-200 rounded-lg p-2"
@@ -647,14 +647,14 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
   }
 
   await postService.updatePost(id, {
-    title,
-    content: parsedContent,
-    rawContent: content,
-    tag: tag || null,
-    file_url: fileUrl,
-    file_type: fileType,
-    file_size: fileSize,
-  });
+  title,
+  content: parsedContent,
+  rawContent: content,
+  tag: tag || null,
+  file_url: fileUrl,
+  file_type: fileType,
+  file_size: fileSize,
+});
   return c.redirect(`/posts/${id}`);
 });
 
