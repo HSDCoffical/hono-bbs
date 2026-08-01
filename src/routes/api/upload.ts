@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 
 const app = new Hono();
 
-app.post('/', async (c) => {
+app.post('/upload', async (c) => {
   try {
     const GITHUB_TOKEN = c.env.GITHUB_TOKEN;
     if (!GITHUB_TOKEN) {
