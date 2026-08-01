@@ -65,6 +65,19 @@ index.get("/posts", async (c) => {
     pageTitle = `${username} 的帖子 - 凉宫社区`;
   }
 
+  // 格式化时间（精确到秒）
+  function formatDateTime(dateStr: string): string {
+    const date = new Date(dateStr + "Z");
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  }
+
   return c.render(
     <article>
       {/* 标签导航 */}
@@ -95,44 +108,44 @@ index.get("/posts", async (c) => {
       {tagName && <h6 class="mb-2">标签: {tagName}</h6>}
       {username && <h6 class="mb-2">用户: {username} 的帖子</h6>}
 
-      {/* ===== 网格缩略图列表 ===== */}
+      {/* ===== 网格缩略图列表（自适应高度 + R角） ===== */}
       {posts.length > 0 ? (
         <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pl-0">
           {posts.map((post) => (
-            <li key={post.id} class="list-none border rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800">
+            <li key={post.id} class="list-none border rounded-xl overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800">
               <a href={`/posts/${post.id}`} class="block">
-                {/* 缩略图区域 */}
-                <div class="relative w-full aspect-square bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                {/* 缩略图区域 - 自适应高度，R角为 rounded-xl（已由外层容器控制） */}
+                <div class="w-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                   {post.file_url ? (
                     post.file_type?.startsWith('image/') ? (
                       <img
                         src={post.file_url}
                         alt={post.title}
-                        class="w-full h-full object-cover"
+                        class="w-full h-auto object-contain rounded-t-xl"
                         loading="lazy"
                       />
                     ) : post.file_type?.startsWith('video/') ? (
                       <video
                         src={post.file_url}
-                        class="w-full h-full object-cover"
+                        class="w-full h-auto rounded-t-xl"
                         muted
                         loop
                         playsInline
                         autoplay
                       />
                     ) : (
-                      <div class="flex items-center justify-center h-full text-gray-400">
+                      <div class="flex items-center justify-center h-48 text-gray-400">
                         <span class="text-sm">📄 文件</span>
                       </div>
                     )
                   ) : (
-                    <div class="flex items-center justify-center h-full text-gray-400">
+                    <div class="flex items-center justify-center h-48 text-gray-400">
                       <span class="text-sm">🖼️ 无预览</span>
                     </div>
                   )}
                   {/* 评论数角标 */}
                   {post.comment_count !== undefined && post.comment_count > 0 && (
-                    <span class="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                    <span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
                       💬 {post.comment_count}
                     </span>
                   )}
@@ -145,8 +158,8 @@ index.get("/posts", async (c) => {
                   </h3>
                   <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                     <span class="truncate">{post.author}</span>
-                    <span class="text-xs">
-                      {new Date(post.created_at + "Z").toLocaleDateString()}
+                    <span class="text-xs whitespace-nowrap">
+                      {formatDateTime(post.created_at)}
                     </span>
                   </div>
                   {post.tag && (
