@@ -6,9 +6,9 @@ import { posts } from './routes/posts'
 import { user } from './routes/user'
 import { tags } from './routes/tags'
 import { profile } from './routes/profile'
+import upload from './routes/api/upload'
 import { D1Database } from '@cloudflare/workers-types'
 
-// 定义 Bindings 类型
 export type Bindings = {
   DB: D1Database
   JWT_SECRET: string
@@ -20,20 +20,16 @@ app.onError((err, c) => {
   return c.text(`Error: ${err.message}\n\nStack: ${err.stack}`, 500);
 });
 
-// 添加静态文件处理
-// serveStatic 中间件会自动处理开发环境和生产环境的差异
-// 在生产环境中使用 ASSETS 绑定，在开发环境中 Wrangler 会自动处理
 app.use('/static/*', serveStatic())
 
-// 添加 JSX 渲染器
 app.get('*', renderer)
 app.post('*', renderer)
 
-// 添加路由
 app.route('/', index)
 app.route('/posts', posts)
 app.route('/user', user)
 app.route('/tags', tags)
 app.route('/profile', profile)
+app.route('/api', upload)   // ← 新增
 
 export default app
