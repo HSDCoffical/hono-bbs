@@ -21,13 +21,17 @@ export interface Post {
   tag?: string;
   comment_count?: number;
   created_at: string;
+  // ===== 壁纸/文件字段（新增） =====
+  file_url?: string | null;      // 文件存储 URL
+  file_type?: string | null;     // 文件 MIME 类型（image/jpeg, video/mp4 等）
+  file_size?: number | null;     // 文件大小（字节）
 }
 
 export interface Comment {
   id: number;
   post_id: number;
   content: string;
-  raw_content?: string; // 原始 Markdown 内容
+  raw_content?: string; // 原始 Markdown 内容（与数据库字段名一致）
   author: string;
   author_avatar?: string; // 评论者头像
   floor_number?: number; // 楼层号
