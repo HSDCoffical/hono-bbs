@@ -9,9 +9,9 @@ app.post('/upload', async (c) => {
       return c.json({ error: '未配置 GITHUB_TOKEN' }, 500);
     }
 
-    // ========== 直接写死仓库和目录 ==========
-    const repo = 'HSDCofficial/astrowind';   // 确认拼写正确
-    const uploadDir = 'workshop';            // 确认目录存在
+    // 🔧 修改为您的 GitHub 用户名和仓库名（不要加 https://）
+    const repo = '你的用户名/仓库名';   // 例如 'zhangsan/my-images'
+    const uploadDir = '';              // 空字符串 = 根目录
 
     const formData = await c.req.formData();
     const file = formData.get('file') as File | null;
@@ -35,14 +35,16 @@ app.post('/upload', async (c) => {
     }
     const base64 = btoa(binary);
 
-    const githubUrl = `https://api.github.com/repos/${repo}/contents/${uploadDir}/${filename}`;
+    // 处理路径：如果 uploadDir 为空，直接使用文件名
+    const path = uploadDir ? `${uploadDir}/${filename}` : filename;
+    const githubUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
 
     const resp = await fetch(githubUrl, {
       method: 'PUT',
       headers: {
         'Authorization': `token ${GITHUB_TOKEN}`,
         'Content-Type': 'application/json',
-        'User-Agent': 'Hono-BBS-App/1.0'   // 必加
+        'User-Agent': 'Hono-BBS-App/1.0'
       },
       body: JSON.stringify({
         message: `上传: ${file.name}`,
@@ -55,20 +57,21 @@ app.post('/upload', async (c) => {
       try {
         const json = JSON.parse(detail);
         detail = JSON.stringify(json, null, 2);
-      } catch (_) { /* 保留原文 */ }
+      } catch (_) { /* 保留原文本 */ }
 
       return c.json({
         error: `GitHub 上传失败: ${resp.status}`,
         detail,
-        requested_url: githubUrl  // 方便核对
+        requested_url: githubUrl
       }, 500);
     }
 
     const data = await resp.json();
+    // 返回的 URL 也使用 path
     return c.json({
       success: true,
       filename,
-      url: `https://github.com/${repo}/blob/main/${uploadDir}/${filename}?raw=true`,
+      url: `https://github.com/${repo}/blob/main/${path}?raw=true`,
       github_data: data,
     });
   } catch (e) {
