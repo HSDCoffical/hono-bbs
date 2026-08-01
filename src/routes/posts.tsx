@@ -78,7 +78,6 @@ posts.get("/new", jwtAuth, async (c) => {
         </button>
       </form>
 
-      {/* ===== 引用外部预览脚本（不再内联） ===== */}
       <script src="/static/preview.js"></script>
     </article>,
     {
@@ -431,7 +430,7 @@ posts.get("/:id", async (c) => {
   );
 });
 
-// 编辑帖子页面 - 需要是作者或管理员
+// ===== 编辑帖子页面 - 添加了文件上传功能 =====
 posts.get("/:id/edit", jwtAuth, async (c) => {
   const id = parseInt(c.req.param("id"));
   const user = c.get("user");
@@ -444,6 +443,7 @@ posts.get("/:id/edit", jwtAuth, async (c) => {
     return c.notFound();
   }
 
+  // 检查权限 - 只有作者或管理员可以编辑
   if (user.username !== post.author && user.role !== "admin") {
     return c.render(
       <div>
@@ -461,34 +461,77 @@ posts.get("/:id/edit", jwtAuth, async (c) => {
   return c.render(
     <article>
       <header>编辑帖子</header>
-      <form action={`/posts/${id}/edit`} method="post" id="edit-post-form">
+      <form action={`/posts/${id}/edit`} method="post" id="edit-post-form" enctype="multipart/form-data">
+        {/* ===== 文件上传字段（可选） ===== */}
         <div>
-          <label for="title">标题</label>
-          <input type="text" id="title" name="title" value={post.title} required />
+          <label for="file" class="block font-medium mb-1">
+            {post.file_url ? '更换壁纸' : '添加壁纸'}（可选）
+          </label>
+          <input
+            type="file"
+            id="file"
+            name="file"
+            accept="image/*,video/mp4,video/webm"
+            class="block w-full text-sm border border-gray-200 rounded-lg p-2"
+          />
+          <p class="text-xs text-gray-500 mt-1">支持 JPG, PNG, GIF, WebP, MP4, WebM · 最大 10MB</p>
+          <div id="edit-preview" class="mt-2"></div>
+          {post.file_url && (
+            <div class="mt-2">
+              <p class="text-xs text-gray-500">
+                当前壁纸：<a href={post.file_url} target="_blank" class="text-blue-600">查看</a>
+              </p>
+            </div>
+          )}
         </div>
-        <div>
-          <label for="content">内容</label>
-          <textarea id="content" name="content" required rows={20} placeholder="在此输入内容，支持 Markdown 格式...">
+
+        <div class="mt-4">
+          <label for="title" class="block font-medium mb-1">标题</label>
+          <input type="text" id="title" name="title" value={post.title} required class="w-full border border-gray-200 rounded-lg p-2" />
+        </div>
+
+        <div class="mt-4">
+          <label for="content" class="block font-medium mb-1">内容</label>
+          <textarea id="content" name="content" required rows={20} placeholder="在此输入内容，支持 Markdown 格式..." class="w-full border border-gray-200 rounded-lg p-2">
             {editContent.trim()}
           </textarea>
         </div>
-        <div>
-          <label for="tag">标签</label>
-          <select id="tag" name="tag">
+
+        <div class="mt-4">
+          <label for="tag" class="block font-medium mb-1">标签</label>
+          <select id="tag" name="tag" class="w-full border border-gray-200 rounded-lg p-2">
             <option value="">-- 选择标签 --</option>
             {tags.map((tag) => (
               <option value={tag.name} selected={post.tag === tag.name}>{tag.name}</option>
             ))}
           </select>
         </div>
-        <button type="submit">更新</button>
+
+        <button type="submit" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+          更新帖子
+        </button>
       </form>
+
+      {/* ===== 编辑页面预览脚本 ===== */}
+      <script>
+        document.getElementById('file').addEventListener('change', function(e) {
+          const preview = document.getElementById('edit-preview');
+          const file = e.target.files[0];
+          if (!file) { preview.innerHTML = ''; return; }
+          const url = URL.createObjectURL(file);
+          if (file.type.startsWith('image/')) {
+            preview.innerHTML = '<img src="' + url + '" style="max-width:300px; max-height:300px; border-radius:8px; border:1px solid #ddd;" />';
+          } else if (file.type.startsWith('video/')) {
+            preview.innerHTML = '<video src="' + url + '" controls style="max-width:300px; max-height:300px; border-radius:8px; border:1px solid #ddd;"></video>';
+          }
+        });
+      </script>
     </article>,
     { title: "编辑帖子", user }
   );
 });
 
-// 处理帖子编辑 - 需要是作者或管理员
+// ===== 处理帖子编辑 - 支持文件上传 =====
 posts.post("/:id/edit", jwtAuth, async (c) => {
   const id = parseInt(c.req.param("id"));
   const user = c.get("user");
@@ -500,6 +543,7 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
     return c.notFound();
   }
 
+  // 检查权限 - 只有作者或管理员可以编辑
   if (user.username !== post.author && user.role !== "admin") {
     return c.render(
       <div>
@@ -515,9 +559,9 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
   const title = (formData.get("title") as string)?.trim();
   const content = (formData.get("content") as string)?.trim();
   const tag = (formData.get("tag") as string)?.trim();
+  const file = formData.get('file') as File | null;
 
-  const parsedContent = parseMarkdown(content);
-
+  // 验证标题和内容
   if (!title || !content) {
     return c.render(
       <div>
@@ -529,7 +573,85 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
     );
   }
 
-  await postService.updatePost(id, { title, content: parsedContent, rawContent: content, tag });
+  const parsedContent = parseMarkdown(content);
+
+  // ===== 处理文件上传（如果有新文件） =====
+  let fileUrl = post.file_url || null;
+  let fileType = post.file_type || null;
+  let fileSize = post.file_size || null;
+
+  if (file && file.size > 0) {
+    // 验证文件格式
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return c.render(
+        <div class="p-4">
+          <h1>上传失败</h1>
+          <p>不支持的文件格式。仅支持 JPG、PNG、GIF、WebP、MP4、WebM</p>
+          <a href={`/posts/${id}/edit`} className="button">返回</a>
+        </div>,
+        { title: "上传失败 - 凉宫社区", user }
+      );
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return c.render(
+        <div class="p-4">
+          <h1>上传失败</h1>
+          <p>文件大小超过 10MB 限制</p>
+          <a href={`/posts/${id}/edit`} className="button">返回</a>
+        </div>,
+        { title: "上传失败 - 凉宫社区", user }
+      );
+    }
+
+    try {
+      const uploadForm = new FormData();
+      uploadForm.append('file', file);
+      uploadForm.append('uploader', user.username);
+
+      const response = await fetch(WORKER_UPLOAD_URL, {
+        method: 'POST',
+        body: uploadForm,
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        fileUrl = result.url;
+        fileType = file.type;
+        fileSize = file.size;
+      } else {
+        return c.render(
+          <div class="p-4">
+            <h1>上传失败</h1>
+            <p>文件上传失败：{result.error || '未知错误'}</p>
+            <a href={`/posts/${id}/edit`} className="button">返回</a>
+          </div>,
+          { title: "上传失败 - 凉宫社区", user }
+        );
+      }
+    } catch (e) {
+      return c.render(
+        <div class="p-4">
+          <h1>上传失败</h1>
+          <p>上传服务异常：{(e as Error).message}</p>
+          <a href={`/posts/${id}/edit`} className="button">返回</a>
+        </div>,
+        { title: "上传失败 - 凉宫社区", user }
+      );
+    }
+  }
+
+  // ===== 更新帖子 =====
+  await postService.updatePost(id, {
+    title,
+    content: parsedContent,
+    rawContent: content,
+    tag: tag || null,
+    file_url: fileUrl,
+    file_type: fileType,
+    file_size: fileSize,
+  });
+
   return c.redirect(`/posts/${id}`);
 });
 
@@ -769,25 +891,4 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
 });
 
 // 处理评论删除 - 仅管理员可用
-posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) => {
-  const postId = parseInt(c.req.param("postId"));
-  const commentId = parseInt(c.req.param("commentId"));
-
-  const commentService = CommentService.getInstance(c.env.DB);
-  const success = await commentService.deleteComment(commentId);
-
-  if (!success) {
-    return c.render(
-      <div>
-        <h1>删除评论失败</h1>
-        <p>评论删除失败，请稍后再试</p>
-        <a href={`/posts/${postId}`}>返回帖子</a>
-      </div>,
-      { title: "删除评论失败 - 凉宫社区" }
-    );
-  }
-
-  return c.redirect(`/posts/${postId}`);
-});
-
-export { posts };
+posts.post("/:postId/comment/:commentId/delete", jwtAuth, adm
