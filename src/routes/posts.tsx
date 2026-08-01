@@ -78,8 +78,8 @@ posts.get("/new", jwtAuth, async (c) => {
         </button>
       </form>
 
-      {/* ===== 预览脚本 ===== */}
-      <script>
+      {/* ===== 预览脚本（添加 is:inline） ===== */}
+      <script is:inline>
         document.getElementById('file').addEventListener('change', function(e) {
           const preview = document.getElementById('preview');
           const file = e.target.files[0];
