@@ -7,7 +7,7 @@ import { ExtendedJWTPayload } from "../types/app";
 import { parseMarkdown } from "../utils/markdown";
 
 // ===== 配置 =====
-const WORKER_UPLOAD_URL = 'https://github-upload.2791389901.workers.dev/upload';
+const WORKER_UPLOAD_URL = '/api/upload';
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 // =================
