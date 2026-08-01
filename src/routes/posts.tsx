@@ -11,7 +11,8 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'vi
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 // =================
 
-const posts = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+// ✅ 修改为具名导出，与 app.tsx 的导入匹配
+export const posts = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 // 获取所有帖子（重定向到首页）
 posts.get("/", async (c) => {
@@ -520,7 +521,6 @@ posts.get("/:id/edit", jwtAuth, async (c) => {
     { title: "编辑帖子", user }
   );
 });
-
 // ===== 处理帖子编辑 - 支持文件上传 =====
 posts.post("/:id/edit", jwtAuth, async (c) => {
   const origin = new URL(c.req.url).origin;
@@ -657,7 +657,6 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
     file_type: fileType,
     file_size: fileSize,
   });
-
   return c.redirect(`/posts/${id}`);
 });
 
@@ -904,5 +903,3 @@ posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =
   await commentService.deleteComment(commentId);
   return c.redirect(`/posts/${postId}`);
 });
-
-export default posts;
