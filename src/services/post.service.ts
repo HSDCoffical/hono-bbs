@@ -16,51 +16,81 @@ export class PostService {
 
   async getAllPosts(): Promise<Post[]> {
     const { results } = await this.db.prepare(
-      'SELECT id, title, content, raw_content as rawContent, author, tag, comment_count, created_at FROM posts ORDER BY created_at DESC'
+      `SELECT id, title, content, raw_content as rawContent, author, tag, 
+              comment_count, created_at, file_url, file_type, file_size 
+       FROM posts ORDER BY created_at DESC`
     ).all<Post>()
     return results
   }
 
   async getPostsByTag(tag: string): Promise<Post[]> {
     const { results } = await this.db.prepare(
-      'SELECT id, title, content, raw_content as rawContent, author, tag, comment_count, created_at FROM posts WHERE tag = ? ORDER BY created_at DESC'
+      `SELECT id, title, content, raw_content as rawContent, author, tag, 
+              comment_count, created_at, file_url, file_type, file_size 
+       FROM posts WHERE tag = ? ORDER BY created_at DESC`
     ).bind(tag).all<Post>()
     return results
   }
 
   async getPostById(id: number): Promise<Post | null> {
     const post = await this.db.prepare(
-      'SELECT id, title, content, raw_content as rawContent, author, tag, comment_count, created_at FROM posts WHERE id = ?'
+      `SELECT id, title, content, raw_content as rawContent, author, tag, 
+              comment_count, created_at, file_url, file_type, file_size 
+       FROM posts WHERE id = ?`
     ).bind(id).first<Post>()
     return post
   }
 
   async getPostsByAuthor(author: string): Promise<Post[]> {
     const { results } = await this.db.prepare(
-      'SELECT id, title, content, raw_content as rawContent, author, tag, comment_count, created_at FROM posts WHERE author = ? ORDER BY created_at DESC'
+      `SELECT id, title, content, raw_content as rawContent, author, tag, 
+              comment_count, created_at, file_url, file_type, file_size 
+       FROM posts WHERE author = ? ORDER BY created_at DESC`
     ).bind(author).all<Post>()
     return results
   }
 
   async createPost(post: Omit<Post, 'id' | 'created_at' | 'comment_count'>): Promise<number> {
+    // 支持 file_url, file_type, file_size 字段
     const result = await this.db.prepare(
-      'INSERT INTO posts (title, content, raw_content, author, tag, comment_count) VALUES (?, ?, ?, ?, ?, 0) RETURNING id'
-    ).bind(post.title, post.content, post.rawContent || null, post.author, post.tag || null).first<{ id: number }>()
+      `INSERT INTO posts (title, content, raw_content, author, tag, comment_count, 
+                          file_url, file_type, file_size) 
+       VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?) RETURNING id`
+    ).bind(
+      post.title,
+      post.content,
+      post.rawContent || null,
+      post.author,
+      post.tag || null,
+      post.file_url || null,
+      post.file_type || null,
+      post.file_size || null
+    ).first<{ id: number }>()
     return result?.id || 0
   }
 
   async updatePost(id: number, post: Partial<Omit<Post, 'id' | 'created_at' | 'comment_count'>>): Promise<boolean> {
-    const fields = Object.keys(post).map(key => {
-      // 将 rawContent 转换为数据库字段 raw_content
-      if (key === 'rawContent') return 'raw_content = ?';
-      return `${key} = ?`;
-    }).join(', ')
+    // 构建动态更新语句，支持所有字段
+    const allowedKeys = ['title', 'content', 'rawContent', 'author', 'tag', 'file_url', 'file_type', 'file_size'];
+    const fields = Object.keys(post)
+      .filter(key => allowedKeys.includes(key))
+      .map(key => {
+        if (key === 'rawContent') return 'raw_content = ?';
+        return `${key} = ?`;
+      });
     
-    const values = Object.values(post)
+    if (fields.length === 0) return false;
+    
+    const values = fields.map(key => {
+      const k = key === 'raw_content' ? 'rawContent' : key;
+      // @ts-ignore
+      return post[k];
+    });
+    values.push(id);
     
     const result = await this.db.prepare(
-      `UPDATE posts SET ${fields} WHERE id = ?`
-    ).bind(...values, id).run()
+      `UPDATE posts SET ${fields.join(', ')} WHERE id = ?`
+    ).bind(...values).run()
     
     return result.success
   }
