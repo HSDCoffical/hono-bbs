@@ -892,4 +892,15 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
         <button hx-get={`/posts/${postId}`} hx-target="body" hx-push-url="true">取消</button>
       </footer>
     </article>,
-    { title: "删除评论 - 凉宫社区", user: c.ge
+    { title: "删除评论 - 凉宫社区", user: c.get("user") }
+  );
+});
+
+// 处理评论删除 - 仅管理员可用
+posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) => {
+  const postId = parseInt(c.req.param("postId"));
+  const commentId = parseInt(c.req.param("commentId"));
+  const commentService = CommentService.getInstance(c.env.DB);
+  await commentService.deleteComment(commentId);
+  return c.redirect(`/posts/${postId}`);
+});
