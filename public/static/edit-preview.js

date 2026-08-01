@@ -1,0 +1,17 @@
+// public/static/edit-preview.js
+document.addEventListener('DOMContentLoaded', function() {
+  const fileInput = document.getElementById('file');
+  const preview = document.getElementById('edit-preview');
+  if (fileInput && preview) {
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) { preview.innerHTML = ''; return; }
+      const url = URL.createObjectURL(file);
+      if (file.type.startsWith('image/')) {
+        preview.innerHTML = '<img src="' + url + '" style="max-width:300px; max-height:300px; border-radius:8px; border:1px solid #ddd;" />';
+      } else if (file.type.startsWith('video/')) {
+        preview.innerHTML = '<video src="' + url + '" controls style="max-width:300px; max-height:300px; border-radius:8px; border:1px solid #ddd;"></video>';
+      }
+    });
+  }
+});
