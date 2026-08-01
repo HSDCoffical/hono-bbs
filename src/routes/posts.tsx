@@ -903,4 +903,3 @@ posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =
 });
 
 // 关键修复：统一标准具名导出，解决 posts is not exported 报错
-export { posts };
