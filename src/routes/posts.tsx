@@ -6,6 +6,12 @@ import type { Bindings, Variables } from "../types/app";
 import { ExtendedJWTPayload } from "../types/app";
 import { parseMarkdown } from "../utils/markdown";
 
+// ===== 配置 =====
+const WORKER_UPLOAD_URL = 'https://github-upload.2791389901.workers.dev/upload';
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+// =================
+
 const posts = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 // 获取所有帖子（重定向到首页）
@@ -21,36 +27,74 @@ posts.get("/new", jwtAuth, async (c) => {
 
   return c.render(
     <article>
-      <header class="mb-2 text-xl font-bold">发布新帖子</header>
-      <form action="/posts" method="post" id="post-form">
+      <header class="mb-2 text-xl font-bold">📤 发布壁纸</header>
+      <form action="/posts" method="post" id="post-form" enctype="multipart/form-data">
+        {/* ===== 文件上传 ===== */}
         <div>
-          <label for="title">标题</label>
-          <input type="text" id="title" name="title" required />
+          <label for="file" class="block font-medium mb-1">选择壁纸（图片/视频）</label>
+          <input
+            type="file"
+            id="file"
+            name="file"
+            accept="image/*,video/mp4,video/webm"
+            required
+            class="block w-full text-sm border border-gray-200 rounded-lg p-2"
+          />
+          <p class="text-xs text-gray-500 mt-1">支持 JPG, PNG, GIF, WebP, MP4, WebM · 最大 10MB</p>
+          <div id="preview" class="mt-2"></div>
         </div>
-        <div>
-          <label for="content">内容</label>
+
+        {/* ===== 标题 ===== */}
+        <div class="mt-4">
+          <label for="title" class="block font-medium mb-1">标题</label>
+          <input type="text" id="title" name="title" required class="w-full border border-gray-200 rounded-lg p-2" />
+        </div>
+
+        {/* ===== 描述（可选） ===== */}
+        <div class="mt-4">
+          <label for="content" class="block font-medium mb-1">描述（可选）</label>
           <textarea
             id="content"
             name="content"
-            required
-            rows={20}
-            placeholder="请在此输入内容，支持 Markdown 格式"
+            rows={4}
+            placeholder="壁纸描述、来源、分辨率等信息..."
+            class="w-full border border-gray-200 rounded-lg p-2"
           ></textarea>
         </div>
-        <div>
-          <label for="tag">标签</label>
-          <select id="tag" name="tag" required>
+
+        {/* ===== 标签 ===== */}
+        <div class="mt-4">
+          <label for="tag" class="block font-medium mb-1">标签</label>
+          <select id="tag" name="tag" required class="w-full border border-gray-200 rounded-lg p-2">
             <option value="">-- 请选择标签 --</option>
             {tags.map((tag) => (
               <option value={tag.name}>{tag.name}</option>
             ))}
           </select>
         </div>
-        <button type="submit">发布</button>
+
+        <button type="submit" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+          发布壁纸
+        </button>
       </form>
+
+      {/* ===== 预览脚本 ===== */}
+      <script>
+        document.getElementById('file').addEventListener('change', function(e) {
+          const preview = document.getElementById('preview');
+          const file = e.target.files[0];
+          if (!file) { preview.innerHTML = ''; return; }
+          const url = URL.createObjectURL(file);
+          if (file.type.startsWith('image/')) {
+            preview.innerHTML = `<img src="${url}" style="max-width:300px; max-height:300px; border-radius:8px; border:1px solid #ddd;" />`;
+          } else if (file.type.startsWith('video/')) {
+            preview.innerHTML = `<video src="${url}" controls style="max-width:300px; max-height:300px; border-radius:8px; border:1px solid #ddd;"></video>`;
+          }
+        });
+      </script>
     </article>,
     {
-      title: "发布新帖子",
+      title: "发布壁纸 - 凉宫社区",
       user: user,
     }
   );
@@ -62,29 +106,106 @@ posts.post("/", jwtAuth, async (c) => {
   const title = (formData.get("title") as string)?.trim();
   const content = (formData.get("content") as string)?.trim();
   const tag = (formData.get("tag") as string)?.trim();
+  const file = formData.get('file') as File | null;
 
   const user = c.get("user");
   const author = user.username;
 
-  if (!title || !content || !tag) {
+  // ===== 验证必填字段 =====
+  if (!title || !tag) {
     return c.render(
-      <div>
+      <div class="p-4">
         <h1>发布失败</h1>
-        <p>标题、内容和标签都不能为空</p>
+        <p>标题和标签不能为空</p>
         <a href="/posts/new" className="button">返回</a>
       </div>,
       { title: "发布失败 - 凉宫社区", user }
     );
   }
 
-  const parsedContent = parseMarkdown(content);
+  // ===== 验证文件 =====
+  if (!file || file.size === 0) {
+    return c.render(
+      <div class="p-4">
+        <h1>发布失败</h1>
+        <p>请选择文件</p>
+        <a href="/posts/new" className="button">返回</a>
+      </div>,
+      { title: "发布失败 - 凉宫社区", user }
+    );
+  }
 
-  // 通过用户名查询用户 ID
+  // ===== 验证文件格式 =====
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return c.render(
+      <div class="p-4">
+        <h1>发布失败</h1>
+        <p>不支持的文件格式。仅支持 JPG、PNG、GIF、WebP、MP4、WebM</p>
+        <a href="/posts/new" className="button">返回</a>
+      </div>,
+      { title: "发布失败 - 凉宫社区", user }
+    );
+  }
+
+  // ===== 验证文件大小 =====
+  if (file.size > MAX_FILE_SIZE) {
+    return c.render(
+      <div class="p-4">
+        <h1>发布失败</h1>
+        <p>文件大小超过 10MB 限制</p>
+        <a href="/posts/new" className="button">返回</a>
+      </div>,
+      { title: "发布失败 - 凉宫社区", user }
+    );
+  }
+
+  // ===== 上传文件到 Worker =====
+  let fileUrl: string | null = null;
+  let fileType: string | null = null;
+  let fileSize: number | null = null;
+
+  try {
+    const uploadForm = new FormData();
+    uploadForm.append('file', file);
+    uploadForm.append('uploader', author);
+
+    const response = await fetch(WORKER_UPLOAD_URL, {
+      method: 'POST',
+      body: uploadForm,
+    });
+    const result = await response.json();
+
+    if (result.success) {
+      fileUrl = result.url;
+      fileType = file.type;
+      fileSize = file.size;
+    } else {
+      return c.render(
+        <div class="p-4">
+          <h1>上传失败</h1>
+          <p>文件上传失败：{result.error || '未知错误'}</p>
+          <a href="/posts/new" className="button">返回</a>
+        </div>,
+        { title: "上传失败 - 凉宫社区", user }
+      );
+    }
+  } catch (e) {
+    return c.render(
+      <div class="p-4">
+        <h1>上传失败</h1>
+        <p>上传服务异常：{(e as Error).message}</p>
+        <a href="/posts/new" className="button">返回</a>
+      </div>,
+      { title: "上传失败 - 凉宫社区", user }
+    );
+  }
+
+  // ===== 通过用户名查询用户 ID =====
   const userService = UserService.getInstance(c.env.DB);
   const dbUser = await userService.getUserByUsername(author);
   if (!dbUser) {
     return c.render(
-      <div>
+      <div class="p-4">
         <h1>用户不存在</h1>
         <p>无法找到对应的用户记录，请重新登录</p>
         <a href="/user/logout">返回登录</a>
@@ -93,15 +214,21 @@ posts.post("/", jwtAuth, async (c) => {
     );
   }
 
+  // ===== 创建帖子（包含壁纸信息） =====
   const userId = dbUser.id;
   const postService = PostService.getInstance(c.env.DB);
+  const parsedContent = content ? parseMarkdown(content) : '';
+
   const postId = await postService.createPost({
     title,
-    content: parsedContent,
-    rawContent: content,
+    content: parsedContent || ' ',
+    rawContent: content || '',
     author,
     tag,
     user_id: userId,
+    file_url: fileUrl,
+    file_type: fileType,
+    file_size: fileSize,
   });
 
   if (!postId) {
@@ -150,8 +277,40 @@ posts.get("/:id", async (c) => {
         <header class="mb-2">
           <div class="text-xl font-bold">{post.title}</div>
         </header>
-        <div class="post-content" dangerouslySetInnerHTML={{ __html: post.content }}></div>
-        <footer class="flex items-center space-x-2 text-sm">
+
+        {/* ===== 展示壁纸（图片/视频） ===== */}
+        {post.file_url ? (
+          <div class="my-4">
+            {post.file_type?.startsWith('image/') ? (
+              <img
+                src={post.file_url}
+                alt={post.title}
+                class="max-w-full rounded-lg shadow-lg"
+                style={{ maxHeight: '70vh', objectFit: 'contain' }}
+              />
+            ) : post.file_type?.startsWith('video/') ? (
+              <video
+                src={post.file_url}
+                controls
+                class="max-w-full rounded-lg shadow-lg"
+                style={{ maxHeight: '70vh' }}
+              />
+            ) : (
+              <a href={post.file_url} target="_blank" class="text-blue-600">查看文件</a>
+            )}
+            {post.file_size && (
+              <p class="text-xs text-gray-500 mt-1">文件大小: {(post.file_size / 1024).toFixed(1)} KB</p>
+            )}
+          </div>
+        ) : null}
+
+        {/* ===== 文本内容（描述） ===== */}
+        {post.content && post.content.trim() !== '' && post.content.trim() !== ' ' && (
+          <div class="post-content" dangerouslySetInnerHTML={{ __html: post.content }}></div>
+        )}
+
+        {/* ===== 底部信息 ===== */}
+        <footer class="flex items-center space-x-2 text-sm mt-4">
           <span class="post-author"><a href={`/profile/${post.author}`}>{post.author}</a></span>
           {post.tag && (
             <a class="bg-gray-2 p-1 rounded text-xs no-underline color-[var(--primary-inverse)]" href={`/posts?tag=${post.tag}`}>
@@ -194,6 +353,8 @@ posts.get("/:id", async (c) => {
           )}
         </footer>
       </article>
+
+      {/* ===== 评论区（保持不变） ===== */}
       <section class="comments">
         {comments.length > 0 ? (
           <>
@@ -276,7 +437,7 @@ posts.get("/:id", async (c) => {
       </section>
     </div>,
     {
-      title: `${post.title} - Hono BBS`,
+      title: `${post.title} - 凉宫社区`,
       user: currentUser,
     }
   );
@@ -399,7 +560,7 @@ posts.get("/:id/delete", jwtAuth, async (c) => {
         <p>您请求的帖子不存在或已被删除</p>
         <a href="/">返回首页</a>
       </div>,
-      { title: "帖子不存在 - Hono BBS" }
+      { title: "帖子不存在 - 凉宫社区" }
     );
   }
 
