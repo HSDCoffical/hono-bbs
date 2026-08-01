@@ -603,20 +603,24 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
       });
       const result = await response.json();
 
-      if (result.success) {
-        fileUrl = result.url;
-        fileType = file.type;
-        fileSize = file.size;
-      } else {
-        return c.render(
-          <div class="p-4">
-            <h1>上传失败</h1>
-            <p>文件上传失败：{result.error || '未知错误'}</p>
-            <a href={`/posts/${id}/edit`} className="button">返回</a>
-          </div>,
-          { title: "上传失败 - 凉宫社区", user }
-        );
-      }
+       if (result.success) {
+  fileUrl = result.url;
+  fileType = file.type;
+  fileSize = file.size;
+} else {
+  // 显示详细错误信息（包含 detail）
+  const errorMsg = result.error || '未知错误';
+  const detailMsg = result.detail ? `\n详细信息：${result.detail}` : '';
+  return c.render(
+    <div class="p-4">
+      <h1>上传失败</h1>
+      <p>文件上传失败：{errorMsg}</p>
+      {result.detail && <pre class="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto">{result.detail}</pre>}
+      <a href="/posts/new" className="button">返回</a>
+    </div>,
+    { title: "上传失败 - 凉宫社区", user }
+  );
+}
     } catch (e) {
       return c.render(
         <div class="p-4">
