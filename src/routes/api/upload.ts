@@ -42,6 +42,7 @@ app.post('/upload', async (c) => {
       headers: {
         'Authorization': `token ${GITHUB_TOKEN}`,
         'Content-Type': 'application/json',
+        'User-Agent': 'Hono-BBS-App/1.0'   // 添加这行，解决 403 错误
       },
       body: JSON.stringify({
         message: `上传: ${file.name}`,
