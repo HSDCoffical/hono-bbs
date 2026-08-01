@@ -1,5 +1,4 @@
 // ===== 配置区（修改这里） =====
-// 注意：GITHUB_TOKEN 不再硬编码，而是从 env 环境变量读取
 const GITHUB_REPO = 'HSDCofficial/astrowind';
 const GITHUB_PATH = 'workshop/';
 // ============================================
@@ -7,16 +6,51 @@ const GITHUB_PATH = 'workshop/';
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-
-    // 从环境变量获取 Token
     const GITHUB_TOKEN = env.GITHUB_TOKEN;
-    if (!GITHUB_TOKEN) {
-      return new Response(JSON.stringify({ error: '服务器配置错误：缺少 GITHUB_TOKEN 环境变量' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+
+    // ===== 测试路由：验证 Token 是否有效 =====
+    if (url.pathname === '/test') {
+      if (!GITHUB_TOKEN) {
+        return new Response(JSON.stringify({ error: '未配置 GITHUB_TOKEN 环境变量' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+      }
+
+      // 测试 Token 是否能读取仓库
+      const testUrl = `https://api.github.com/repos/${GITHUB_REPO}`;
+      const resp = await fetch(testUrl, {
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+        },
       });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        return new Response(JSON.stringify({
+          ok: true,
+          repo: data.full_name,
+          private: data.private,
+          default_branch: data.default_branch,
+        }), {
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+      } else {
+        const errorText = await resp.text();
+        return new Response(JSON.stringify({
+          ok: false,
+          status: resp.status,
+          detail: errorText,
+        }), {
+          status: resp.status,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+      }
     }
 
+    // ===== 原有上传/文件列表/删除等逻辑 =====
+    // （下面代码保持不变，但为了完整我重新贴一遍）
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: {
@@ -29,6 +63,13 @@ export default {
 
     if (request.method === 'POST' && url.pathname === '/upload') {
       try {
+        if (!GITHUB_TOKEN) {
+          return new Response(JSON.stringify({ error: '服务器配置错误：缺少 GITHUB_TOKEN 环境变量' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+          });
+        }
+
         const formData = await request.formData();
         const file = formData.get('file');
         const uploader = formData.get('uploader') || '匿名';
@@ -93,7 +134,6 @@ export default {
           `INSERT INTO files (filename, original_name, size, uploader) VALUES (?, ?, ?, ?)`
         ).bind(filename, file.name, file.size, uploader).run();
 
-        // 使用 blob + ?raw=true
         return new Response(JSON.stringify({
           success: true,
           filename: filename,
