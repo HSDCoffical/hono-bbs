@@ -42,7 +42,7 @@ export default {
       }
     }
 
-    // 其他路径返回简单信息
-    return new Response('请访问 /test', { status: 200 });
+    // 其他路径返回提示
+    return new Response('请访问 /test 测试 Token', { status: 200 });
   }
 };
