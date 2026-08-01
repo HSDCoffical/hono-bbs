@@ -6,12 +6,12 @@ app.post('/upload', async (c) => {
   try {
     const GITHUB_TOKEN = c.env.GITHUB_TOKEN;
     if (!GITHUB_TOKEN) {
-      return c.json({ error: '服务器配置错误：未配置 GITHUB_TOKEN 环境变量' }, 500);
+      return c.json({ error: '未配置 GITHUB_TOKEN' }, 500);
     }
 
-    // 直接写死，不走环境变量
-    const repo = 'HSDCofficial/astrowind';
-    const uploadDir = 'workshop';
+    // ========== 直接写死仓库和目录 ==========
+    const repo = 'HSDCofficial/astrowind';   // 确认拼写正确
+    const uploadDir = 'workshop';            // 确认目录存在
 
     const formData = await c.req.formData();
     const file = formData.get('file') as File | null;
@@ -20,7 +20,7 @@ app.post('/upload', async (c) => {
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      return c.json({ error: '文件大小不能超过 10MB' }, 400);
+      return c.json({ error: '文件大小超过 10MB' }, 400);
     }
 
     const timestamp = Date.now();
@@ -36,12 +36,13 @@ app.post('/upload', async (c) => {
     const base64 = btoa(binary);
 
     const githubUrl = `https://api.github.com/repos/${repo}/contents/${uploadDir}/${filename}`;
+
     const resp = await fetch(githubUrl, {
       method: 'PUT',
       headers: {
         'Authorization': `token ${GITHUB_TOKEN}`,
         'Content-Type': 'application/json',
-        'User-Agent': 'Hono-BBS-App/1.0'
+        'User-Agent': 'Hono-BBS-App/1.0'   // 必加
       },
       body: JSON.stringify({
         message: `上传: ${file.name}`,
@@ -51,34 +52,22 @@ app.post('/upload', async (c) => {
 
     if (!resp.ok) {
       let detail = await resp.text();
-      // 尝试解析 JSON 获取更具体信息
-      let parsedDetail = detail;
       try {
         const json = JSON.parse(detail);
-        parsedDetail = JSON.stringify(json, null, 2); // 格式化输出
-      } catch (_) { /* 保留原文本 */ }
-
-      if (resp.status === 404) {
-        return c.json({
-          error: 'GitHub 仓库或路径不存在（404）',
-          detail: `请确认仓库 "${repo}" 存在，且目录 "${uploadDir}" 在仓库根目录下。`,
-          github_full_response: parsedDetail,  // 这里会显示 GitHub 返回的完整错误体
-          requested_url: githubUrl
-        }, 500);
-      }
+        detail = JSON.stringify(json, null, 2);
+      } catch (_) { /* 保留原文 */ }
 
       return c.json({
         error: `GitHub 上传失败: ${resp.status}`,
-        detail: parsedDetail,
-        status: resp.status,
-        statusText: resp.statusText
+        detail,
+        requested_url: githubUrl  // 方便核对
       }, 500);
     }
 
     const data = await resp.json();
     return c.json({
       success: true,
-      filename: filename,
+      filename,
       url: `https://github.com/${repo}/blob/main/${uploadDir}/${filename}?raw=true`,
       github_data: data,
     });
