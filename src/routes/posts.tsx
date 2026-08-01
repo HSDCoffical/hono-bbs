@@ -78,24 +78,8 @@ posts.get("/new", jwtAuth, async (c) => {
         </button>
       </form>
 
-      {/* ===== 预览脚本（使用 dangerouslySetInnerHTML 避免构建错误） ===== */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            document.getElementById('file').addEventListener('change', function(e) {
-              const preview = document.getElementById('preview');
-              const file = e.target.files[0];
-              if (!file) { preview.innerHTML = ''; return; }
-              const url = URL.createObjectURL(file);
-              if (file.type.startsWith('image/')) {
-                preview.innerHTML = '<img src="' + url + '" style="max-width:300px; max-height:300px; border-radius:8px; border:1px solid #ddd;" />';
-              } else if (file.type.startsWith('video/')) {
-                preview.innerHTML = '<video src="' + url + '" controls style="max-width:300px; max-height:300px; border-radius:8px; border:1px solid #ddd;"></video>';
-              }
-            });
-          `
-        }}
-      />
+      {/* ===== 引用外部预览脚本（不再内联） ===== */}
+      <script src="/static/preview.js"></script>
     </article>,
     {
       title: "发布壁纸 - 凉宫社区",
