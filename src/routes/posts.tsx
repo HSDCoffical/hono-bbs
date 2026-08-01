@@ -29,7 +29,6 @@ posts.get("/new", jwtAuth, async (c) => {
     <article>
       <header class="mb-2 text-xl font-bold">📤 发布壁纸</header>
       <form action="/posts" method="post" id="post-form" enctype="multipart/form-data">
-        {/* ===== 文件上传 ===== */}
         <div>
           <label for="file" class="block font-medium mb-1">选择壁纸（图片/视频）</label>
           <input
@@ -44,13 +43,11 @@ posts.get("/new", jwtAuth, async (c) => {
           <div id="preview" class="mt-2"></div>
         </div>
 
-        {/* ===== 标题 ===== */}
         <div class="mt-4">
           <label for="title" class="block font-medium mb-1">标题</label>
           <input type="text" id="title" name="title" required class="w-full border border-gray-200 rounded-lg p-2" />
         </div>
 
-        {/* ===== 描述（可选） ===== */}
         <div class="mt-4">
           <label for="content" class="block font-medium mb-1">描述（可选）</label>
           <textarea
@@ -62,7 +59,6 @@ posts.get("/new", jwtAuth, async (c) => {
           ></textarea>
         </div>
 
-        {/* ===== 标签 ===== */}
         <div class="mt-4">
           <label for="tag" class="block font-medium mb-1">标签</label>
           <select id="tag" name="tag" required class="w-full border border-gray-200 rounded-lg p-2">
@@ -87,7 +83,7 @@ posts.get("/new", jwtAuth, async (c) => {
   );
 });
 
-// 处理新帖子提交 - 需要登录（已添加详细错误信息）
+// 处理新帖子提交 - 需要登录
 posts.post("/", jwtAuth, async (c) => {
   const formData = await c.req.formData();
   const title = (formData.get("title") as string)?.trim();
@@ -98,7 +94,6 @@ posts.post("/", jwtAuth, async (c) => {
   const user = c.get("user");
   const author = user.username;
 
-  // ===== 验证必填字段 =====
   if (!title || !tag) {
     return c.render(
       <div class="p-4">
@@ -110,7 +105,6 @@ posts.post("/", jwtAuth, async (c) => {
     );
   }
 
-  // ===== 验证文件 =====
   if (!file || file.size === 0) {
     return c.render(
       <div class="p-4">
@@ -122,7 +116,6 @@ posts.post("/", jwtAuth, async (c) => {
     );
   }
 
-  // ===== 验证文件格式 =====
   if (!ALLOWED_TYPES.includes(file.type)) {
     return c.render(
       <div class="p-4">
@@ -134,7 +127,6 @@ posts.post("/", jwtAuth, async (c) => {
     );
   }
 
-  // ===== 验证文件大小 =====
   if (file.size > MAX_FILE_SIZE) {
     return c.render(
       <div class="p-4">
@@ -146,7 +138,6 @@ posts.post("/", jwtAuth, async (c) => {
     );
   }
 
-  // ===== 上传文件到 Worker =====
   let fileUrl: string | null = null;
   let fileType: string | null = null;
   let fileSize: number | null = null;
@@ -167,7 +158,6 @@ posts.post("/", jwtAuth, async (c) => {
       fileType = file.type;
       fileSize = file.size;
     } else {
-      // 显示详细错误信息
       const errorMsg = result.error || '未知错误';
       const detailMsg = result.detail || '';
       return c.render(
@@ -191,7 +181,6 @@ posts.post("/", jwtAuth, async (c) => {
     );
   }
 
-  // ===== 通过用户名查询用户 ID =====
   const userService = UserService.getInstance(c.env.DB);
   const dbUser = await userService.getUserByUsername(author);
   if (!dbUser) {
@@ -205,7 +194,6 @@ posts.post("/", jwtAuth, async (c) => {
     );
   }
 
-  // ===== 创建帖子（包含壁纸信息） =====
   const userId = dbUser.id;
   const postService = PostService.getInstance(c.env.DB);
   const parsedContent = content ? parseMarkdown(content) : '';
@@ -229,7 +217,7 @@ posts.post("/", jwtAuth, async (c) => {
   return c.redirect(`/posts/${postId}`);
 });
 
-// 查看单个帖子（保持不变）
+// 查看单个帖子
 posts.get("/:id", async (c) => {
   const id = parseInt(c.req.param("id"));
   const page = parseInt(c.req.query("page") || "1");
@@ -269,7 +257,6 @@ posts.get("/:id", async (c) => {
           <div class="text-xl font-bold">{post.title}</div>
         </header>
 
-        {/* ===== 展示壁纸（图片/视频） ===== */}
         {post.file_url ? (
           <div class="my-4">
             {post.file_type?.startsWith('image/') ? (
@@ -295,12 +282,10 @@ posts.get("/:id", async (c) => {
           </div>
         ) : null}
 
-        {/* ===== 文本内容（描述） ===== */}
         {post.content && post.content.trim() !== '' && post.content.trim() !== ' ' && (
           <div class="post-content" dangerouslySetInnerHTML={{ __html: post.content }}></div>
         )}
 
-        {/* ===== 底部信息 ===== */}
         <footer class="flex items-center space-x-2 text-sm mt-4">
           <span class="post-author"><a href={`/profile/${post.author}`}>{post.author}</a></span>
           {post.tag && (
@@ -345,7 +330,6 @@ posts.get("/:id", async (c) => {
         </footer>
       </article>
 
-      {/* ===== 评论区（保持不变） ===== */}
       <section class="comments">
         {comments.length > 0 ? (
           <>
@@ -434,7 +418,7 @@ posts.get("/:id", async (c) => {
   );
 });
 
-// ===== 编辑帖子页面 - 添加了文件上传功能 =====
+// ===== 编辑帖子页面 =====
 posts.get("/:id/edit", jwtAuth, async (c) => {
   const id = parseInt(c.req.param("id"));
   const user = c.get("user");
@@ -447,7 +431,6 @@ posts.get("/:id/edit", jwtAuth, async (c) => {
     return c.notFound();
   }
 
-  // 检查权限 - 只有作者或管理员可以编辑
   if (user.username !== post.author && user.role !== "admin") {
     return c.render(
       <div>
@@ -466,7 +449,6 @@ posts.get("/:id/edit", jwtAuth, async (c) => {
     <article>
       <header>编辑帖子</header>
       <form action={`/posts/${id}/edit`} method="post" id="edit-post-form" enctype="multipart/form-data">
-        {/* ===== 文件上传字段（可选） ===== */}
         <div>
           <label for="file" class="block font-medium mb-1">
             {post.file_url ? '更换壁纸' : '添加壁纸'}（可选）
@@ -516,7 +498,6 @@ posts.get("/:id/edit", jwtAuth, async (c) => {
         </button>
       </form>
 
-      {/* ===== 编辑页面预览脚本（外部引用） ===== */}
       <script src="/static/edit-preview.js"></script>
     </article>,
     { title: "编辑帖子", user }
@@ -535,7 +516,6 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
     return c.notFound();
   }
 
-  // 检查权限 - 只有作者或管理员可以编辑
   if (user.username !== post.author && user.role !== "admin") {
     return c.render(
       <div>
@@ -553,7 +533,6 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
   const tag = (formData.get("tag") as string)?.trim();
   const file = formData.get('file') as File | null;
 
-  // 验证标题和内容
   if (!title || !content) {
     return c.render(
       <div>
@@ -567,13 +546,11 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
 
   const parsedContent = parseMarkdown(content);
 
-  // ===== 处理文件上传（如果有新文件） =====
   let fileUrl = post.file_url || null;
   let fileType = post.file_type || null;
   let fileSize = post.file_size || null;
 
   if (file && file.size > 0) {
-    // 验证文件格式
     if (!ALLOWED_TYPES.includes(file.type)) {
       return c.render(
         <div class="p-4">
@@ -612,7 +589,6 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
         fileType = file.type;
         fileSize = file.size;
       } else {
-        // 显示详细错误信息
         const errorMsg = result.error || '未知错误';
         const detailMsg = result.detail || '';
         return c.render(
@@ -637,7 +613,6 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
     }
   }
 
-  // ===== 更新帖子 =====
   await postService.updatePost(id, {
     title,
     content: parsedContent,
@@ -892,4 +867,20 @@ posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =
   const commentId = parseInt(c.req.param("commentId"));
 
   const commentService = CommentService.getInstance(c.env.DB);
-  const success = await com
+  const success = await commentService.deleteComment(commentId);
+
+  if (!success) {
+    return c.render(
+      <div>
+        <h1>删除评论失败</h1>
+        <p>评论删除失败，请稍后再试</p>
+        <a href={`/posts/${postId}`}>返回帖子</a>
+      </div>,
+      { title: "删除评论失败 - 凉宫社区" }
+    );
+  }
+
+  return c.redirect(`/posts/${postId}`);
+});
+
+export { posts };
