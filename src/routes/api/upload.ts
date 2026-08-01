@@ -9,6 +9,10 @@ app.post('/upload', async (c) => {
       return c.json({ error: '服务器配置错误：未配置 GITHUB_TOKEN 环境变量' }, 500);
     }
 
+    // 从环境变量获取仓库路径，默认使用 HSDCofficial/astrowind
+    const repo = c.env.GITHUB_REPO || 'HSDCofficial/astrowind';
+    const uploadDir = c.env.GITHUB_UPLOAD_DIR || 'workshop'; // 也可配置上传目录
+
     const formData = await c.req.formData();
     const file = formData.get('file') as File | null;
     if (!file) {
@@ -31,7 +35,8 @@ app.post('/upload', async (c) => {
     }
     const base64 = btoa(binary);
 
-    const githubUrl = `https://api.github.com/repos/HSDCofficial/astrowind/contents/workshop/${filename}`;
+    // 使用环境变量构造 GitHub API URL
+    const githubUrl = `https://api.github.com/repos/${repo}/contents/${uploadDir}/${filename}`;
     const resp = await fetch(githubUrl, {
       method: 'PUT',
       headers: {
@@ -44,16 +49,30 @@ app.post('/upload', async (c) => {
       }),
     });
 
+    // 如果失败，返回更详细的错误信息
     if (!resp.ok) {
-      const detail = await resp.text();
-      return c.json({ error: `GitHub 上传失败: ${resp.status}`, detail }, 500);
+      let detail = await resp.text();
+      // 如果返回的是 JSON，尝试解析以获取更友好信息
+      try {
+        const json = JSON.parse(detail);
+        detail = json.message || json.errors || detail;
+      } catch (_) { /* 不是 JSON 就保持原样 */ }
+      return c.json(
+        { 
+          error: `GitHub 上传失败: ${resp.status}`, 
+          detail,
+          status: resp.status,
+          statusText: resp.statusText
+        }, 
+        500
+      );
     }
 
     const data = await resp.json();
     return c.json({
       success: true,
       filename: filename,
-      url: `https://github.com/HSDCofficial/astrowind/blob/main/workshop/${filename}?raw=true`,
+      url: `https://github.com/${repo}/blob/main/${uploadDir}/${filename}?raw=true`,
       github_data: data,
     });
   } catch (e) {
