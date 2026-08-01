@@ -10,7 +10,7 @@ app.post('/upload', async (c) => {
     }
 
     // 🔧 修改为您的 GitHub 用户名和仓库名（不要加 https://）
-    const repo = '你的用户名/仓库名';   // 例如 'zhangsan/my-images'
+    const repo = 'HSDCoffical/workshop';   // 例如 'zhangsan/my-images'
     const uploadDir = '';              // 空字符串 = 根目录
 
     const formData = await c.req.formData();
