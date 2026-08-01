@@ -901,6 +901,5 @@ posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =
   await commentService.deleteComment(commentId);
   return c.redirect(`/posts/${postId}`);
 });
-
-// 关键修复：统一标准具名导出，解决 posts is not exported 报错
-export default posts;
+// ... 所有路由代码保持不变，只改最后一行
+export { posts }
