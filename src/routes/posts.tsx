@@ -154,7 +154,6 @@ posts.post("/", jwtAuth, async (c) => {
       body: uploadForm,
     });
 
-    // 安全地解析 JSON
     const responseText = await response.text();
     let result;
     try {
@@ -604,7 +603,6 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
         body: uploadForm,
       });
 
-      // 安全地解析 JSON
       const responseText = await response.text();
       let result;
       try {
@@ -894,3 +892,4 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
         <button hx-get={`/posts/${postId}`} hx-target="body" hx-push-url="true">取消</button>
       </footer>
     </article>,
+    { title: "删除评论 - 凉宫社区", user: c.ge
