@@ -87,7 +87,7 @@ posts.get("/new", jwtAuth, async (c) => {
   );
 });
 
-// 处理新帖子提交 - 需要登录
+// 处理新帖子提交 - 需要登录（已添加详细错误信息）
 posts.post("/", jwtAuth, async (c) => {
   const formData = await c.req.formData();
   const title = (formData.get("title") as string)?.trim();
@@ -167,10 +167,14 @@ posts.post("/", jwtAuth, async (c) => {
       fileType = file.type;
       fileSize = file.size;
     } else {
+      // 显示详细错误信息
+      const errorMsg = result.error || '未知错误';
+      const detailMsg = result.detail || '';
       return c.render(
         <div class="p-4">
           <h1>上传失败</h1>
-          <p>文件上传失败：{result.error || '未知错误'}</p>
+          <p>文件上传失败：{errorMsg}</p>
+          {detailMsg && <pre class="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto" style="max-height:200px;">{detailMsg}</pre>}
           <a href="/posts/new" className="button">返回</a>
         </div>,
         { title: "上传失败 - 凉宫社区", user }
@@ -225,7 +229,7 @@ posts.post("/", jwtAuth, async (c) => {
   return c.redirect(`/posts/${postId}`);
 });
 
-// 查看单个帖子
+// 查看单个帖子（保持不变）
 posts.get("/:id", async (c) => {
   const id = parseInt(c.req.param("id"));
   const page = parseInt(c.req.query("page") || "1");
@@ -603,23 +607,35 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
       });
       const result = await response.json();
 
-       if (result.success) {
-  fileUrl = result.url;
-  fileType = file.type;
-  fileSize = file.size;
-} else {
-  const errorMsg = result.error || '未知错误';
-  const detailMsg = result.detail || '';
-  return c.render(
-    <div class="p-4">
-      <h1>上传失败</h1>
-      <p>文件上传失败：{errorMsg}</p>
-      {detailMsg && <pre class="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto" style="max-height:200px;">{detailMsg}</pre>}
-      <a href="/posts/new" className="button">返回</a>
-    </div>,
-    { title: "上传失败 - 凉宫社区", user }
-  );
-}
+      if (result.success) {
+        fileUrl = result.url;
+        fileType = file.type;
+        fileSize = file.size;
+      } else {
+        // 显示详细错误信息
+        const errorMsg = result.error || '未知错误';
+        const detailMsg = result.detail || '';
+        return c.render(
+          <div class="p-4">
+            <h1>上传失败</h1>
+            <p>文件上传失败：{errorMsg}</p>
+            {detailMsg && <pre class="text-xs bg-gray-100 p-2 rounded mt-2 overflow-auto" style="max-height:200px;">{detailMsg}</pre>}
+            <a href={`/posts/${id}/edit`} className="button">返回</a>
+          </div>,
+          { title: "上传失败 - 凉宫社区", user }
+        );
+      }
+    } catch (e) {
+      return c.render(
+        <div class="p-4">
+          <h1>上传失败</h1>
+          <p>上传服务异常：{(e as Error).message}</p>
+          <a href={`/posts/${id}/edit`} className="button">返回</a>
+        </div>,
+        { title: "上传失败 - 凉宫社区", user }
+      );
+    }
+  }
 
   // ===== 更新帖子 =====
   await postService.updatePost(id, {
@@ -876,20 +892,4 @@ posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =
   const commentId = parseInt(c.req.param("commentId"));
 
   const commentService = CommentService.getInstance(c.env.DB);
-  const success = await commentService.deleteComment(commentId);
-
-  if (!success) {
-    return c.render(
-      <div>
-        <h1>删除评论失败</h1>
-        <p>评论删除失败，请稍后再试</p>
-        <a href={`/posts/${postId}`}>返回帖子</a>
-      </div>,
-      { title: "删除评论失败 - 凉宫社区" }
-    );
-  }
-
-  return c.redirect(`/posts/${postId}`);
-});
-
-export { posts };
+  const success = await com
