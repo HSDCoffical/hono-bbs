@@ -231,10 +231,10 @@ posts.post("/", jwtAuth, async (c) => {
     return c.redirect('/posts');
   }
 
-  return c.redirect(`/posts/${postId}`, 303); // 改为 303
+  return c.redirect(`/posts/${postId}`, 303);
 });
 
-// ===== 查看单个帖子（含评论列表，已添加 data 属性） =====
+// ===== 查看单个帖子（含评论列表，已添加 data 属性及删除按钮） =====
 posts.get("/:id", async (c) => {
   const id = parseInt(c.req.param("id"));
   const page = parseInt(c.req.query("page") || "1");
@@ -276,14 +276,14 @@ posts.get("/:id", async (c) => {
 
         {post.file_url ? (
           <div class="my-4">
-            {post.file_type?.startsWith('image/') ? (
+            {(post.file_type?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(post.file_url)) ? (
               <img
                 src={post.file_url}
                 alt={post.title}
                 class="max-w-full rounded-lg shadow-lg"
                 style={{ maxHeight: '70vh', objectFit: 'contain' }}
               />
-            ) : post.file_type?.startsWith('video/') ? (
+            ) : (post.file_type?.startsWith('video/') || /\.(mp4|webm|ogg|mov)$/i.test(post.file_url)) ? (
               <video
                 src={post.file_url}
                 controls
@@ -361,7 +361,7 @@ posts.get("/:id", async (c) => {
             <div class="comments-header">评论 ({totalComments})</div>
             <div class="comments-list">
               {comments.map((comment) => (
-                // 添加 data 属性，用于前端长按识别
+                // 添加 data 属性，用于前端长按识别（长按功能可选）
                 <div 
                   key={comment.id}
                   data-comment-id={comment.id}
@@ -379,46 +379,26 @@ posts.get("/:id", async (c) => {
                         <span class="comment-date" data-timestamp={comment.created_at}>
                           {new Date(comment.created_at + "Z").toLocaleString()}
                         </span>
-                        {currentUser && (
-                          <>
-                            {currentUser.role === "admin" ? (
-                              <>
-                                <svg hx-get={`/posts/${id}/comment/${comment.id}/edit`} hx-target="body" hx-push-url="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 cursor-pointer">
-                                  <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M9 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-3"></path>
-                                    <path d="M9 15h3l8.5-8.5a1.5 1.5 0 0 0-3-3L9 12v3"></path>
-                                    <path d="M16 5l3 3"></path>
-                                  </g>
-                                </svg>
-                                <svg hx-get={`/posts/${id}/comment/${comment.id}/delete`} hx-target="body" hx-push-url="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="w-5 h-5 cursor-pointer">
-                                  <path d="M12 12h2v12h-2z" fill="currentColor"></path>
-                                  <path d="M18 12h2v12h-2z" fill="currentColor"></path>
-                                  <path d="M4 6v2h2v20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8h2V6zm4 22V8h16v20z" fill="currentColor"></path>
-                                  <path d="M12 2h8v2h-8z" fill="currentColor"></path>
-                                </svg>
-                              </>
-                            ) : (
-                              currentUser.username === comment.author && (
-                                <>
-                                  <svg hx-get={`/posts/${id}/comment/${comment.id}/edit`} hx-target="body" hx-push-url="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 cursor-pointer">
-                                    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                      <path d="M9 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-3"></path>
-                                      <path d="M9 15h3l8.5-8.5a1.5 1.5 0 0 0-3-3L9 12v3"></path>
-                                      <path d="M16 5l3 3"></path>
-                                    </g>
-                                  </svg>
-                                  <svg hx-get={`/posts/${id}/comment/${comment.id}/delete`} hx-target="body" hx-push-url="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="w-5 h-5 cursor-pointer">
-                                    <path d="M12 12h2v12h-2z" fill="currentColor"></path>
-                                    <path d="M18 12h2v12h-2z" fill="currentColor"></path>
-                                    <path d="M4 6v2h2v20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8h2V6zm4 22V8h16v20z" fill="currentColor"></path>
-                                    <path d="M12 2h8v2h-8z" fill="currentColor"></path>
-                                  </svg>
-                                </>
-                              )
-                            )}
-                          </>
-                        )}
                         <span class="comment-floor">#{comment.floor_number}楼</span>
+                        {/* 编辑按钮（仅作者和管理员） */}
+                        {currentUser && (currentUser.role === "admin" || currentUser.username === comment.author) && (
+                          <svg hx-get={`/posts/${id}/comment/${comment.id}/edit`} hx-target="body" hx-push-url="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 cursor-pointer">
+                            <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M9 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-3"></path>
+                              <path d="M9 15h3l8.5-8.5a1.5 1.5 0 0 0-3-3L9 12v3"></path>
+                              <path d="M16 5l3 3"></path>
+                            </g>
+                          </svg>
+                        )}
+                        {/* 删除按钮（仅作者和管理员，置于最右） */}
+                        {currentUser && (currentUser.role === "admin" || currentUser.username === comment.author) && (
+                          <svg hx-get={`/posts/${id}/comment/${comment.id}/delete`} hx-target="body" hx-push-url="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="w-5 h-5 cursor-pointer ml-auto">
+                            <path d="M12 12h2v12h-2z" fill="currentColor"></path>
+                            <path d="M18 12h2v12h-2z" fill="currentColor"></path>
+                            <path d="M4 6v2h2v20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8h2V6zm4 22V8h16v20z" fill="currentColor"></path>
+                            <path d="M12 2h8v2h-8z" fill="currentColor"></path>
+                          </svg>
+                        )}
                       </div>
                     </header>
                     <div dangerouslySetInnerHTML={{ __html: parseMarkdown(comment.content) }}></div>
@@ -680,10 +660,10 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
     file_type: fileType ?? null,
     file_size: fileSize ?? null,
   });
-  return c.redirect(`/posts/${id}`, 303); // 改为 303
+  return c.redirect(`/posts/${id}`, 303);
 });
 
-// ===== 删除壁纸（作者或管理员） =====
+// ===== 删除帖子（作者或管理员） =====
 // 删除确认页面（作者或管理员可访问）
 posts.get("/:id/delete", jwtAuth, async (c) => {
   const id = parseInt(c.req.param("id"));
@@ -695,11 +675,11 @@ posts.get("/:id/delete", jwtAuth, async (c) => {
   if (!post) {
     return c.render(
       <div>
-        <h1>壁纸不存在</h1>
-        <p>您请求的壁纸不存在或已被删除</p>
+        <h1>帖子不存在</h1>
+        <p>您请求的帖子不存在或已被删除</p>
         <a href="/">返回首页</a>
       </div>,
-      { title: "壁纸不存在 - 凉宫数据" }
+      { title: "帖子不存在 - 凉宫数据" }
     );
   }
 
@@ -708,8 +688,8 @@ posts.get("/:id/delete", jwtAuth, async (c) => {
     return c.render(
       <div>
         <h1>权限不足</h1>
-        <p>您没有权限删除此壁纸</p>
-        <a href={`/posts/${id}`}>返回壁纸</a>
+        <p>您没有权限删除此帖子</p>
+        <a href={`/posts/${id}`}>返回帖子</a>
       </div>,
       { title: "权限不足 - 凉宫数据", user }
     );
@@ -722,14 +702,14 @@ posts.get("/:id/delete", jwtAuth, async (c) => {
         <h3>{post.title}</h3>
         <p>作者: {post.author}</p>
         <p>发布时间: {new Date(post.created_at + "Z").toLocaleDateString()}</p>
-        <p class="warning">确定要删除这条壁纸吗？此操作不可撤销。</p>
+        <p class="warning">确定要删除这条帖子吗？此操作不可撤销。</p>
       </div>
       <footer class="flex space-x-2 items-center">
         <button hx-post={`/posts/${id}/delete`} hx-target="body" hx-push-url="true">确认</button>
         <button hx-get={`/posts/${id}`} hx-target="body" hx-push-url="true" class="contrast">取消</button>
       </footer>
     </article>,
-    { title: "删除壁纸 - 凉宫数据", user }
+    { title: "删除帖子 - 凉宫数据", user }
   );
 });
 
@@ -744,11 +724,11 @@ posts.post("/:id/delete", jwtAuth, async (c) => {
   if (!post) {
     return c.render(
       <div>
-        <h1>壁纸不存在</h1>
-        <p>您请求的壁纸不存在或已被删除</p>
+        <h1>帖子不存在</h1>
+        <p>您请求的帖子不存在或已被删除</p>
         <a href="/">返回首页</a>
       </div>,
-      { title: "壁纸不存在 - 凉宫数据" }
+      { title: "帖子不存在 - 凉宫数据" }
     );
   }
 
