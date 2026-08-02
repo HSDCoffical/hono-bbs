@@ -77,16 +77,13 @@ profile.get("/:username", async (c) => {
     process.env.GRAVATAR_BASE_URL || "https://www.gravatar.com/avatar/";
 
   let avatarUrl: string;
-  // 如果 avatar 字段存在且不是空字符串，直接使用（它应该是完整的 URL）
   if (profileUser.avatar && profileUser.avatar.trim() !== "") {
     avatarUrl = profileUser.avatar;
   } else {
-    // 否则回退到 Gravatar
     avatarUrl = `${gravatarBaseUrl}${profileUser.email_hash}?d=identicon&s=200`;
   }
 
   return c.render(
-    // ===== 外层容器：最小高度铺满视口，自适应宽度 =====
     <article style={{ minHeight: 'calc(100vh - 200px)', paddingBottom: '2rem' }}>
       <header class="mb-2 text-xl font-bold">用户资料</header>
 
@@ -99,7 +96,15 @@ profile.get("/:username", async (c) => {
             alt={`${profileUser.username}的头像`}
           />
           <div class="flex flex-col space-y-1">
-            <h2>{profileUser.username}</h2>
+            {/* ★ 新增 badge 标签显示 ★ */}
+            <h2>
+              {profileUser.username}
+              {profileUser.badge && (
+                <span class="ml-2 inline-block bg-blue-500 text-white text-xs px-2 py-1 rounded-full align-middle">
+                  {profileUser.badge}
+                </span>
+              )}
+            </h2>
             <p class="text-sm">
               加入时间: <span data-timestamp={profileUser.created_at}></span>
             </p>
