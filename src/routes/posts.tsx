@@ -234,7 +234,7 @@ posts.post("/", jwtAuth, async (c) => {
   return c.redirect(`/posts/${postId}`, 303);
 });
 
-// ===== 查看单个帖子（含评论列表，已添加 data 属性及删除按钮） =====
+// ===== 查看单个帖子（含评论列表，已添加 data 属性及删除按钮，支持 badge 标签） =====
 posts.get("/:id", async (c) => {
   const id = parseInt(c.req.param("id"));
   const page = parseInt(c.req.query("page") || "1");
@@ -242,6 +242,7 @@ posts.get("/:id", async (c) => {
 
   const postService = PostService.getInstance(c.env.DB);
   const commentService = CommentService.getInstance(c.env.DB);
+  const userService = UserService.getInstance(c.env.DB);
 
   const post = await postService.getPostById(id);
   if (!post) {
@@ -258,6 +259,20 @@ posts.get("/:id", async (c) => {
   const comments = await commentService.getCommentsByPostId(id, page, pageSize);
   const totalComments = await commentService.getCommentCountByPostId(id);
   const totalPages = Math.ceil(totalComments / pageSize);
+
+  // ★ 获取帖子作者的 badge
+  let postAuthor = null;
+  if (post) {
+    postAuthor = await userService.getUserByUsername(post.author);
+  }
+
+  // ★ 获取所有评论作者的 badge
+  const commentAuthors = comments.length > 0 
+    ? await userService.getUsersByUsernames(comments.map(c => c.author))
+    : [];
+  const commentAuthorMap = Object.fromEntries(
+    commentAuthors.map(a => [a.username, a])
+  );
 
   const token = getCookie(c, "auth_token");
   let currentUser: ExtendedJWTPayload | null = null;
@@ -304,7 +319,15 @@ posts.get("/:id", async (c) => {
         )}
 
         <footer class="flex items-center space-x-2 text-sm mt-4">
-          <span class="post-author"><a href={`/profile/${post.author}`}>{post.author}</a></span>
+          <span class="post-author">
+            <a href={`/profile/${post.author}`}>{post.author}</a>
+            {/* ★ 帖子作者 badge 标签 */}
+            {postAuthor?.badge && (
+              <span class="ml-1 inline-block bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full align-middle">
+                {postAuthor.badge}
+              </span>
+            )}
+          </span>
           {post.tag && (
             <a class="bg-gray-2 p-1 rounded text-xs no-underline color-[var(--primary-inverse)]" href={`/posts?tag=${post.tag}`}>
               {post.tag}
@@ -361,7 +384,6 @@ posts.get("/:id", async (c) => {
             <div class="comments-header">评论 ({totalComments})</div>
             <div class="comments-list">
               {comments.map((comment) => (
-                // 添加 data 属性，用于前端长按识别（长按功能可选）
                 <div 
                   key={comment.id}
                   data-comment-id={comment.id}
@@ -375,7 +397,15 @@ posts.get("/:id", async (c) => {
                         {comment.author_avatar && (
                           <img src={`${c.env.GRAVATAR_BASE_URL}${comment.author_avatar}?d=identicon`} alt={`${comment.author}'s avatar`} class="w-5 h-5 rounded-full" hx-get={`profile/${comment.author}`} hx-target="body" hx-push-url="true" />
                         )}
-                        <a href={`/profile/${comment.author}`}>{comment.author}</a>
+                        <a href={`/profile/${comment.author}`}>
+                          {comment.author}
+                          {/* ★ 评论作者 badge 标签 */}
+                          {commentAuthorMap[comment.author]?.badge && (
+                            <span class="ml-1 inline-block bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full align-middle">
+                              {commentAuthorMap[comment.author].badge}
+                            </span>
+                          )}
+                        </a>
                         <span class="comment-date" data-timestamp={comment.created_at}>
                           {new Date(comment.created_at + "Z").toLocaleString()}
                         </span>
