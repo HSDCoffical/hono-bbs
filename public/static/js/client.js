@@ -38,90 +38,164 @@ function convertTimestamps() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  // Convert timestamps on initial page load
+// 主初始化函数（合并所有 DOMContentLoaded 逻辑）
+function initApp() {
+  // 1. 时间戳转换
   convertTimestamps();
   
-  // Also listen for HTMX content swaps
+  // 2. HTMX 内容交换后重新转换
   document.body.addEventListener('htmx:afterSwap', function() {
     convertTimestamps();
   });
   
-  /**
-   * 防重复提交功能
-   * 
-   * 为所有表单添加防重复提交功能，防止用户多次点击提交按钮
-   */
-  
-  // 配置不同表单的提交按钮文本
+  // 3. 防重复提交功能
   const formConfig = {
-    // 发帖表单
     'post-form': {
       loadingText: '发布中...',
       originalText: '发布'
     },
-    // 评论表单
     'comment-form': {
       loadingText: '提交中...',
       originalText: '提交评论'
     },
-    // 注册表单
     'reg-form': {
       loadingText: '注册中...',
       originalText: '注册'
     },
-    // 登录表单
     'login-form': {
       loadingText: '登录中...',
       originalText: '登录'
     },
-    // 编辑帖子表单
     'edit-post-form': {
       loadingText: '更新中...',
       originalText: '更新'
     },
-    // 编辑评论表单
     'edit-comment-form': {
       loadingText: '更新中...',
       originalText: '更新'
     }
   };
   
-  // 为所有表单添加防重复提交功能
   document.querySelectorAll('form').forEach(form => {
-    // 获取表单ID
     const formId = form.id;
-    // 获取提交按钮
     const submitButton = form.querySelector('button[type="submit"]');
-    
     if (!submitButton) return;
     
-    // 获取按钮配置，如果没有特定配置则使用默认值
     const config = formConfig[formId] || {
       loadingText: '提交中...',
       originalText: submitButton.textContent || '提交'
     };
-    
-    // 保存原始按钮文本
     const originalText = config.originalText;
     
-    // 添加表单提交事件监听器
     form.addEventListener('submit', function(e) {
-      // 如果按钮已被禁用，阻止提交
       if (submitButton.disabled) {
         e.preventDefault();
         return;
       }
-      
-      // 禁用按钮并更改文本
       submitButton.disabled = true;
       submitButton.textContent = config.loadingText;
       
-      // 设置超时，防止网络问题导致按钮永久禁用
       setTimeout(() => {
         submitButton.disabled = false;
         submitButton.textContent = originalText;
-      }, 10000); // 10秒后恢复按钮状态
+      }, 10000);
     });
-  });  
-});
+  });
+
+  // 4. 长按评论弹出删除悬浮窗（新增功能）
+  let longPressTimer = null;
+  // 创建悬浮窗（只创建一次）
+  const popup = document.createElement('div');
+  popup.id = 'comment-delete-popup';
+  popup.style.cssText = `
+    position: fixed;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 12px 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 9999;
+    display: none;
+    min-width: 120px;
+  `;
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = '删除此评论';
+  deleteBtn.style.cssText = `
+    background: #e53e3e;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  `;
+  deleteBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const commentId = popup.dataset.commentId;
+    const postId = popup.dataset.postId;
+    if (commentId && postId) {
+      fetch(`/posts/${postId}/comment/${commentId}/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }).then(() => {
+        window.location.reload();
+      }).catch(() => {
+        alert('删除失败，请重试');
+      });
+    }
+    popup.style.display = 'none';
+  });
+  popup.appendChild(deleteBtn);
+  document.body.appendChild(popup);
+
+  // 长按监听（touch 事件）
+  document.addEventListener('touchstart', function(e) {
+    const target = e.target.closest('[data-comment-id]');
+    if (!target) return;
+    const commentId = target.dataset.commentId;
+    const postId = target.dataset.postId;
+    popup.dataset.commentId = commentId;
+    popup.dataset.postId = postId;
+
+    longPressTimer = setTimeout(() => {
+      const touch = e.touches[0];
+      popup.style.left = (touch.clientX - 60) + 'px';
+      popup.style.top = (touch.clientY - 20) + 'px';
+      popup.style.display = 'block';
+    }, 500);
+  });
+
+  document.addEventListener('touchmove', function() {
+    clearTimeout(longPressTimer);
+  });
+
+  document.addEventListener('touchend', function() {
+    clearTimeout(longPressTimer);
+  });
+
+  // 点击其他区域隐藏悬浮窗
+  document.addEventListener('click', function(e) {
+    if (!popup.contains(e.target)) {
+      popup.style.display = 'none';
+    }
+  });
+
+  // 支持鼠标右键（PC 调试）
+  document.addEventListener('contextmenu', function(e) {
+    const target = e.target.closest('[data-comment-id]');
+    if (!target) return;
+    e.preventDefault();
+    const commentId = target.dataset.commentId;
+    const postId = target.dataset.postId;
+    popup.dataset.commentId = commentId;
+    popup.dataset.postId = postId;
+    popup.style.left = e.clientX - 60 + 'px';
+    popup.style.top = e.clientY - 20 + 'px';
+    popup.style.display = 'block';
+  });
+}
+
+// 页面加载完成后执行初始化
+document.addEventListener('DOMContentLoaded', initApp);
