@@ -762,11 +762,13 @@ posts.post("/:id/comment", jwtAuth, async (c) => {
   const commentService = CommentService.getInstance(c.env.DB);
   const parsedContent = parseMarkdown(content);
 
+  // ★ 关键修复：传入 user_id ★
   await commentService.createComment({
     post_id: postId,
     content: parsedContent,
     raw_content: content,
     author: user.username,
+    user_id: user.id,   // 添加此行，解决 NOT NULL 约束错误
   });
 
   return c.redirect(`/posts/${postId}`, 303);
