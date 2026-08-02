@@ -108,26 +108,26 @@ index.get("/posts", async (c) => {
       {tagName && <h6 class="mb-2">标签: {tagName}</h6>}
       {username && <h6 class="mb-2">用户: {username} 的帖子</h6>}
 
-      {/* ===== 网格缩略图列表（自适应高度 + R角） ===== */}
+      {/* ===== 网格缩略图列表（固定双列，内容完整显示） ===== */}
       {posts.length > 0 ? (
-        <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pl-0">
+        <ul class="grid grid-cols-2 gap-4 pl-0">
           {posts.map((post) => (
             <li key={post.id} class="list-none border rounded-xl overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800">
-              <a href={`/posts/${post.id}`} class="block">
-                {/* 缩略图区域 - 自适应高度，R角为 rounded-xl（已由外层容器控制） */}
-                <div class="w-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+              <a href={`/posts/${post.id}`} class="block h-full flex flex-col">
+                {/* 缩略图区域 */}
+                <div class="w-full bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
                   {post.file_url ? (
                     post.file_type?.startsWith('image/') ? (
                       <img
                         src={post.file_url}
                         alt={post.title}
-                        class="w-full h-auto object-contain rounded-t-xl"
+                        class="w-full h-auto object-contain"
                         loading="lazy"
                       />
                     ) : post.file_type?.startsWith('video/') ? (
                       <video
                         src={post.file_url}
-                        class="w-full h-auto rounded-t-xl"
+                        class="w-full h-auto"
                         muted
                         loop
                         playsInline
@@ -151,19 +151,19 @@ index.get("/posts", async (c) => {
                   )}
                 </div>
 
-                {/* 标题和作者信息 */}
-                <div class="p-2">
-                  <h3 class="text-sm font-semibold truncate" title={post.title}>
+                {/* 标题和作者信息 - 内容完整显示，不截断 */}
+                <div class="p-2 flex flex-col flex-grow">
+                  <h3 class="text-sm font-semibold break-words" title={post.title}>
                     {post.title}
                   </h3>
-                  <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    <span class="truncate">{post.author}</span>
-                    <span class="text-xs whitespace-nowrap">
+                  <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1 flex-wrap gap-x-2">
+                    <span class="truncate max-w-[60%]">{post.author}</span>
+                    <span class="whitespace-nowrap">
                       {formatDateTime(post.created_at)}
                     </span>
                   </div>
                   {post.tag && (
-                    <span class="inline-block mt-1 bg-gray-200 dark:bg-gray-700 text-xs px-2 py-0.5 rounded">
+                    <span class="inline-block mt-1 bg-gray-200 dark:bg-gray-700 text-xs px-2 py-0.5 rounded self-start">
                       #{post.tag}
                     </span>
                   )}
