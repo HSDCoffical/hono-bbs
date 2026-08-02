@@ -26,10 +26,10 @@ posts.get("/new", jwtAuth, async (c) => {
 
   return c.render(
     <article>
-      <header class="mb-2 text-xl font-bold">📤 发布壁纸</header>
+      <header class="mb-2 text-xl font-bold">📤 上传媒体文件</header>
       <form action="/posts" method="post" id="post-form" enctype="multipart/form-data">
         <div>
-          <label for="file" class="block font-medium mb-1">选择素材（图片/视频）</label>
+          <label for="file" class="block font-medium mb-1">选择文件（图片/视频）</label>
           <input
             type="file"
             id="file"
@@ -38,7 +38,7 @@ posts.get("/new", jwtAuth, async (c) => {
             required
             class="block w-full text-sm border border-gray-200 rounded-lg p-2"
           />
-          <p class="text-xs text-gray-500 mt-1">支持 JPG, PNG, GIF, WebP, MP4, WebM · 最大 10MB</p>
+          <p class="text-xs text-gray-500 mt-1">仅支持 JPG, PNG, GIF, WebP, MP4, WebM · 且单个文件最大支持 10MB</p>
           <div id="preview" class="mt-2"></div>
         </div>
 
@@ -48,12 +48,12 @@ posts.get("/new", jwtAuth, async (c) => {
         </div>
 
         <div class="mt-4">
-          <label for="content" class="block font-medium mb-1">描述（可选）</label>
+          <label for="content" class="block font-medium mb-1">内容</label>
           <textarea
             id="content"
             name="content"
             rows={4}
-            placeholder="壁纸描述、来源、分辨率等信息..."
+            placeholder="请输入文本"
             class="w-full border border-gray-200 rounded-lg p-2"
           ></textarea>
         </div>
@@ -69,14 +69,14 @@ posts.get("/new", jwtAuth, async (c) => {
         </div>
 
         <button type="submit" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-          发布壁纸
+          发布帖子
         </button>
       </form>
 
       <script src="/static/preview.js"></script>
     </article>,
     {
-      title: "发布壁纸 - 凉宫数据",
+      title: "发布帖子 - 凉宫数据",
       user: user,
     }
   );
