@@ -25,7 +25,7 @@ app.onError((err, c) => {
 
 // ---------- CORS（允许 AstroWind 官网调用 API） ----------
 app.use('*', cors({
-  origin: 'https://你的官网域名', // 替换为你的 AstroWind 实际域名（如 https://astrowind.pages.dev）
+  origin: 'https://HSDC.dpdns.org', // 替换为你的 AstroWind 实际域名（如 https://astrowind.pages.dev）
   credentials: true,
 }))
 
