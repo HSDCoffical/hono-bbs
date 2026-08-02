@@ -231,10 +231,10 @@ posts.post("/", jwtAuth, async (c) => {
     return c.redirect('/posts');
   }
 
-  return c.redirect(`/posts/${postId}`);
+  return c.redirect(`/posts/${postId}`, 303); // 改为 303
 });
 
-// 查看单个壁纸
+// ===== 查看单个帖子（含评论列表，已添加 data 属性） =====
 posts.get("/:id", async (c) => {
   const id = parseInt(c.req.param("id"));
   const page = parseInt(c.req.query("page") || "1");
@@ -333,13 +333,21 @@ posts.get("/:id", async (c) => {
                 </>
               ) : (
                 currentUser.username === post.author && (
-                  <svg hx-get={`/posts/${id}/edit`} hx-target="body" hx-push-url="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 cursor-pointer">
-                    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M9 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-3"></path>
-                      <path d="M9 15h3l8.5-8.5a1.5 1.5 0 0 0-3-3L9 12v3"></path>
-                      <path d="M16 5l3 3"></path>
-                    </g>
-                  </svg>
+                  <>
+                    <svg hx-get={`/posts/${id}/edit`} hx-target="body" hx-push-url="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 cursor-pointer">
+                      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-3"></path>
+                        <path d="M9 15h3l8.5-8.5a1.5 1.5 0 0 0-3-3L9 12v3"></path>
+                        <path d="M16 5l3 3"></path>
+                      </g>
+                    </svg>
+                    <svg hx-get={`/posts/${id}/delete`} hx-target="body" hx-push-url="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="w-5 h-5 cursor-pointer">
+                      <path d="M12 12h2v12h-2z" fill="currentColor"></path>
+                      <path d="M18 12h2v12h-2z" fill="currentColor"></path>
+                      <path d="M4 6v2h2v20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8h2V6zm4 22V8h16v20z" fill="currentColor"></path>
+                      <path d="M12 2h8v2h-8z" fill="currentColor"></path>
+                    </svg>
+                  </>
                 )
               )}
             </>
@@ -353,7 +361,14 @@ posts.get("/:id", async (c) => {
             <div class="comments-header">评论 ({totalComments})</div>
             <div class="comments-list">
               {comments.map((comment) => (
-                <div key={comment.id}>
+                // 添加 data 属性，用于前端长按识别
+                <div 
+                  key={comment.id}
+                  data-comment-id={comment.id}
+                  data-comment-author={comment.author}
+                  data-post-id={id}
+                  style={{ position: 'relative' }}
+                >
                   <article>
                     <header class="mb-2 text-sm">
                       <div class="flex items-center space-x-1">
@@ -384,13 +399,21 @@ posts.get("/:id", async (c) => {
                               </>
                             ) : (
                               currentUser.username === comment.author && (
-                                <svg hx-get={`/posts/${id}/comment/${comment.id}/edit`} hx-target="body" hx-push-url="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 cursor-pointer">
-                                  <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M9 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-3"></path>
-                                    <path d="M9 15h3l8.5-8.5a1.5 1.5 0 0 0-3-3L9 12v3"></path>
-                                    <path d="M16 5l3 3"></path>
-                                  </g>
-                                </svg>
+                                <>
+                                  <svg hx-get={`/posts/${id}/comment/${comment.id}/edit`} hx-target="body" hx-push-url="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-5 h-5 cursor-pointer">
+                                    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                      <path d="M9 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-3"></path>
+                                      <path d="M9 15h3l8.5-8.5a1.5 1.5 0 0 0-3-3L9 12v3"></path>
+                                      <path d="M16 5l3 3"></path>
+                                    </g>
+                                  </svg>
+                                  <svg hx-get={`/posts/${id}/comment/${comment.id}/delete`} hx-target="body" hx-push-url="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="w-5 h-5 cursor-pointer">
+                                    <path d="M12 12h2v12h-2z" fill="currentColor"></path>
+                                    <path d="M18 12h2v12h-2z" fill="currentColor"></path>
+                                    <path d="M4 6v2h2v20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8h2V6zm4 22V8h16v20z" fill="currentColor"></path>
+                                    <path d="M12 2h8v2h-8z" fill="currentColor"></path>
+                                  </svg>
+                                </>
                               )
                             )}
                           </>
@@ -434,7 +457,6 @@ posts.get("/:id", async (c) => {
     }
   );
 });
-
 // ===== 编辑壁纸页面 =====
 posts.get("/:id/edit", jwtAuth, async (c) => {
   const id = parseInt(c.req.param("id"));
@@ -658,10 +680,11 @@ posts.post("/:id/edit", jwtAuth, async (c) => {
     file_type: fileType ?? null,
     file_size: fileSize ?? null,
   });
-  return c.redirect(`/posts/${id}`);
+  return c.redirect(`/posts/${id}`, 303); // 改为 303
 });
 
-// 删除壁纸页面 - 需要是管理员
+// ===== 删除壁纸（作者或管理员） =====
+// 删除确认页面（作者或管理员可访问）
 posts.get("/:id/delete", jwtAuth, async (c) => {
   const id = parseInt(c.req.param("id"));
   const user = c.get("user");
@@ -680,7 +703,8 @@ posts.get("/:id/delete", jwtAuth, async (c) => {
     );
   }
 
-  if (user.role !== "admin") {
+  // 权限检查：仅作者或管理员可访问删除页面
+  if (user.role !== "admin" && user.username !== post.author) {
     return c.render(
       <div>
         <h1>权限不足</h1>
@@ -709,15 +733,42 @@ posts.get("/:id/delete", jwtAuth, async (c) => {
   );
 });
 
-// 处理壁纸删除 - 需要是管理员
-posts.post("/:id/delete", jwtAuth, adminOnly, async (c) => {
+// 处理壁纸删除（作者或管理员）
+posts.post("/:id/delete", jwtAuth, async (c) => {
   const id = parseInt(c.req.param("id"));
+  const user = c.get("user");
+
   const postService = PostService.getInstance(c.env.DB);
+  const post = await postService.getPostById(id);
+
+  if (!post) {
+    return c.render(
+      <div>
+        <h1>壁纸不存在</h1>
+        <p>您请求的壁纸不存在或已被删除</p>
+        <a href="/">返回首页</a>
+      </div>,
+      { title: "壁纸不存在 - 凉宫数据" }
+    );
+  }
+
+  // 权限检查：仅作者或管理员可删除
+  if (user.role !== "admin" && user.username !== post.author) {
+    return c.render(
+      <div>
+        <h1>权限不足</h1>
+        <p>您没有权限删除此壁纸</p>
+        <a href={`/posts/${id}`}>返回壁纸</a>
+      </div>,
+      { title: "权限不足 - 凉宫数据", user }
+    );
+  }
+
   await postService.deletePost(id);
-  return c.redirect("/posts");
+  return c.redirect("/posts", 303);
 });
 
-// 添加评论 - 需要登录
+// ===== 添加评论 =====
 posts.post("/:id/comment", jwtAuth, async (c) => {
   const postId = parseInt(c.req.param("id"));
   const formData = await c.req.formData();
@@ -738,10 +789,10 @@ posts.post("/:id/comment", jwtAuth, async (c) => {
     author: user.username,
   });
 
-  return c.redirect(`/posts/${postId}`);
+  return c.redirect(`/posts/${postId}`, 303);
 });
 
-// 编辑评论页面 - 管理员可编辑任何评论，普通用户只能编辑自己的评论
+// ===== 编辑评论 =====
 posts.get("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
   const postId = parseInt(c.req.param("postId"));
   const commentId = parseInt(c.req.param("commentId"));
@@ -793,7 +844,6 @@ posts.get("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
   );
 });
 
-// 处理评论编辑 - 管理员可编辑任何评论，普通用户只能编辑自己的评论
 posts.post("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
   const postId = parseInt(c.req.param("postId"));
   const commentId = parseInt(c.req.param("commentId"));
@@ -852,13 +902,15 @@ posts.post("/:postId/comment/:commentId/edit", jwtAuth, async (c) => {
     );
   }
 
-  return c.redirect(`/posts/${postId}`);
+  return c.redirect(`/posts/${postId}`, 303);
 });
 
-// 删除评论确认页面 - 仅管理员可用
-posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) => {
+// ===== 删除评论（作者或管理员） =====
+// 删除确认页面（作者或管理员可访问）
+posts.get("/:postId/comment/:commentId/delete", jwtAuth, async (c) => {
   const postId = parseInt(c.req.param("postId"));
   const commentId = parseInt(c.req.param("commentId"));
+  const user = c.get("user");
 
   const postService = PostService.getInstance(c.env.DB);
   const commentService = CommentService.getInstance(c.env.DB);
@@ -877,6 +929,18 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
     );
   }
 
+  // 权限检查：仅作者或管理员可访问删除确认页
+  if (user.role !== "admin" && user.username !== comment.author) {
+    return c.render(
+      <div>
+        <h1>权限不足</h1>
+        <p>您没有权限删除此评论</p>
+        <a href={`/posts/${postId}`}>返回壁纸</a>
+      </div>,
+      { title: "权限不足 - 凉宫数据", user }
+    );
+  }
+
   return c.render(
     <article>
       <header>确认删除评论</header>
@@ -890,19 +954,46 @@ posts.get("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) =>
       <footer class="mt-4 space-x-4">
         <button hx-post={`/posts/${postId}/comment/${commentId}/delete`} hx-target="body" hx-push-url="true" class="contrast">确认</button>
         <button hx-get={`/posts/${postId}`} hx-target="body" hx-push-url="true">取消</button>
-  </footer>
+      </footer>
     </article>,
     { title: "删除评论 - 凉宫数据", user: c.get("user") }
   );
 });
 
-// 处理评论删除 - 仅管理员可用
-posts.post("/:postId/comment/:commentId/delete", jwtAuth, adminOnly, async (c) => {
+// 处理评论删除（作者或管理员）
+posts.post("/:postId/comment/:commentId/delete", jwtAuth, async (c) => {
   const postId = parseInt(c.req.param("postId"));
   const commentId = parseInt(c.req.param("commentId"));
+  const user = c.get("user");
+
   const commentService = CommentService.getInstance(c.env.DB);
+  const comment = await commentService.getCommentById(commentId);
+
+  if (!comment) {
+    return c.render(
+      <div>
+        <h1>评论不存在</h1>
+        <p>您请求的评论不存在或已被删除</p>
+        <a href={`/posts/${postId}`}>返回壁纸</a>
+      </div>,
+      { title: "评论不存在 - 凉宫数据", user }
+    );
+  }
+
+  // 权限检查：仅作者或管理员可删除
+  if (user.role !== "admin" && user.username !== comment.author) {
+    return c.render(
+      <div>
+        <h1>权限不足</h1>
+        <p>您没有权限删除此评论</p>
+        <a href={`/posts/${postId}`}>返回壁纸</a>
+      </div>,
+      { title: "权限不足 - 凉宫数据", user }
+    );
+  }
+
   await commentService.deleteComment(commentId);
-  return c.redirect(`/posts/${postId}`);
+  return c.redirect(`/posts/${postId}`, 303);
 });
 
 export { posts };
