@@ -110,7 +110,7 @@ index.get("/posts", async (c) => {
 
       {/* ===== 网格缩略图列表（自适应高度 + R角） ===== */}
       {posts.length > 0 ? (
-        <ul class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pl-0">
+        <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pl-0">
           {posts.map((post) => (
             <li key={post.id} class="list-none border rounded-xl overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800">
               <a href={`/posts/${post.id}`} class="block">
