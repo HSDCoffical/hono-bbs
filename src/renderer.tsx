@@ -92,12 +92,6 @@ const Header = ({ user }: HeaderProps) => {
               <span class="hidden md:inline-block">标签</span>
             </a>
           </li>
-          {/* ===== 新增工具箱链接（无图标） ===== */}
-          <li>
-            <a href="/tools" class="secondary" style={{ color: 'white' }}>
-              <span class="hidden md:inline-block">工具中心</span>
-            </a>
-          </li>
           {isLoggedIn && (
             <>
               <li>
@@ -171,7 +165,6 @@ export const renderer = jsxRenderer(({ children, title, user }) => {
           alignItems: 'flex-start',
           justifyContent: 'center',
         }}>
-          {/* 内容卡片 */}
           <div style={{
             width: '96%',
             maxWidth: '1400px',
