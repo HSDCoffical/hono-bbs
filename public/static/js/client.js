@@ -38,7 +38,7 @@ function convertTimestamps() {
   });
 }
 
-// 主初始化函数（合并所有 DOMContentLoaded 逻辑）
+// 主初始化函数
 function initApp() {
   // 1. 时间戳转换
   convertTimestamps();
@@ -100,100 +100,6 @@ function initApp() {
         submitButton.textContent = originalText;
       }, 10000);
     });
-  });
-
-  // 4. 长按评论弹出删除悬浮窗（新增功能）
-  let longPressTimer = null;
-  // 创建悬浮窗（只创建一次）
-  const popup = document.createElement('div');
-  popup.id = 'comment-delete-popup';
-  popup.style.cssText = `
-    position: fixed;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 12px 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 9999;
-    display: none;
-    min-width: 120px;
-  `;
-  const deleteBtn = document.createElement('button');
-  deleteBtn.textContent = '删除此评论';
-  deleteBtn.style.cssText = `
-    background: #e53e3e;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-  `;
-  deleteBtn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    const commentId = popup.dataset.commentId;
-    const postId = popup.dataset.postId;
-    if (commentId && postId) {
-      fetch(`/posts/${postId}/comment/${commentId}/delete`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      }).then(() => {
-        window.location.reload();
-      }).catch(() => {
-        alert('删除失败，请重试');
-      });
-    }
-    popup.style.display = 'none';
-  });
-  popup.appendChild(deleteBtn);
-  document.body.appendChild(popup);
-
-  // 长按监听（touch 事件）
-  document.addEventListener('touchstart', function(e) {
-    const target = e.target.closest('[data-comment-id]');
-    if (!target) return;
-    const commentId = target.dataset.commentId;
-    const postId = target.dataset.postId;
-    popup.dataset.commentId = commentId;
-    popup.dataset.postId = postId;
-
-    longPressTimer = setTimeout(() => {
-      const touch = e.touches[0];
-      popup.style.left = (touch.clientX - 60) + 'px';
-      popup.style.top = (touch.clientY - 20) + 'px';
-      popup.style.display = 'block';
-    }, 500);
-  });
-
-  document.addEventListener('touchmove', function() {
-    clearTimeout(longPressTimer);
-  });
-
-  document.addEventListener('touchend', function() {
-    clearTimeout(longPressTimer);
-  });
-
-  // 点击其他区域隐藏悬浮窗
-  document.addEventListener('click', function(e) {
-    if (!popup.contains(e.target)) {
-      popup.style.display = 'none';
-    }
-  });
-
-  // 支持鼠标右键（PC 调试）
-  document.addEventListener('contextmenu', function(e) {
-    const target = e.target.closest('[data-comment-id]');
-    if (!target) return;
-    e.preventDefault();
-    const commentId = target.dataset.commentId;
-    const postId = target.dataset.postId;
-    popup.dataset.commentId = commentId;
-    popup.dataset.postId = postId;
-    popup.style.left = e.clientX - 60 + 'px';
-    popup.style.top = e.clientY - 20 + 'px';
-    popup.style.display = 'block';
   });
 }
 
