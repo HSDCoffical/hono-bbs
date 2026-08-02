@@ -43,15 +43,34 @@ export class CommentService {
     return result?.count || 0
   }
 
-  async createComment(comment: Omit<Comment, 'id' | 'created_at'>): Promise<number> {
-    // 创建评论
+  // ★ 修改 createComment：支持自动补全 user_id ★
+  async createComment(comment: Omit<Comment, 'id' | 'created_at'> & { user_id?: number }): Promise<number> {
+    let userId = comment.user_id;
+    
+    // 如果未提供 user_id，则通过 author 从 users 表查询
+    if (!userId) {
+      const userResult = await this.db.prepare(
+        'SELECT id FROM users WHERE username = ?'
+      ).bind(comment.author).first<{ id: number }>();
+      if (userResult) {
+        userId = userResult.id;
+      } else {
+        throw new Error(`用户 "${comment.author}" 不存在，无法创建评论`);
+      }
+    }
+
+    // 插入评论，包含 user_id
     const result = await this.db.prepare(
-      'INSERT INTO comments (post_id, content, raw_content, author) VALUES (?, ?, ?, ?) RETURNING id'
-    ).bind(comment.post_id, comment.content, comment.raw_content, comment.author).first<{ id: number }>()
+      'INSERT INTO comments (post_id, content, raw_content, author, user_id) VALUES (?, ?, ?, ?, ?) RETURNING id'
+    ).bind(
+      comment.post_id,
+      comment.content,
+      comment.raw_content,
+      comment.author,
+      userId
+    ).first<{ id: number }>();
     
-    // 评论计数由触发器自动更新，无需手动更新
-    
-    return result?.id || 0
+    return result?.id || 0;
   }
 
   async deleteComment(id: number): Promise<boolean> {
