@@ -34,7 +34,7 @@ index.get("/posts", async (c) => {
   const authorUsernames = [...new Set(posts.map((post) => post.author))];
   const authors = await userService.getUsersByUsernames(authorUsernames);
 
-  // 创建用户名到头像的映射
+  // 创建用户名到头像的映射（可选）
   const usernameToAvatar: Record<string, string> = {};
   authors.forEach((author) => {
     usernameToAvatar[author.username] =
@@ -111,66 +111,77 @@ index.get("/posts", async (c) => {
       {/* ===== 网格缩略图列表（固定双列，内容完整显示） ===== */}
       {posts.length > 0 ? (
         <ul class="grid grid-cols-2 gap-4 pl-0">
-          {posts.map((post) => (
-            <li key={post.id} class="list-none border rounded-xl overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800">
-              <a href={`/posts/${post.id}`} class="block h-full flex flex-col">
-                {/* 缩略图区域 */}
-                <div class="w-full bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
-                  {post.file_url ? (
-                    post.file_type?.startsWith('image/') ? (
-                      <img
-                        src={post.file_url}
-                        alt={post.title}
-                        class="w-full h-auto object-contain"
-                        loading="lazy"
-                      />
-                    ) : post.file_type?.startsWith('video/') ? (
-                      <video
-                        src={post.file_url}
-                        class="w-full h-auto"
-                        muted
-                        loop
-                        playsInline
-                        autoplay
-                      />
+          {posts.map((post) => {
+            // 查找当前帖子的作者信息（包含 badge）
+            const postAuthor = authors.find(a => a.username === post.author);
+            return (
+              <li key={post.id} class="list-none border rounded-xl overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800">
+                <a href={`/posts/${post.id}`} class="block h-full flex flex-col">
+                  {/* 缩略图区域 */}
+                  <div class="w-full bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
+                    {post.file_url ? (
+                      post.file_type?.startsWith('image/') ? (
+                        <img
+                          src={post.file_url}
+                          alt={post.title}
+                          class="w-full h-auto object-contain"
+                          loading="lazy"
+                        />
+                      ) : post.file_type?.startsWith('video/') ? (
+                        <video
+                          src={post.file_url}
+                          class="w-full h-auto"
+                          muted
+                          loop
+                          playsInline
+                          autoplay
+                        />
+                      ) : (
+                        <div class="flex items-center justify-center h-48 text-gray-400">
+                          <span class="text-sm">📄 文件</span>
+                        </div>
+                      )
                     ) : (
                       <div class="flex items-center justify-center h-48 text-gray-400">
-                        <span class="text-sm">📄 文件</span>
+                        <span class="text-sm">🖼️ 无预览</span>
                       </div>
-                    )
-                  ) : (
-                    <div class="flex items-center justify-center h-48 text-gray-400">
-                      <span class="text-sm">🖼️ 无预览</span>
-                    </div>
-                  )}
-                  {/* 评论数角标 */}
-                  {post.comment_count !== undefined && post.comment_count > 0 && (
-                    <span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
-                      💬 {post.comment_count}
-                    </span>
-                  )}
-                </div>
-
-                {/* 标题和作者信息 - 内容完整显示，不截断 */}
-                <div class="p-2 flex flex-col flex-grow">
-                  <h3 class="text-sm font-semibold break-words" title={post.title}>
-                    {post.title}
-                  </h3>
-                  <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1 flex-wrap gap-x-2">
-                    <span class="truncate max-w-[60%]">{post.author}</span>
-                    <span class="whitespace-nowrap">
-                      {formatDateTime(post.created_at)}
-                    </span>
+                    )}
+                    {/* 评论数角标 */}
+                    {post.comment_count !== undefined && post.comment_count > 0 && (
+                      <span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                        💬 {post.comment_count}
+                      </span>
+                    )}
                   </div>
-                  {post.tag && (
-                    <span class="inline-block mt-1 bg-gray-200 dark:bg-gray-700 text-xs px-2 py-0.5 rounded self-start">
-                      #{post.tag}
-                    </span>
-                  )}
-                </div>
-              </a>
-            </li>
-          ))}
+
+                  {/* 标题和作者信息 - 包含 badge 标签 */}
+                  <div class="p-2 flex flex-col flex-grow">
+                    <h3 class="text-sm font-semibold break-words" title={post.title}>
+                      {post.title}
+                    </h3>
+                    <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1 flex-wrap gap-x-2">
+                      <span class="truncate max-w-[60%] flex items-center gap-1">
+                        {post.author}
+                        {postAuthor?.badge && (
+                          <span class="inline-block bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded-full align-middle whitespace-nowrap">
+                            {postAuthor.badge}
+                          </span>
+                        )}
+                      </span>
+                      <span class="whitespace-nowrap">
+                        {formatDateTime(post.created_at)}
+                      </span>
+                    </div>
+                    {post.tag && (
+                      <span class="inline-block mt-1 bg-gray-200 dark:bg-gray-700 text-xs px-2 py-0.5 rounded self-start">
+                        #{post.tag}
+                      </span>
+                    )}
+                  </div>
+                </a>
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <p class="text-center text-gray-500 py-8">
