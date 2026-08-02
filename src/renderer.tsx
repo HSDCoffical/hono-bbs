@@ -92,6 +92,12 @@ const Header = ({ user }: HeaderProps) => {
               <span class="hidden md:inline-block">标签</span>
             </a>
           </li>
+          {/* ===== 新增工具箱链接（无图标） ===== */}
+          <li>
+            <a href="/tools" class="secondary" style={{ color: 'white' }}>
+              <span class="hidden md:inline-block">工具中心</span>
+            </a>
+          </li>
           {isLoggedIn && (
             <>
               <li>
@@ -165,10 +171,10 @@ export const renderer = jsxRenderer(({ children, title, user }) => {
           alignItems: 'flex-start',
           justifyContent: 'center',
         }}>
-          {/* 内容卡片：改为宽屏比例，手机也全宽 */}
+          {/* 内容卡片 */}
           <div style={{
-            width: '96%',              // 更宽，接近全屏
-            maxWidth: '1400px',        // 电脑宽屏最大宽度
+            width: '96%',
+            maxWidth: '1400px',
             margin: '0 auto',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
@@ -176,7 +182,7 @@ export const renderer = jsxRenderer(({ children, title, user }) => {
             border: '1px solid rgba(255,255,255,0.4)',
             boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
             borderRadius: '16px',
-            padding: '1.5rem',         // 适度内边距
+            padding: '1.5rem',
             minHeight: 'calc(100vh - 180px)',
           }}>
             {children}
