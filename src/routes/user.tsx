@@ -7,21 +7,19 @@ import type { Bindings, Variables } from "../types/app";
 import { ExtendedJWTPayload } from "../types/app";
 
 const user = new Hono<{ Bindings: Bindings ,Variables: Variables}>()
+
 // 注册页面
 user.get('/reg', async (c) => {
-  // 检查用户是否已登录
   const token = getCookie(c, 'auth_token')
   let currentUser: ExtendedJWTPayload | null = null
   
   if (token) {
     try {
-      // 尝试从token中获取用户信息
       const payload = await verify(token, c.env.JWT_SECRET) as ExtendedJWTPayload
       currentUser = payload
-      // 已登录用户重定向到首页
       return c.redirect('/')
     } catch (error) {
-      // Token无效，忽略错误
+      // Token无效，忽略
     }
   }
   
@@ -100,7 +98,6 @@ user.post('/reg', async (c) => {
   
   const userService = UserService.getInstance(c.env.DB)
   
-  // 检查用户名是否已存在
   const existingUser = await userService.getUserByUsername(username)
   
   if (existingUser) {
@@ -114,11 +111,9 @@ user.post('/reg', async (c) => {
     )
   }
   
-  // 生成Gravatar头像URL
   const emailHash = crypto.createHash('md5').update(email.toLowerCase().trim()).digest('hex')
   const avatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=identicon`
   
-  // 创建新用户
   await userService.createUser({
     username,
     password,
@@ -139,19 +134,16 @@ user.post('/reg', async (c) => {
 
 // 登录页面
 user.get('/login', async (c) => {
-  // 检查用户是否已登录
   const token = getCookie(c, 'auth_token')
   let currentUser: ExtendedJWTPayload | null = null
   
   if (token) {
     try {
-      // 尝试从token中获取用户信息
       const payload = await verify(token, c.env.JWT_SECRET) as ExtendedJWTPayload
       currentUser = payload
-      // 已登录用户重定向到首页
       return c.redirect('/')
     } catch (error) {
-      // Token无效，忽略错误
+      // Token无效，忽略
     }
   }
   
@@ -201,7 +193,6 @@ user.post('/login', async (c) => {
   
   const userService = UserService.getInstance(c.env.DB)
   
-  // 验证用户
   const user = await userService.validateUser(username, password)
   
   if (!user) {
@@ -218,20 +209,22 @@ user.post('/login', async (c) => {
   // 生成JWT令牌
   const token = await generateToken(user, c.env.JWT_SECRET)
   
-  // 设置Cookie
+  // 设置Cookie（保持登录状态）
   setCookie(c, 'auth_token', token, {
     httpOnly: true,
     path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 7天
+    maxAge: 60 * 60 * 24 * 7,
     sameSite: 'Lax'
   })
   
-  return c.redirect('/')
+  // ===== 关键修改：跳转到官网并携带用户名 =====
+  // 使用 encodeURIComponent 处理中文用户名
+  const encodedUsername = encodeURIComponent(user.username);
+  return c.redirect(`https://hsdc.dpdns.org?username=${encodedUsername}`);
 })
 
 // 退出登录
 user.get('/logout', (c) => {
-  // 清除Cookie
   setCookie(c, 'auth_token', '', {
     httpOnly: true,
     path: '/',
@@ -251,9 +244,7 @@ user.get('/me', jwtAuth, async (c) => {
     return c.json({ error: '用户不存在' }, 404)
   }
   
-  // 不返回密码
   const { password, ...userInfo } = user
-  
   return c.json(userInfo)
 })
 
@@ -269,7 +260,6 @@ user.post('/update', jwtAuth, async (c) => {
     return c.json({ error: '用户不存在' }, 404)
   }
   
-  // 收集要更新的字段
   const updateData: any = {}
   
   if (formData.has('bio')) {
@@ -280,7 +270,6 @@ user.post('/update', jwtAuth, async (c) => {
     const email = formData.get('email') as string
     updateData.email = email
     
-    // 更新Gravatar头像
     const emailHash = crypto.createHash('md5').update(email.toLowerCase().trim()).digest('hex')
     updateData.avatar = `https://www.gravatar.com/avatar/${emailHash}?d=identicon`
   }
@@ -289,7 +278,6 @@ user.post('/update', jwtAuth, async (c) => {
     updateData.password = formData.get('password') as string
   }
   
-  // 更新用户信息
   await userService.updateUser(userData.id, updateData)
   
   return c.json({ success: true })
