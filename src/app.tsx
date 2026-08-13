@@ -23,19 +23,9 @@ app.onError((err, c) => {
   return c.text(`Error: ${err.message}\n\nStack: ${err.stack}`, 500);
 });
 
-// ---------- CORS（支持大小写，允许官网跨域调用 API） ----------
+// ---------- CORS（明确允许两种大小写域名） ----------
 app.use('*', cors({
-  origin: (origin) => {
-    // 如果 origin 为空（如 Postman），可以放行或根据需求决定
-    if (!origin) return origin;
-    // 允许的域名列表（不区分大小写）
-    const allowed = ['https://hsdc.dpdns.org', 'https://HSDC.dpdns.org'];
-    // 检查 origin 是否匹配（忽略大小写）
-    if (allowed.some(o => o.toLowerCase() === origin.toLowerCase())) {
-      return origin; // 返回请求的 origin，保证 CORS 头一致
-    }
-    return null; // 拒绝
-  },
+  origin: ['https://hsdc.dpdns.org', 'https://HSDC.dpdns.org'],
   credentials: true,
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
@@ -44,19 +34,17 @@ app.use('*', cors({
 // ---------- 静态文件服务 ----------
 app.use('/static/*', serveStatic())
 
-// ---------- 渲染器中间件（用于 Hono 的 JSX 渲染） ----------
+// ---------- 渲染器中间件 ----------
 app.get('*', renderer)
 app.post('*', renderer)
 
-// ---------- 具体业务路由 ----------
+// ---------- 路由 ----------
 app.route('/', index)
 app.route('/posts', posts)
 app.route('/user', user)
 app.route('/tags', tags)
 app.route('/profile', profile)
 app.route('/api', upload)
-
-// ---------- 新增用户中心 API 路由 ----------
 app.route('/api/profile', profileApi)
 app.route('/api/messages', messagesApi)
 
