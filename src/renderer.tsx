@@ -20,18 +20,8 @@ const Header = ({ user }: HeaderProps) => {
       padding: '0.5rem 1rem',
       boxSizing: 'border-box',
     }}>
-      {/* 毛玻璃覆盖层 */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        background: 'rgba(0,0,0,0.25)',
-        zIndex: 0,
-      }}></div>
-      
       <nav style={{ 
-        position: 'relative', 
+        position: 'relative',
         zIndex: 1,
         display: 'flex',
         justifyContent: 'space-between',
@@ -40,23 +30,23 @@ const Header = ({ user }: HeaderProps) => {
         gap: '0.5rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none', color: 'white' }}>☁️ 凉宫社区</a>
+          <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none', color: 'white', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>☁️ 凉宫社区</a>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>首页</a>
-          <a href="/circles" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>圈子</a>
-          <a href="/bottle" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>漂流瓶</a>
-          <a href="/mood" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>情绪</a>
-          <a href="/capsule" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>时光信</a>
+          <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>首页</a>
+          <a href="/circles" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>圈子</a>
+          <a href="/bottle" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>漂流瓶</a>
+          <a href="/mood" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>情绪</a>
+          <a href="/capsule" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>时光信</a>
           {isLoggedIn ? (
             <>
-              <a href={`/profile/${user.username}`} role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white' }}>{user.username}</a>
-              <a href="/user/logout" role="button" class="outline" style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.3)' }}>退出</a>
+              <a href={`/profile/${user.username}`} role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>{user.username}</a>
+              <a href="/user/logout" role="button" class="outline" style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.3)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>退出</a>
             </>
           ) : (
             <>
-              <a href="/user/reg" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>注册</a>
-              <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>登录</a>
+              <a href="/user/reg" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>注册</a>
+              <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>登录</a>
             </>
           )}
         </div>
