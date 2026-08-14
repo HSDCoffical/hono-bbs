@@ -37,4 +37,109 @@ app.get('/:id', async (c) => {
   let isCreator = false
   if (user) {
     const member = await db.prepare(
-      'SELECT role FROM circle_members WHERE circle
+      'SELECT role FROM circle_members WHERE circle_id = ? AND user_id = ?'
+    ).bind(id, user.id).first()
+    isMember = !!member
+    isCreator = circle.creator_id === user.id
+  }
+
+  // 获取圈子帖子
+  const posts = await db.prepare(`
+    SELECT p.*, u.username as author_name, u.avatar as author_avatar
+    FROM posts p
+    LEFT JOIN users u ON p.author = u.username
+    WHERE p.circle_id = ? OR p.circle_id IS NULL
+    ORDER BY p.created_at DESC
+    LIMIT 20
+  `).bind(id).all()
+
+  const html = renderToString(
+    <html lang="zh-CN">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{circle.name} - 凉宫社区</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+        <style>{`
+          .post-item { padding: 0.75rem 0; border-bottom: 1px solid #f0f0f0; }
+          .post-item:last-child { border-bottom: none; }
+          .circle-header { background: linear-gradient(135deg, #f0f7ff, #e8f0fe); border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem; }
+        `}</style>
+      </head>
+      <body>
+        <main class="container" style="padding: 1rem 0;">
+          <nav>
+            <ul><li><a href="/" class="contrast"><strong>☁️ 凉宫社区</strong></a></li></ul>
+            <ul>
+              <li><a href="/">首页</a></li>
+              <li><a href="/circles" role="button">圈子</a></li>
+              <li><a href="/bottle">漂流瓶</a></li>
+              <li><a href="/mood">情绪容器</a></li>
+              <li><a href="/capsule">时光信</a></li>
+              {user ? (
+                <li><a href={`/user/${user.id}`}>{user.username}</a></li>
+              ) : (
+                <li><a href="/auth/login">登录</a></li>
+              )}
+            </ul>
+          </nav>
+
+          <div class="circle-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span style={{ fontSize: '3rem' }}>{circle.icon || '📁'}</span>
+              <div>
+                <h1 style={{ margin: 0 }}>{circle.name}</h1>
+                <p style={{ margin: '0.25rem 0', color: '#666' }}>{circle.description || '暂无描述'}</p>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#999' }}>
+                  👤 {circle.creator_name} · {circle.member_count} 人
+                </p>
+              </div>
+            </div>
+            <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+              {user && !isMember && (
+                <form method="POST" action={`/api/circles/${id}/join`}>
+                  <button type="submit" role="button" class="outline">➕ 加入圈子</button>
+                </form>
+              )}
+              {isMember && (
+                <span style={{ padding: '0.3rem 0.8rem', background: '#e8f5e9', borderRadius: '20px', color: '#2e7d32', fontSize: '0.85rem' }}>✅ 已加入</span>
+              )}
+              {isCreator && (
+                <span style={{ padding: '0.3rem 0.8rem', background: '#fff3e0', borderRadius: '20px', color: '#e65100', fontSize: '0.85rem' }}>👑 圈主</span>
+              )}
+            </div>
+          </div>
+
+          <div style={{ marginTop: '1rem' }}>
+            <a href="/posts/new?circle_id={id}" role="button">✍️ 发帖</a>
+          </div>
+
+          <h3 style={{ marginTop: '1.5rem' }}>📄 最新帖子</h3>
+          {posts.results.length === 0 ? (
+            <p style={{ color: '#999', textAlign: 'center', padding: '2rem 0' }}>还没有帖子，来发第一个吧</p>
+          ) : (
+            posts.results.map((post: any) => (
+              <div class="post-item">
+                <a href={`/posts/${post.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.85rem', color: '#999' }}>{post.author_name}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#ccc' }}>·</span>
+                    <span style={{ fontSize: '0.75rem', color: '#ccc' }}>{new Date(post.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 500 }}>{post.title}</div>
+                  <div style={{ fontSize: '0.85rem', color: '#999', marginTop: '0.2rem' }}>
+                    💬 {post.comment_count || 0} 回复
+                  </div>
+                </a>
+              </div>
+            ))
+          )}
+        </main>
+      </body>
+    </html>
+  )
+
+  return c.html(html)
+})
+
+export default app
