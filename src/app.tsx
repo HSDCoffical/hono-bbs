@@ -17,8 +17,11 @@ import bottles from './routes/api/bottles'
 import moods from './routes/api/moods'
 import capsules from './routes/api/capsules'
 import bottlePage from './routes/bottle'
+import bottleSend from './routes/bottle/send'
+import bottlePick from './routes/bottle/pick'
 import moodPage from './routes/mood'
 import capsulePage from './routes/capsule'
+import capsuleNew from './routes/capsule/new'
 import circlesPage from './routes/circles'
 import circleDetail from './routes/circles/[id]'
 import circleCreate from './routes/circles/create'
@@ -70,8 +73,11 @@ app.route('/api/capsules', capsules)
 
 // 页面路由
 app.route('/bottle', bottlePage)
+app.route('/bottle/send', bottleSend)
+app.route('/bottle/pick', bottlePick)
 app.route('/mood', moodPage)
 app.route('/capsule', capsulePage)
+app.route('/capsule/new', capsuleNew)
 app.route('/circles', circlesPage)
 app.route('/circles', circleDetail)
 app.route('/circles/create', circleCreate)
