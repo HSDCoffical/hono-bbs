@@ -1,14 +1,114 @@
 -- ============================================================
--- 1. 为 posts 表添加 circle_id 字段（关联圈子）
+-- 原有表：用户、帖子、评论、标签、设置
 -- ============================================================
--- 检查 column 是否存在，D1 的 ALTER TABLE 不支持 IF NOT EXISTS，所以我们先尝试添加，
--- 如果已存在会报错，可以忽略。但稳妥方式是用条件判断（但 D1 不支持），所以我们采用
--- 先查询再决定，但在迁移脚本中，我们默认执行 ADD COLUMN，如果失败则忽略。
--- 建议手动确认一下是否已有 circle_id 列。
+
+-- 用户表
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  email TEXT NOT NULL,
+  email_hash TEXT,
+  bio TEXT,
+  avatar TEXT,
+  role TEXT DEFAULT 'user' CHECK (role IN ('admin', 'user')),
+  created_at TIMESTAMP DEFAULT (DATETIME('now', 'utc'))
+);
+
+-- 帖子表
+CREATE TABLE IF NOT EXISTS posts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  raw_content TEXT,
+  author TEXT NOT NULL,
+  tag TEXT,
+  comment_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT (DATETIME('now', 'utc')),
+  FOREIGN KEY (author) REFERENCES users(username)
+);
+
+-- 评论表
+CREATE TABLE IF NOT EXISTS comments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  post_id INTEGER NOT NULL,
+  content TEXT NOT NULL,
+  raw_content TEXT NOT NULL,
+  author TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT (DATETIME('now', 'utc')),
+  FOREIGN KEY (post_id) REFERENCES posts(id),
+  FOREIGN KEY (author) REFERENCES users(username)
+);
+
+-- 标签表
+CREATE TABLE IF NOT EXISTS tags (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT (DATETIME('now', 'utc'))
+);
+
+-- 系统配置表
+CREATE TABLE IF NOT EXISTS settings (
+  id INTEGER PRIMARY KEY,
+  key TEXT NOT NULL UNIQUE,
+  value TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================================
+-- 原有触发器
+-- ============================================================
+
+-- 第一个注册用户自动成为管理员
+CREATE TRIGGER IF NOT EXISTS make_first_user_admin
+AFTER INSERT ON users
+WHEN (SELECT COUNT(*) FROM users) = 1
+BEGIN
+  UPDATE users SET role = 'admin' WHERE id = NEW.id;
+END;
+
+-- 添加评论时更新帖子评论数
+CREATE TRIGGER IF NOT EXISTS increment_post_comment_count
+AFTER INSERT ON comments
+BEGIN
+    UPDATE posts 
+    SET comment_count = comment_count + 1 
+    WHERE id = NEW.post_id;
+END;
+
+-- 删除评论时更新帖子评论数
+CREATE TRIGGER IF NOT EXISTS decrement_post_comment_count
+AFTER DELETE ON comments
+BEGIN
+    UPDATE posts 
+    SET comment_count = CASE WHEN comment_count > 0 THEN comment_count - 1 ELSE 0 END 
+    WHERE id = OLD.post_id;
+END;
+
+-- 设置表更新时间触发器
+CREATE TRIGGER IF NOT EXISTS update_settings_timestamp 
+AFTER UPDATE ON settings
+BEGIN
+  UPDATE settings SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END;
+
+-- ============================================================
+-- 默认配置
+-- ============================================================
+
+INSERT OR IGNORE INTO settings (key, value) VALUES 
+  ('site_name', '{"value": "Hono BBS", "description": "网站名称"}'),
+  ('enable_registration', '{"value": true, "description": "是否允许新用户注册"}'),
+  ('enable_comments', '{"value": true, "description": "是否允许发表评论"}');
+
+-- ============================================================
+-- 新增：为 posts 表添加 circle_id 字段（圈子关联）
+-- ============================================================
 ALTER TABLE posts ADD COLUMN circle_id INTEGER REFERENCES circles(id);
 
 -- ============================================================
--- 2. 创建圈子表
+-- 新增：圈子表
 -- ============================================================
 CREATE TABLE IF NOT EXISTS circles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +124,7 @@ CREATE TABLE IF NOT EXISTS circles (
 );
 
 -- ============================================================
--- 3. 创建圈子成员表
+-- 新增：圈子成员表
 -- ============================================================
 CREATE TABLE IF NOT EXISTS circle_members (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,7 +138,7 @@ CREATE TABLE IF NOT EXISTS circle_members (
 );
 
 -- ============================================================
--- 4. 创建漂流瓶表
+-- 新增：漂流瓶表
 -- ============================================================
 CREATE TABLE IF NOT EXISTS bottles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,19 +156,19 @@ CREATE TABLE IF NOT EXISTS bottles (
 );
 
 -- ============================================================
--- 5. 创建情绪记录表
+-- 新增：情绪记录表
 -- ============================================================
 CREATE TABLE IF NOT EXISTS moods (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER,
-  session_id TEXT,    -- 游客模式使用
+  session_id TEXT,
   mood_type TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT (DATETIME('now', 'utc')),
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- ============================================================
--- 6. 创建时光信表
+-- 新增：时光信表
 -- ============================================================
 CREATE TABLE IF NOT EXISTS time_capsules (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -82,23 +182,12 @@ CREATE TABLE IF NOT EXISTS time_capsules (
 );
 
 -- ============================================================
--- 7. 新增索引（提高查询性能）
+-- 新增：索引（提高查询性能）
 -- ============================================================
--- 帖子按圈子查询
 CREATE INDEX IF NOT EXISTS idx_posts_circle_id ON posts(circle_id);
--- 漂流瓶状态和随机捞取
 CREATE INDEX IF NOT EXISTS idx_bottles_status ON bottles(status);
 CREATE INDEX IF NOT EXISTS idx_bottles_sender ON bottles(sender_user_id);
--- 情绪按日期
 CREATE INDEX IF NOT EXISTS idx_moods_created_at ON moods(created_at);
--- 时光信按用户和状态
 CREATE INDEX IF NOT EXISTS idx_capsules_user_status ON time_capsules(user_id, status);
--- 圈子成员查询
 CREATE INDEX IF NOT EXISTS idx_circle_members_circle ON circle_members(circle_id);
 CREATE INDEX IF NOT EXISTS idx_circle_members_user ON circle_members(user_id);
-
--- ============================================================
--- 8. 可选：为已有的 posts 设置默认圈子（比如 ID=1 的“默认”圈子）
--- 如果还没有圈子，可以先创建一个默认圈子，再更新 posts 的 circle_id
--- 但这里先不自动执行，留待管理员手动创建圈子后再更新。
--- ============================================================
