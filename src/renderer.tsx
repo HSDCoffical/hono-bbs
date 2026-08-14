@@ -14,37 +14,46 @@ const Header = ({ user }: HeaderProps) => {
       overflow: 'hidden',
       backgroundImage: 'url(/static/01.jpg)',
       backgroundSize: 'cover',
-      backgroundPosition: 'top',
+      backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
       width: '100%',
-      padding: '0.5rem 1rem',
+      padding: '0.75rem 1.5rem',
       boxSizing: 'border-box',
     }}>
+      {/* 毛玻璃覆盖层 */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        background: 'rgba(0,0,0,0.25)',
+        zIndex: 0,
+      }}></div>
+      
       <nav style={{ position: 'relative', zIndex: 1 }}>
-        <ul className="flex items-center space-x-3 flex-wrap" style={{ 
-          textShadow: '0 0 8px rgba(0,0,0,0.7)', 
-          margin: 0, 
+        <ul style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1.5rem',
+          margin: 0,
           padding: 0,
-          listStyle: 'none'
+          listStyle: 'none',
+          flexWrap: 'wrap',
         }}>
-          <li><strong style={{ color: 'white', whiteSpace: 'nowrap', fontSize: '1.1rem' }}>凉宫社区</strong></li>
-          <li><a href="/posts" class="secondary" style={{ color: 'white', fontSize: '0.85rem', textDecoration: 'none' }}>首页</a></li>
-          <li><a href="/circles" class="secondary" style={{ color: 'white', fontSize: '0.85rem', textDecoration: 'none' }}>圈子</a></li>
-          <li><a href="/bottle" class="secondary" style={{ color: 'white', fontSize: '0.85rem', textDecoration: 'none' }}>漂流瓶</a></li>
-          <li><a href="/mood" class="secondary" style={{ color: 'white', fontSize: '0.85rem', textDecoration: 'none' }}>情绪</a></li>
-          <li><a href="/capsule" class="secondary" style={{ color: 'white', fontSize: '0.85rem', textDecoration: 'none' }}>时光信</a></li>
+          <li style={{ fontWeight: 600, fontSize: '1rem', color: 'white', letterSpacing: '0.5px' }}>凉宫社区</li>
+          <li><a href="/posts" style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>首页</a></li>
+          <li><a href="/circles" style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>圈子</a></li>
+          <li><a href="/bottle" style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>漂流瓶</a></li>
+          <li><a href="/mood" style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>情绪</a></li>
+          <li><a href="/capsule" style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>时光信</a></li>
           {isLoggedIn ? (
-            <>
-              <li><span style={{ color: 'white', fontSize: '0.85rem' }}>|</span></li>
-              <li><a href={`/profile/${user.username}`} class="secondary" style={{ color: 'white', fontSize: '0.85rem', textDecoration: 'none' }}>{user.username}</a></li>
-              <li><a href="/user/logout" class="secondary" style={{ color: 'white', fontSize: '0.8rem', textDecoration: 'none' }}>退出</a></li>
-            </>
+            <li style={{ marginLeft: 'auto' }}>
+              <a href={`/profile/${user.username}`} style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>{user.username}</a>
+            </li>
           ) : (
-            <>
-              <li><span style={{ color: 'white', fontSize: '0.85rem' }}>|</span></li>
-              <li><a href="/user/reg" class="secondary" style={{ color: 'white', fontSize: '0.85rem', textDecoration: 'none' }}>注册</a></li>
-              <li><a href="/user/login" class="secondary" style={{ color: 'white', fontSize: '0.85rem', textDecoration: 'none' }}>登录</a></li>
-            </>
+            <li style={{ marginLeft: 'auto' }}>
+              <a href="/user/login" style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>登录</a>
+            </li>
           )}
         </ul>
       </nav>
