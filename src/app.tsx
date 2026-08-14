@@ -10,6 +10,19 @@ import { profile } from './routes/profile'
 import upload from './routes/api/upload'
 import { profileApi } from './routes/api/profile'
 import { messagesApi } from './routes/api/messages'
+
+// ========== 新增：导入新路由 ==========
+import circles from './routes/api/circles'
+import bottles from './routes/api/bottles'
+import moods from './routes/api/moods'
+import capsules from './routes/api/capsules'
+import bottlePage from './routes/bottle'
+import moodPage from './routes/mood'
+import capsulePage from './routes/capsule'
+import circlesPage from './routes/circles'
+import circleDetail from './routes/circles/[id]'
+import circleCreate from './routes/circles/create'
+
 import { D1Database } from '@cloudflare/workers-types'
 
 export type Bindings = {
@@ -23,7 +36,7 @@ app.onError((err, c) => {
   return c.text(`Error: ${err.message}\n\nStack: ${err.stack}`, 500);
 });
 
-// ---------- CORS（明确允许两种大小写域名） ----------
+// ---------- CORS ----------
 app.use('*', cors({
   origin: ['https://hsdc.dpdns.org', 'https://HSDC.dpdns.org'],
   credentials: true,
@@ -38,7 +51,7 @@ app.use('/static/*', serveStatic())
 app.get('*', renderer)
 app.post('*', renderer)
 
-// ---------- 路由 ----------
+// ---------- 原有路由 ----------
 app.route('/', index)
 app.route('/posts', posts)
 app.route('/user', user)
@@ -47,5 +60,20 @@ app.route('/profile', profile)
 app.route('/api', upload)
 app.route('/api/profile', profileApi)
 app.route('/api/messages', messagesApi)
+
+// ========== 新增：挂载新路由 ==========
+// API 路由
+app.route('/api/circles', circles)
+app.route('/api/bottles', bottles)
+app.route('/api/moods', moods)
+app.route('/api/capsules', capsules)
+
+// 页面路由
+app.route('/bottle', bottlePage)
+app.route('/mood', moodPage)
+app.route('/capsule', capsulePage)
+app.route('/circles', circlesPage)
+app.route('/circles', circleDetail)
+app.route('/circles/create', circleCreate)
 
 export default app
