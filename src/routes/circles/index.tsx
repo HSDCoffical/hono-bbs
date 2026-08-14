@@ -87,4 +87,16 @@ circles.get("/", async (c) => {
           }}>
             <div style={{ fontSize: '2.5rem' }}>{circle.icon || '📁'}</div>
             <div style={{ fontWeight: 600, margin: '0.5rem 0 0.25rem' }}>{circle.name}</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--muted
+            <div style={{ fontSize: '0.8rem', color: 'var(--muted-color)' }}>{circle.member_count} 人</div>
+          </a>
+        ))}
+      </div>
+    </div>,
+    {
+      title: "发现圈子 - 凉宫社区",
+      user: user,
+    }
+  );
+});
+
+export { circles };
