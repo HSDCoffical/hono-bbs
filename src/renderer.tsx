@@ -17,7 +17,7 @@ const Header = ({ user }: HeaderProps) => {
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',
       width: '100%',
-      padding: '0.75rem 1.5rem',
+      padding: '0.5rem 1rem',
       boxSizing: 'border-box',
     }}>
       {/* 毛玻璃覆盖层 */}
@@ -30,32 +30,36 @@ const Header = ({ user }: HeaderProps) => {
         zIndex: 0,
       }}></div>
       
-      <nav style={{ position: 'relative', zIndex: 1 }}>
-        <ul style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1.5rem',
-          margin: 0,
-          padding: 0,
-          listStyle: 'none',
-          flexWrap: 'wrap',
-        }}>
-          <li style={{ fontWeight: 600, fontSize: '1rem', color: 'white', letterSpacing: '0.5px' }}>凉宫社区</li>
-          <li><a href="/posts" style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>首页</a></li>
-          <li><a href="/circles" style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>圈子</a></li>
-          <li><a href="/bottle" style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>漂流瓶</a></li>
-          <li><a href="/mood" style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>情绪</a></li>
-          <li><a href="/capsule" style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>时光信</a></li>
+      <nav style={{ 
+        position: 'relative', 
+        zIndex: 1,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '0.5rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none', color: 'white' }}>☁️ 凉宫社区</a>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>首页</a>
+          <a href="/circles" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>圈子</a>
+          <a href="/bottle" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>漂流瓶</a>
+          <a href="/mood" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>情绪</a>
+          <a href="/capsule" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>时光信</a>
           {isLoggedIn ? (
-            <li style={{ marginLeft: 'auto' }}>
-              <a href={`/profile/${user.username}`} style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>{user.username}</a>
-            </li>
+            <>
+              <a href={`/profile/${user.username}`} role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white' }}>{user.username}</a>
+              <a href="/user/logout" role="button" class="outline" style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.3)' }}>退出</a>
+            </>
           ) : (
-            <li style={{ marginLeft: 'auto' }}>
-              <a href="/user/login" style={{ color: 'white', fontSize: '0.9rem', textDecoration: 'none', opacity: 0.85 }}>登录</a>
-            </li>
+            <>
+              <a href="/user/reg" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>注册</a>
+              <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)' }}>登录</a>
+            </>
           )}
-        </ul>
+        </div>
       </nav>
     </header>
   )
