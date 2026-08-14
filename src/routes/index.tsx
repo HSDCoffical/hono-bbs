@@ -94,111 +94,56 @@ index.get("/posts", async (c) => {
 
   return c.render(
     <div>
-      {/* ===== 导航栏 ===== */}
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
+      {/* ===== 第一行：主导航 ===== */}
+      <nav style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '0.75rem',
+        flexWrap: 'wrap',
+        gap: '0.5rem',
+        borderBottom: '1px solid #e8e8e8',
+        paddingBottom: '0.5rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <a href="/" style={{ fontWeight: 'bold', fontSize: '1.1rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
+          <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap' }}>
+            <a href="/posts" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', textDecoration: 'none', color: 'var(--primary)' }}>首页</a>
+            <a href="/circles" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', textDecoration: 'none', color: '#666' }}>圈子</a>
+            <a href="/bottle" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', textDecoration: 'none', color: '#666' }}>漂流瓶</a>
+            <a href="/mood" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', textDecoration: 'none', color: '#666' }}>情绪</a>
+            <a href="/capsule" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', textDecoration: 'none', color: '#666' }}>时光信</a>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>首页</a>
-          <a href="/circles" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>圈子</a>
-          <a href="/bottle" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>漂流瓶</a>
-          <a href="/mood" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>情绪</a>
-          <a href="/capsule" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>时光信</a>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {currentUser ? (
-            <a href={`/user/${currentUser.id}`} role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>{currentUser.username}</a>
+            <a href={`/user/${currentUser.id}`} style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', textDecoration: 'none' }}>{currentUser.username}</a>
           ) : (
-            <a href="/auth/login" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>登录</a>
+            <a href="/auth/login" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem', textDecoration: 'none' }}>登录</a>
           )}
         </div>
       </nav>
 
-      {/* ===== 新奇点快捷入口 ===== */}
+      {/* ===== 第二行：操作栏（标签导航 + 发帖 + 管理标签） ===== */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-        gap: '0.75rem',
-        marginBottom: '1.5rem'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '0.5rem',
+        flexWrap: 'wrap',
+        gap: '0.3rem'
       }}>
-        <a href="/bottle" style={{
-          textAlign: 'center',
-          padding: '0.75rem',
-          background: 'linear-gradient(135deg, #e8f5e9, #c8e6c9)',
-          borderRadius: '12px',
-          textDecoration: 'none',
-          color: '#2e7d32',
-          fontSize: '0.85rem'
-        }}>
-          🍶 漂流瓶<br />
-          <small style={{ fontSize: '0.7rem', opacity: 0.7 }}>{bottleCount?.count || 0} 个漂着</small>
-        </a>
-        <a href="/mood" style={{
-          textAlign: 'center',
-          padding: '0.75rem',
-          background: 'linear-gradient(135deg, #e3f2fd, #bbdefb)',
-          borderRadius: '12px',
-          textDecoration: 'none',
-          color: '#0d47a1',
-          fontSize: '0.85rem'
-        }}>
-          🫙 情绪容器
-        </a>
-        <a href="/capsule" style={{
-          textAlign: 'center',
-          padding: '0.75rem',
-          background: 'linear-gradient(135deg, #f3e5f5, #e1bee7)',
-          borderRadius: '12px',
-          textDecoration: 'none',
-          color: '#4a148c',
-          fontSize: '0.85rem'
-        }}>
-          📮 时光信
-        </a>
-        <a href="/circles" style={{
-          textAlign: 'center',
-          padding: '0.75rem',
-          background: 'linear-gradient(135deg, #fff3e0, #ffe0b2)',
-          borderRadius: '12px',
-          textDecoration: 'none',
-          color: '#e65100',
-          fontSize: '0.85rem'
-        }}>
-          📁 圈子
-        </a>
-      </div>
-
-      {/* ===== 热门圈子快捷入口 ===== */}
-      {circles.results && circles.results.length > 0 && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>🔥 热门圈子</span>
-            <a href="/circles" style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>查看更多 →</a>
-          </div>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {circles.results.slice(0, 4).map((circle: any) => (
-              <a key={circle.id} href={`/circles/${circle.id}`} style={{
-                padding: '0.3rem 0.8rem',
-                background: '#f0f0f0',
-                borderRadius: '20px',
-                textDecoration: 'none',
-                fontSize: '0.8rem',
-                color: '#333'
-              }}>
-                {circle.icon || '📁'} {circle.name} ({circle.member_count}人)
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 标签导航 */}
-      <header class="mb-4">
-        <div class="flex items-center text-sm flex-wrap gap-1">
+        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.15rem' }}>
           <a
             href="/posts"
-            class={`py-1 px-2 color-[var(--primary-inverse)] no-underline rounded ${
-              !tagName && !username ? "bg-gray-2" : ""
-            }`}
+            style={{
+              padding: '0.2rem 0.6rem',
+              fontSize: '0.8rem',
+              borderRadius: '4px',
+              textDecoration: 'none',
+              background: !tagName && !username ? 'var(--primary)' : 'transparent',
+              color: !tagName && !username ? 'white' : 'var(--primary)',
+            }}
           >
             全部
           </a>
@@ -206,85 +151,100 @@ index.get("/posts", async (c) => {
             <a
               key={tag.id}
               href={`/posts?tag=${tag.name}`}
-              class={`py-1 px-2 color-[var(--primary-inverse)] rounded no-underline ${
-                tagName === tag.name ? "bg-gray-2" : ""
-              }`}
+              style={{
+                padding: '0.2rem 0.6rem',
+                fontSize: '0.75rem',
+                borderRadius: '4px',
+                textDecoration: 'none',
+                background: tagName === tag.name ? 'var(--primary)' : 'transparent',
+                color: tagName === tag.name ? 'white' : '#666',
+              }}
             >
               {tag.name}({tag.post_count})
             </a>
           ))}
         </div>
-      </header>
+        <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
+          {isAdmin && (
+            <a href="/tags" style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem', textDecoration: 'none', color: '#999' }}>管理标签</a>
+          )}
+          <a href="/posts/new" role="button" style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem' }}>+ 发帖</a>
+        </div>
+      </div>
 
-      {tagName && <h6 class="mb-2">标签: {tagName}</h6>}
-      {username && <h6 class="mb-2">用户: {username} 的帖子</h6>}
+      {tagName && <h6 style={{ marginBottom: '0.5rem', fontSize: '0.85rem' }}>标签: {tagName}</h6>}
+      {username && <h6 style={{ marginBottom: '0.5rem', fontSize: '0.85rem' }}>用户: {username} 的帖子</h6>}
 
-      {/* ===== 网格缩略图列表（固定双列，内容完整显示） ===== */}
+      {/* ===== 网格缩略图列表 ===== */}
       {posts.length > 0 ? (
-        <ul class="grid grid-cols-2 gap-4 pl-0">
+        <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
           {posts.map((post) => {
-            // 查找当前帖子的作者信息（包含 badge）
             const postAuthor = authors.find(a => a.username === post.author);
             return (
-              <li key={post.id} class="list-none border rounded-xl overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800">
-                <a href={`/posts/${post.id}`} class="block h-full flex flex-col">
-                  {/* 缩略图区域 */}
-                  <div class="w-full bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
+              <li key={post.id} style={{
+                border: '1px solid #e8e8e8',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                background: 'white',
+                transition: 'box-shadow 0.2s'
+              }}>
+                <a href={`/posts/${post.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                  <div style={{ background: '#f5f5f5', overflow: 'hidden', position: 'relative' }}>
                     {post.file_url ? (
                       post.file_type?.startsWith('image/') ? (
-                        <img
-                          src={post.file_url}
-                          alt={post.title}
-                          class="w-full h-auto object-contain"
-                          loading="lazy"
-                        />
+                        <img src={post.file_url} alt={post.title} style={{ width: '100%', height: 'auto', maxHeight: '180px', objectFit: 'cover' }} loading="lazy" />
                       ) : post.file_type?.startsWith('video/') ? (
-                        <video
-                          src={post.file_url}
-                          class="w-full h-auto"
-                          muted
-                          loop
-                          playsInline
-                          autoplay
-                        />
+                        <video src={post.file_url} style={{ width: '100%', maxHeight: '180px' }} muted loop playsInline autoPlay />
                       ) : (
-                        <div class="flex items-center justify-center h-48 text-gray-400">
-                          <span class="text-sm">📄 文件</span>
-                        </div>
+                        <div style={{ padding: '1.5rem', textAlign: 'center', color: '#999', fontSize: '0.85rem' }}>📄 文件</div>
                       )
                     ) : (
-                      <div class="flex items-center justify-center h-48 text-gray-400">
-                        <span class="text-sm">🖼️ 无预览</span>
-                      </div>
+                      <div style={{ padding: '1.5rem', textAlign: 'center', color: '#ccc', fontSize: '0.85rem' }}>📝 文字</div>
                     )}
-                    {/* 评论数角标 */}
-                    {post.comment_count !== undefined && post.comment_count > 0 && (
-                      <span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                    {post.comment_count > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        bottom: '0.5rem',
+                        right: '0.5rem',
+                        background: 'rgba(0,0,0,0.6)',
+                        color: 'white',
+                        fontSize: '0.7rem',
+                        padding: '0.1rem 0.5rem',
+                        borderRadius: '12px'
+                      }}>
                         💬 {post.comment_count}
                       </span>
                     )}
                   </div>
-
-                  {/* 标题和作者信息 - 包含 badge 标签 */}
-                  <div class="p-2 flex flex-col flex-grow">
-                    <h3 class="text-sm font-semibold break-words" title={post.title}>
-                      {post.title}
-                    </h3>
-                    <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1 flex-wrap gap-x-2">
-                      <span class="truncate max-w-[60%] flex items-center gap-1">
+                  <div style={{ padding: '0.6rem' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.2rem' }}>{post.title}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.7rem', color: '#999' }}>
+                      <span>
                         {post.author}
                         {postAuthor?.badge && (
-                          <span class="inline-block bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded-full align-middle whitespace-nowrap">
+                          <span style={{
+                            background: '#4a90d9',
+                            color: 'white',
+                            fontSize: '0.55rem',
+                            padding: '0.05rem 0.4rem',
+                            borderRadius: '12px',
+                            marginLeft: '0.2rem'
+                          }}>
                             {postAuthor.badge}
                           </span>
                         )}
                       </span>
-                      <span class="whitespace-nowrap">
-                        {formatDateTime(post.created_at)}
-                      </span>
+                      <span>{formatDateTime(post.created_at)}</span>
                     </div>
                     {post.tag && (
-                      <span class="inline-block mt-1 bg-gray-200 dark:bg-gray-700 text-xs px-2 py-0.5 rounded self-start">
+                      <span style={{
+                        display: 'inline-block',
+                        fontSize: '0.6rem',
+                        background: '#f0f0f0',
+                        padding: '0.05rem 0.4rem',
+                        borderRadius: '4px',
+                        marginTop: '0.15rem'
+                      }}>
                         #{post.tag}
                       </span>
                     )}
@@ -295,12 +255,8 @@ index.get("/posts", async (c) => {
           })}
         </ul>
       ) : (
-        <p class="text-center text-gray-500 py-8">
-          {tagName
-            ? `该标签下暂无帖子`
-            : username
-            ? `该用户暂无帖子`
-            : `请发布您的第一个帖子`}
+        <p style={{ textAlign: 'center', color: '#999', padding: '3rem 0' }}>
+          {tagName ? `该标签下暂无帖子` : username ? `该用户暂无帖子` : `还没有帖子，来发布第一个吧`}
         </p>
       )}
     </div>,
