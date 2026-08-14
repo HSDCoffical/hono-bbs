@@ -78,8 +78,119 @@ index.get("/posts", async (c) => {
     });
   }
 
+  // ========== 获取圈子列表 ==========
+  const circles = await c.env.DB.prepare(`
+    SELECT c.*, 
+      (SELECT COUNT(*) FROM circle_members WHERE circle_id = c.id) as member_count
+    FROM circles c
+    ORDER BY member_count DESC
+    LIMIT 6
+  `).all();
+
+  // ========== 获取漂流瓶数量 ==========
+  const bottleCount = await c.env.DB.prepare(
+    "SELECT COUNT(*) as count FROM bottles WHERE status = 'drifting'"
+  ).first();
+
   return c.render(
-    <article>
+    <div>
+      {/* ===== 导航栏 ===== */}
+      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>首页</a>
+          <a href="/circles" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>圈子</a>
+          <a href="/bottle" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>漂流瓶</a>
+          <a href="/mood" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>情绪</a>
+          <a href="/capsule" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>时光信</a>
+          {currentUser ? (
+            <a href={`/user/${currentUser.id}`} role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>{currentUser.username}</a>
+          ) : (
+            <a href="/auth/login" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>登录</a>
+          )}
+        </div>
+      </nav>
+
+      {/* ===== 新奇点快捷入口 ===== */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+        gap: '0.75rem',
+        marginBottom: '1.5rem'
+      }}>
+        <a href="/bottle" style={{
+          textAlign: 'center',
+          padding: '0.75rem',
+          background: 'linear-gradient(135deg, #e8f5e9, #c8e6c9)',
+          borderRadius: '12px',
+          textDecoration: 'none',
+          color: '#2e7d32',
+          fontSize: '0.85rem'
+        }}>
+          🍶 漂流瓶<br />
+          <small style={{ fontSize: '0.7rem', opacity: 0.7 }}>{bottleCount?.count || 0} 个漂着</small>
+        </a>
+        <a href="/mood" style={{
+          textAlign: 'center',
+          padding: '0.75rem',
+          background: 'linear-gradient(135deg, #e3f2fd, #bbdefb)',
+          borderRadius: '12px',
+          textDecoration: 'none',
+          color: '#0d47a1',
+          fontSize: '0.85rem'
+        }}>
+          🫙 情绪容器
+        </a>
+        <a href="/capsule" style={{
+          textAlign: 'center',
+          padding: '0.75rem',
+          background: 'linear-gradient(135deg, #f3e5f5, #e1bee7)',
+          borderRadius: '12px',
+          textDecoration: 'none',
+          color: '#4a148c',
+          fontSize: '0.85rem'
+        }}>
+          📮 时光信
+        </a>
+        <a href="/circles" style={{
+          textAlign: 'center',
+          padding: '0.75rem',
+          background: 'linear-gradient(135deg, #fff3e0, #ffe0b2)',
+          borderRadius: '12px',
+          textDecoration: 'none',
+          color: '#e65100',
+          fontSize: '0.85rem'
+        }}>
+          📁 圈子
+        </a>
+      </div>
+
+      {/* ===== 热门圈子快捷入口 ===== */}
+      {circles.results && circles.results.length > 0 && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>🔥 热门圈子</span>
+            <a href="/circles" style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>查看更多 →</a>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {circles.results.slice(0, 4).map((circle: any) => (
+              <a key={circle.id} href={`/circles/${circle.id}`} style={{
+                padding: '0.3rem 0.8rem',
+                background: '#f0f0f0',
+                borderRadius: '20px',
+                textDecoration: 'none',
+                fontSize: '0.8rem',
+                color: '#333'
+              }}>
+                {circle.icon || '📁'} {circle.name} ({circle.member_count}人)
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 标签导航 */}
       <header class="mb-4">
         <div class="flex items-center text-sm flex-wrap gap-1">
@@ -192,7 +303,7 @@ index.get("/posts", async (c) => {
             : `请发布您的第一个帖子`}
         </p>
       )}
-    </article>,
+    </div>,
     {
       title: pageTitle,
       user: currentUser,
