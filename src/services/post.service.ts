@@ -50,6 +50,35 @@ export class PostService {
     return results
   }
 
+  // ============================================================
+  // 新增：普通搜索（在所有帖子中搜索标题或内容）
+  // ============================================================
+  async searchPosts(keyword: string): Promise<Post[]> {
+    const { results } = await this.db.prepare(
+      `SELECT id, title, content, raw_content as rawContent, author, tag, 
+              comment_count, created_at, file_url, file_type, file_size 
+       FROM posts 
+       WHERE title LIKE ? OR content LIKE ? 
+       ORDER BY created_at DESC`
+    ).bind(`%${keyword}%`, `%${keyword}%`).all<Post>()
+    return results
+  }
+
+  // ============================================================
+  // 新增：圈子内搜索（在指定圈子中搜索标题或内容）
+  // ============================================================
+  async searchPostsInCircle(keyword: string, circleName: string): Promise<Post[]> {
+    const { results } = await this.db.prepare(
+      `SELECT p.id, p.title, p.content, p.raw_content as rawContent, p.author, p.tag, 
+              p.comment_count, p.created_at, p.file_url, p.file_type, p.file_size 
+       FROM posts p
+       JOIN circles c ON p.circle_id = c.id
+       WHERE (p.title LIKE ? OR p.content LIKE ?) AND c.name = ?
+       ORDER BY p.created_at DESC`
+    ).bind(`%${keyword}%`, `%${keyword}%`, circleName).all<Post>()
+    return results
+  }
+
   async createPost(post: Omit<Post, 'id' | 'created_at' | 'comment_count'>): Promise<number> {
     // 支持 file_url, file_type, file_size 字段
     const result = await this.db.prepare(
