@@ -141,7 +141,7 @@ index.get("/posts", async (c) => {
   display: 'flex',
   alignItems: 'center',
   gap: '0.5rem',
-  marginTop: '-1.8rem',     // ← 往下移（正数向下，负数向上）
+  marginTop: '0.4rem',     // ← 往下移（正数向下，负数向上）
 }}>
           <img 
             src="/lg.png" 
