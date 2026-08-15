@@ -14,9 +14,6 @@ index.get("/posts", async (c) => {
   const username = c.req.query("username");
   const searchQuery = c.req.query("search");
 
-  // ===== 调试日志 =====
-  console.log("🔍 [搜索调试] 接收到请求参数:", { tagName, username, searchQuery });
-
   const postService = PostService.getInstance(c.env.DB);
   const userService = UserService.getInstance(c.env.DB);
   const tagService = TagService.getInstance(c.env.DB);
@@ -25,31 +22,24 @@ index.get("/posts", async (c) => {
 
   let posts = [];
   if (username) {
-    console.log("👤 [搜索调试] 按作者搜索:", username);
     posts = await postService.getPostsByAuthor(username);
   } else if (tagName) {
-    console.log("🏷️ [搜索调试] 按标签搜索:", tagName);
     posts = await postService.getPostsByTag(tagName);
   } else if (searchQuery) {
-    console.log("🔍 [搜索调试] 执行搜索，关键字:", searchQuery);
     try {
       const circleMatch = searchQuery.match(/^#([^\s]+)\s+(.+)/);
       if (circleMatch) {
         const circleName = circleMatch[1];
         const keyword = circleMatch[2];
-        console.log("🎯 [搜索调试] 圈子内搜索，圈子:", circleName, "关键字:", keyword);
         posts = await postService.searchPostsInCircle(keyword, circleName);
       } else {
-        console.log("🌐 [搜索调试] 全局搜索，关键字:", searchQuery);
         posts = await postService.searchPosts(searchQuery);
       }
-      console.log("📊 [搜索调试] 搜索完成，找到:", posts.length, "条结果");
     } catch (e) {
-      console.error("❌ [搜索调试] 搜索失败:", e);
+      console.error("搜索失败:", e);
       posts = [];
     }
   } else {
-    console.log("📋 [搜索调试] 加载全部帖子");
     posts = await postService.getAllPosts();
   }
 
@@ -484,7 +474,7 @@ index.get("/posts", async (c) => {
         `
       }} />
 
-      {/* ===== 搜索框（含调试信息） ===== */}
+      {/* ===== 搜索框 ===== */}
       <div style={{
         marginBottom: '1.25rem',
         width: '100%',
@@ -521,13 +511,9 @@ index.get("/posts", async (c) => {
               e.preventDefault();
               const input = document.getElementById('search-input') as HTMLInputElement;
               const value = input?.value?.trim();
-              // ===== 调试弹窗 =====
-              alert('🔍 回车触发了！搜索内容：' + (value || '(空)'));
-              console.log('🔍 [前端调试] 回车搜索:', value);
               if (value) {
                 window.location.href = `/posts?search=${encodeURIComponent(value)}`;
               } else {
-                // 空内容刷新页面
                 window.location.href = `/posts`;
               }
             }
@@ -545,6 +531,22 @@ index.get("/posts", async (c) => {
             🔍 搜索: “{searchQuery}” 
             {posts.length === 0 ? ' — 没有找到相关帖子' : ` — 找到 ${posts.length} 个结果`}
             <a href="/posts" style={{ marginLeft: '0.8rem', fontSize: '0.75rem', color: '#999', textDecoration: 'none' }}>清除搜索</a>
+          </div>
+        )}
+        {/* ===== 手机调试信息 ===== */}
+        {searchQuery && (
+          <div style={{
+            marginTop: '0.3rem',
+            padding: '0.2rem 0.8rem',
+            background: '#fff3cd',
+            borderRadius: '6px',
+            fontSize: '0.7rem',
+            color: '#856404',
+            border: '1px solid #ffc107',
+            wordBreak: 'break-all',
+          }}>
+            📋 调试: 搜索词 “{searchQuery}” 已提交，找到 {posts.length} 条结果
+            {posts.length === 0 && ' (请确认数据库中有匹配的帖子)'}
           </div>
         )}
       </div>
