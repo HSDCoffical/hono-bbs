@@ -125,23 +125,95 @@ index.get("/posts", async (c) => {
         {/* 左侧 Logo */}
         <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
 
-        {/* 中间导航项（首页、圈子、情绪） */}
+        {/* 中间导航项（首页下拉、圈子、情绪） */}
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* 首页按钮 */}
-          <a
-            href="/posts"
-            role="button"
-            class="outline"
-            style={{
-              padding: '0.3rem 0.8rem',
-              fontSize: '0.85rem',
-              borderRadius: '4px',          // 轻微 R 角，更板正
-              minWidth: '3.5rem',
-              textAlign: 'center',
-            }}
-          >
-            首页
-          </a>
+          {/* 首页下拉（整合全部标签） */}
+          <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
+            <button
+              className="outline dropdown-toggle"
+              style={{
+                padding: '0.3rem 0.8rem',
+                fontSize: '0.85rem',
+                background: 'transparent',
+                border: '1px solid var(--primary)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+                minWidth: '3.5rem',
+                justifyContent: 'center',
+              }}
+              data-target="home-dropdown"
+            >
+              首页 <span style={{ fontSize: '0.7rem' }}>▾</span>
+            </button>
+            <div id="home-dropdown" className="dropdown-menu" style={{
+              maxHeight: '0',
+              opacity: '0',
+              overflow: 'hidden',
+              transition: 'maxHeight 0.3s ease, opacity 0.3s ease',
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              background: 'white',
+              border: '1px solid #ddd',
+              borderRadius: '6px',
+              minWidth: '150px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              padding: '0',
+              zIndex: 100,
+              marginTop: '0.2rem',
+            }}>
+              <div style={{ padding: '0.3rem 0' }}>
+                {/* 创建标签（在全部上面） */}
+                <a href="/tags" style={{
+                  display: 'block',
+                  padding: '0.4rem 0.8rem',
+                  textDecoration: 'none',
+                  color: 'var(--primary)',
+                  fontSize: '0.85rem',
+                  fontWeight: 500,
+                }}>
+                  ＋ 创建标签
+                </a>
+                <div style={{ borderTop: '1px solid #eee', margin: '0.2rem 0' }}></div>
+                {/* 全部 */}
+                <a
+                  href="/posts"
+                  style={{
+                    display: 'block',
+                    padding: '0.4rem 0.8rem',
+                    textDecoration: 'none',
+                    color: !tagName && !username ? 'var(--primary)' : '#333',
+                    fontSize: '0.85rem',
+                    fontWeight: !tagName && !username ? 600 : 400,
+                    background: !tagName && !username ? 'rgba(var(--primary-rgb), 0.08)' : 'transparent',
+                  }}
+                >
+                  全部
+                </a>
+                {/* 所有标签 */}
+                {allTags.map((tag) => (
+                  <a
+                    key={tag.id}
+                    href={`/posts?tag=${tag.name}`}
+                    style={{
+                      display: 'block',
+                      padding: '0.3rem 0.8rem',
+                      textDecoration: 'none',
+                      color: tagName === tag.name ? 'var(--primary)' : '#333',
+                      fontSize: '0.85rem',
+                      fontWeight: tagName === tag.name ? 600 : 400,
+                      background: tagName === tag.name ? 'rgba(var(--primary-rgb), 0.08)' : 'transparent',
+                    }}
+                  >
+                    {tag.name}({tag.post_count})
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
 
           {/* 圈子下拉 */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
@@ -152,7 +224,7 @@ index.get("/posts", async (c) => {
                 fontSize: '0.85rem',
                 background: 'transparent',
                 border: '1px solid var(--primary)',
-                borderRadius: '4px',        // 轻微 R 角
+                borderRadius: '4px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -168,7 +240,7 @@ index.get("/posts", async (c) => {
               maxHeight: '0',
               opacity: '0',
               overflow: 'hidden',
-              transition: 'max-height 0.3s ease, opacity 0.3s ease',
+              transition: 'maxHeight 0.3s ease, opacity 0.3s ease',
               position: 'absolute',
               top: '100%',
               left: 0,
@@ -213,7 +285,7 @@ index.get("/posts", async (c) => {
                 fontSize: '0.85rem',
                 background: 'transparent',
                 border: '1px solid var(--primary)',
-                borderRadius: '4px',        // 轻微 R 角
+                borderRadius: '4px',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -249,6 +321,9 @@ index.get("/posts", async (c) => {
               </div>
             </div>
           </div>
+
+          {/* 发帖按钮（移到导航行） */}
+          <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px', whiteSpace: 'nowrap' }}>✍️ 发帖</a>
         </div>
 
         {/* 右侧用户头像 + 用户名 */}
@@ -317,7 +392,6 @@ index.get("/posts", async (c) => {
           ) : (
             <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>登录</a>
           )}
-          {/* 用户名显示在头像下方 */}
           {currentUser && (
             <span style={{
               fontSize: '0.7rem',
@@ -448,34 +522,10 @@ index.get("/posts", async (c) => {
         </div>
       )}
 
-      {/* ===== 标签导航 + 发帖按钮 ===== */}
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-        <div class="flex items-center text-sm flex-wrap gap-1">
-          <a
-            href="/posts"
-            class={`py-1 px-2 color-[var(--primary-inverse)] no-underline rounded ${
-              !tagName && !username ? "bg-gray-2" : ""
-            }`}
-          >
-            全部
-          </a>
-          {allTags.map((tag) => (
-            <a
-              key={tag.id}
-              href={`/posts?tag=${tag.name}`}
-              class={`py-1 px-2 color-[var(--primary-inverse)] rounded no-underline ${
-                tagName === tag.name ? "bg-gray-2" : ""
-              }`}
-            >
-              {tag.name}({tag.post_count})
-            </a>
-          ))}
-        </div>
-        <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', whiteSpace: 'nowrap', borderRadius: '4px' }}>✍️ 发帖</a>
-      </header>
-
-      {tagName && <h6 class="mb-2">标签: {tagName}</h6>}
-      {username && <h6 class="mb-2">用户: {username} 的帖子</h6>}
+      {/* ===== 标签导航已移除，合并到首页下拉菜单中 ===== */}
+      {/* 保留页面标题显示当前选中的标签 */}
+      {tagName && <h6 style={{ marginBottom: '0.5rem', fontSize: '0.85rem', color: '#666' }}>📌 当前标签: {tagName}</h6>}
+      {username && <h6 style={{ marginBottom: '0.5rem', fontSize: '0.85rem', color: '#666' }}>👤 用户: {username} 的帖子</h6>}
 
       {/* ===== 帖子列表 ===== */}
       {posts.length > 0 ? (
