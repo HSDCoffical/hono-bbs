@@ -22,10 +22,8 @@ circleCreate.get("/", async (c) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>创建圈子 - 凉宫社区</title>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-        {/* ===== CropperJS CSS ===== */}
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css" />
         <style>{`
-          /* 裁剪模态框样式 */
           .modal-overlay {
             display: none;
             position: fixed;
@@ -111,7 +109,6 @@ circleCreate.get("/", async (c) => {
           .btn-confirm:hover {
             background: #3a7bc8;
           }
-          /* 裁剪后的预览 */
           .crop-preview {
             margin-top: 0.5rem;
             display: none;
@@ -135,11 +132,9 @@ circleCreate.get("/", async (c) => {
             font-size: 0.85rem;
             color: #666;
           }
-          /* 覆盖 cropperjs 默认样式，使其在模态框中更好看 */
           .cropper-container {
             max-height: 50vh;
           }
-          /* 响应式 */
           @media (max-width: 600px) {
             .modal-content {
               max-width: 100%;
@@ -155,22 +150,6 @@ circleCreate.get("/", async (c) => {
       </head>
       <body>
         <main class="container" style={{ padding: '1rem 0' }}>
-          <nav>
-            <ul><li><a href="/" class="contrast"><strong>☁️ 凉宫社区</strong></a></li></ul>
-            <ul>
-              <li><a href="/">首页</a></li>
-              <li><a href="/circles" role="button">圈子</a></li>
-              <li><a href="/bottle">漂流瓶</a></li>
-              <li><a href="/mood">情绪容器</a></li>
-              <li><a href="/capsule">时光信</a></li>
-              {user ? (
-                <li><a href={`/user/${user.id}`}>{user.username}</a></li>
-              ) : (
-                <li><a href="/auth/login">登录</a></li>
-              )}
-            </ul>
-          </nav>
-
           <div style={{ maxWidth: '500px', margin: '2rem auto' }}>
             <h1>➕ 创建圈子</h1>
             <p style={{ color: '#666' }}>创建一个属于你的小天地</p>
@@ -193,7 +172,6 @@ circleCreate.get("/", async (c) => {
                 />
               </div>
 
-              {/* 图标上传 - 必填，带裁剪 */}
               <div style={{ marginTop: '1rem' }}>
                 <label htmlFor="icon">图标 *</label>
                 <input
@@ -207,7 +185,6 @@ circleCreate.get("/", async (c) => {
                 <small style={{ color: '#999', fontSize: '0.75rem' }}>
                   支持 PNG、JPG、WebP、SVG、GIF，最大 10MB，将自动裁剪为 1:1 正方形
                 </small>
-                {/* 裁剪预览 */}
                 <div id="cropPreview" class="crop-preview">
                   <img id="previewImage" src="" alt="裁剪预览" />
                   <span id="previewFileName"></span>
@@ -270,13 +247,11 @@ circleCreate.get("/", async (c) => {
           </div>
         </div>
 
-        {/* ===== CropperJS 脚本 ===== */}
         <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
 
         <script dangerouslySetInnerHTML={{
           __html: `
             (function() {
-              // DOM 元素
               const fileInput = document.getElementById('icon');
               const cropModal = document.getElementById('cropModal');
               const cropImage = document.getElementById('cropImage');
@@ -292,14 +267,12 @@ circleCreate.get("/", async (c) => {
               let currentFile = null;
               let croppedFile = null;
 
-              // 打开裁剪模态框
               function openCropModal(file) {
                 currentFile = file;
                 const reader = new FileReader();
                 reader.onload = function(e) {
                   cropImage.src = e.target.result;
                   cropModal.classList.add('active');
-                  // 等待图片加载完成后初始化 cropper
                   cropImage.onload = function() {
                     if (cropper) {
                       cropper.destroy();
@@ -318,7 +291,6 @@ circleCreate.get("/", async (c) => {
                       responsive: true,
                       restore: false,
                     });
-                    // 确保裁剪框居中
                     setTimeout(function() {
                       if (cropper) {
                         cropper.setCropBoxData({
@@ -330,7 +302,6 @@ circleCreate.get("/", async (c) => {
                       }
                     }, 100);
                   };
-                  // 如果图片已缓存，直接触发 onload
                   if (cropImage.complete) {
                     cropImage.onload();
                   }
@@ -338,7 +309,6 @@ circleCreate.get("/", async (c) => {
                 reader.readAsDataURL(file);
               }
 
-              // 关闭裁剪模态框
               function closeCropModal() {
                 cropModal.classList.remove('active');
                 if (cropper) {
@@ -349,10 +319,8 @@ circleCreate.get("/", async (c) => {
                 currentFile = null;
               }
 
-              // 确认裁剪
               function confirmCrop() {
                 if (!cropper) return;
-                // 获取裁剪后的数据
                 const canvas = cropper.getCroppedCanvas({
                   width: 512,
                   height: 512,
@@ -362,23 +330,19 @@ circleCreate.get("/", async (c) => {
                   alert('裁剪失败，请重试');
                   return;
                 }
-                // 转换为 Blob
                 const mimeType = currentFile.type || 'image/png';
                 canvas.toBlob(function(blob) {
                   if (!blob) {
                     alert('裁剪失败，请重试');
                     return;
                   }
-                  // 创建新的 File 对象
                   const fileName = currentFile.name.replace(/\\.[^.]+$/, '') + '_cropped.png';
                   croppedFile = new File([blob], fileName, { type: 'image/png' });
 
-                  // 替换 file input 中的文件
                   const dataTransfer = new DataTransfer();
                   dataTransfer.items.add(croppedFile);
                   fileInput.files = dataTransfer.files;
 
-                  // 显示预览
                   const previewReader = new FileReader();
                   previewReader.onload = function(e) {
                     previewImg.src = e.target.result;
@@ -387,19 +351,14 @@ circleCreate.get("/", async (c) => {
                   };
                   previewReader.readAsDataURL(croppedFile);
 
-                  // 关闭模态框
                   closeCropModal();
                 }, 'image/png', 0.92);
               }
 
-              // ===== 事件绑定 =====
-
-              // 文件选择
               fileInput.addEventListener('change', function(e) {
                 const file = this.files && this.files[0];
                 if (!file) return;
 
-                // 验证文件类型
                 const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml', 'image/gif'];
                 if (!allowedTypes.includes(file.type)) {
                   alert('不支持的文件格式，请上传 PNG、JPG、WebP、SVG 或 GIF');
@@ -407,30 +366,24 @@ circleCreate.get("/", async (c) => {
                   return;
                 }
 
-                // 验证文件大小（10MB）
                 if (file.size > 10 * 1024 * 1024) {
                   alert('文件大小不能超过 10MB');
                   this.value = '';
                   return;
                 }
 
-                // 打开裁剪模态框
                 openCropModal(file);
               });
 
-              // 确认裁剪
               confirmBtn.addEventListener('click', confirmCrop);
 
-              // 取消裁剪
               cancelBtn.addEventListener('click', function() {
-                // 清空文件输入
                 fileInput.value = '';
                 croppedFile = null;
                 previewContainer.classList.remove('show');
                 closeCropModal();
               });
 
-              // 关闭按钮
               closeBtn.addEventListener('click', function() {
                 fileInput.value = '';
                 croppedFile = null;
@@ -438,7 +391,6 @@ circleCreate.get("/", async (c) => {
                 closeCropModal();
               });
 
-              // 点击遮罩关闭
               cropModal.addEventListener('click', function(e) {
                 if (e.target === this) {
                   fileInput.value = '';
@@ -448,19 +400,14 @@ circleCreate.get("/", async (c) => {
                 }
               });
 
-              // 重新裁剪
               recropBtn.addEventListener('click', function() {
                 if (!croppedFile) return;
-                // 用裁剪后的文件重新打开裁剪
                 openCropModal(croppedFile);
-                // 清除预览
                 previewContainer.classList.remove('show');
-                // 清空 file input
                 fileInput.value = '';
                 croppedFile = null;
               });
 
-              // 键盘快捷键：ESC 关闭
               document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && cropModal.classList.contains('active')) {
                   fileInput.value = '';
@@ -470,10 +417,7 @@ circleCreate.get("/", async (c) => {
                 }
               });
 
-              // 表单提交前验证
               document.getElementById('circleForm').addEventListener('submit', function(e) {
-                // 如果有裁剪后的文件但没有替换到 file input（极端情况），阻止提交
-                // 实际上 file input 已经在确认裁剪时替换了，这里只是兜底
                 if (!fileInput.files || fileInput.files.length === 0) {
                   e.preventDefault();
                   alert('请上传并裁剪图标');
@@ -494,7 +438,7 @@ circleCreate.get("/", async (c) => {
   );
 });
 
-// ===== POST 处理（与之前相同） =====
+// ===== POST 处理 =====
 circleCreate.post("/", async (c) => {
   const token = getCookie(c, "auth_token");
   if (!token) {
