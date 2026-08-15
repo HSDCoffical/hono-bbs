@@ -50,6 +50,9 @@ circleDetail.get("/:id", async (c) => {
     LIMIT 20
   `).bind(id).all();
 
+  // 判断图标是否为 URL（通过检查是否以 http 开头）
+  const isIconUrl = circle.icon && circle.icon.startsWith('http');
+
   return c.render(
     <div>
       <div style={{
@@ -59,7 +62,23 @@ circleDetail.get("/:id", async (c) => {
         marginBottom: '1.5rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ fontSize: '3rem' }}>{circle.icon || '📁'}</span>
+          {/* 修改：如果是 URL 则显示图片，否则显示 emoji */}
+          {isIconUrl ? (
+            <img 
+              src={circle.icon} 
+              alt={circle.name} 
+              style={{ 
+                width: '64px', 
+                height: '64px', 
+                borderRadius: '12px', 
+                objectFit: 'cover',
+                border: '1px solid rgba(0,0,0,0.08)',
+                flexShrink: 0,
+              }} 
+            />
+          ) : (
+            <span style={{ fontSize: '3rem', flexShrink: 0 }}>{circle.icon || '📁'}</span>
+          )}
           <div>
             <h1 style={{ margin: 0 }}>{circle.name}</h1>
             <p style={{ margin: '0.25rem 0', color: '#666' }}>{circle.description || '暂无描述'}</p>
