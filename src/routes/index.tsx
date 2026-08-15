@@ -130,11 +130,12 @@ index.get("/posts", async (c) => {
     "SELECT COUNT(*) as count FROM moods WHERE date(created_at) = date('now')"
   ).first();
 
-  // 主容器添加滚动优化样式
   return c.render(
     <div style={{
       willChange: 'transform',
       WebkitOverflowScrolling: 'touch',
+      overflowY: 'auto',
+      contain: 'layout style paint',
     }}>
       <nav style={{
         display: 'flex',
@@ -477,7 +478,7 @@ index.get("/posts", async (c) => {
         `
       }} />
 
-      {/* ===== 搜索框（标准表单，自动提交） ===== */}
+      {/* ===== 搜索框（性能优化版） ===== */}
       <form
         action="/posts"
         method="GET"
@@ -509,6 +510,7 @@ index.get("/posts", async (c) => {
             outline: 'none',
             transition: 'all 0.2s ease',
             boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            willChange: 'transform, backdrop-filter',
           }}
           onFocus={(e) => {
             e.target.style.borderColor = 'var(--primary)';
@@ -523,11 +525,13 @@ index.get("/posts", async (c) => {
       {searchQuery && (
         <div style={{
           marginTop: '0.5rem',
+          marginBottom: '0.8rem',
           padding: '0.3rem 0.8rem',
           background: 'rgba(var(--primary-rgb, 66, 133, 244), 0.08)',
           borderRadius: '8px',
           fontSize: '0.85rem',
           color: 'var(--primary)',
+          willChange: 'transform',
         }}>
           🔍 搜索: “{searchQuery}” 
           {posts.length === 0 ? ' — 没有找到相关帖子' : ` — 找到 ${posts.length} 个结果`}
@@ -539,6 +543,7 @@ index.get("/posts", async (c) => {
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '1rem',
         marginBottom: '1.5rem',
+        willChange: 'transform',
       }}>
         <a href="/bottle" style={{
           display: 'flex',
@@ -551,6 +556,7 @@ index.get("/posts", async (c) => {
           color: '#2e7d32',
           fontSize: '0.9rem',
           fontWeight: 500,
+          willChange: 'transform',
         }}>
           <span>🍶 漂流瓶</span>
           <span style={{ fontSize: '0.85rem', opacity: 0.8 }}>{bottleCount?.count || 0} 个漂着</span>
@@ -566,6 +572,7 @@ index.get("/posts", async (c) => {
           color: '#0d47a1',
           fontSize: '0.9rem',
           fontWeight: 500,
+          willChange: 'transform',
         }}>
           <span>🫙 情绪容器</span>
           <span style={{ fontSize: '0.85rem', opacity: 0.8 }}>{moodCount?.count || 0} 人已表达</span>
@@ -599,6 +606,7 @@ index.get("/posts", async (c) => {
                       fontWeight: 500,
                       border: '1px solid rgba(66, 133, 244, 0.12)',
                       transition: 'all 0.2s',
+                      willChange: 'transform',
                     }}
                   >
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
@@ -670,7 +678,6 @@ index.get("/posts", async (c) => {
         <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>✍️ 发帖</a>
         {tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>📌 当前标签: {tagName}</span>}
         {username && !tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>👤 用户: {username}</span>}
-        {/* 已删除 searchQuery 显示 */}
       </div>
 
       {posts.length > 0 ? (
