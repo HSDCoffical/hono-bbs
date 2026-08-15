@@ -22,7 +22,7 @@ import { bottlePick } from './routes/bottle/pick'
 import { mood } from './routes/mood'
 import { capsule } from './routes/capsule'
 import { capsuleNew } from './routes/capsule/new'
-import { circles as circlesPage } from './routes/circles'
+import { circlesPage } from './routes/circles'  // ← 修改了这一行
 import { circleDetail } from './routes/circles/[id]'
 import { circleCreate } from './routes/circles/create'
 
@@ -32,7 +32,7 @@ export type Bindings = {
   DB: D1Database
   JWT_SECRET: string
   ASSETS?: { fetch: (request: Request) => Promise<Response> }
-  GITHUB_TOKEN: string  // ← 添加这一行
+  GITHUB_TOKEN: string
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
@@ -80,7 +80,7 @@ app.route('/mood', mood)
 app.route('/capsule', capsule)
 app.route('/capsule/new', capsuleNew)
 app.route('/circles/create', circleCreate)  // 先匹配 /create
-app.route('/circles', circlesPage)
-app.route('/circles', circleDetail)         // 再匹配 /:id
+app.route('/circles', circlesPage)          // 再匹配 /circles
+app.route('/circles', circleDetail)         // 最后匹配 /:id
 
 export default app
