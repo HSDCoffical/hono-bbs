@@ -473,20 +473,19 @@ index.get("/posts", async (c) => {
         `
       }} />
 
-      {/* ===== 搜索框（纯 div 结构，无 form） ===== */}
+      {/* ===== 搜索框（仅输入框，回车即搜） ===== */}
       <div style={{
         marginBottom: '1.25rem',
         width: '100%',
-        position: 'relative',
       }}>
         <input
           id="search-input"
           type="text"
-          placeholder="🔍 搜索帖子..."
+          placeholder="🔍 搜索帖子... 按回车搜索"
           defaultValue={searchQuery || ''}
           style={{
             width: '100%',
-            padding: '0.6rem 3.5rem 0.6rem 1rem',
+            padding: '0.6rem 1rem',
             borderRadius: '12px',
             border: '1px solid rgba(0,0,0,0.08)',
             background: 'rgba(255,255,255,0.6)',
@@ -497,7 +496,6 @@ index.get("/posts", async (c) => {
             outline: 'none',
             transition: 'all 0.2s ease',
             boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-            WebkitAppearance: 'none',
           }}
           onFocus={(e) => {
             e.target.style.borderColor = 'var(--primary)';
@@ -519,34 +517,6 @@ index.get("/posts", async (c) => {
             }
           }}
         />
-        <button
-          onClick={() => {
-            const input = document.getElementById('search-input') as HTMLInputElement;
-            const value = input?.value?.trim();
-            if (value) {
-              window.location.href = `/posts?search=${encodeURIComponent(value)}`;
-            } else {
-              window.location.href = `/posts`;
-            }
-          }}
-          style={{
-            position: 'absolute',
-            right: '0.4rem',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            padding: '0.25rem 0.8rem',
-            borderRadius: '8px',
-            border: 'none',
-            background: 'var(--primary)',
-            color: 'white',
-            fontSize: '0.75rem',
-            cursor: 'pointer',
-            fontWeight: 500,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          搜索
-        </button>
       </div>
       {searchQuery && (
         <div style={{
