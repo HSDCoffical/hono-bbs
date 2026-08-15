@@ -12,6 +12,8 @@ const index = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 index.get("/posts", async (c) => {
   const tagName = c.req.query("tag");
   const username = c.req.query("username");
+  // ========== 新增：获取搜索参数 ==========
+  const searchQuery = c.req.query("search");
 
   const postService = PostService.getInstance(c.env.DB);
   const userService = UserService.getInstance(c.env.DB);
@@ -24,6 +26,19 @@ index.get("/posts", async (c) => {
     posts = await postService.getPostsByAuthor(username);
   } else if (tagName) {
     posts = await postService.getPostsByTag(tagName);
+  } else if (searchQuery) {
+    // ========== 搜索功能 ==========
+    // 检查是否包含圈子搜索指令：#圈子名称 + 关键字
+    const circleMatch = searchQuery.match(/^#([^\s]+)\s+(.+)/);
+    if (circleMatch) {
+      // 圈子内搜索：查询指定圈子 + 关键字
+      const circleName = circleMatch[1];
+      const keyword = circleMatch[2];
+      posts = await postService.searchPostsInCircle(keyword, circleName);
+    } else {
+      // 普通搜索：所有帖子
+      posts = await postService.searchPosts(searchQuery);
+    }
   } else {
     posts = await postService.getAllPosts();
   }
@@ -58,6 +73,8 @@ index.get("/posts", async (c) => {
     pageTitle = `标签: ${tagName} - 凉宫社区`;
   } else if (username) {
     pageTitle = `${username} 的帖子 - 凉宫社区`;
+  } else if (searchQuery) {
+    pageTitle = `搜索: ${searchQuery} - 凉宫社区`;
   }
 
   function formatDateTime(dateStr: string): string {
@@ -191,10 +208,10 @@ index.get("/posts", async (c) => {
                     display: 'block',
                     padding: '0.4rem 0.8rem',
                     textDecoration: 'none',
-                    color: !tagName && !username ? 'var(--primary)' : '#333',
+                    color: !tagName && !username && !searchQuery ? 'var(--primary)' : '#333',
                     fontSize: '0.85rem',
-                    fontWeight: !tagName && !username ? 600 : 400,
-                    background: !tagName && !username ? 'rgba(var(--primary-rgb), 0.08)' : 'transparent',
+                    fontWeight: !tagName && !username && !searchQuery ? 600 : 400,
+                    background: !tagName && !username && !searchQuery ? 'rgba(var(--primary-rgb), 0.08)' : 'transparent',
                   }}
                 >
                   全部
@@ -446,7 +463,7 @@ index.get("/posts", async (c) => {
               menu.style.padding = '0.3rem 0';
             }
           }
-          document.querySelectorAll('.dropdown-toggle, .avatar-toggle').forEach(el => {
+document.querySelectorAll('.dropdown-toggle, .avatar-toggle').forEach(el => {
             el.addEventListener('click', toggleDropdown);
           });
           document.addEventListener('click', function(e) {
@@ -466,6 +483,89 @@ index.get("/posts", async (c) => {
         `
       }} />
 
+      {/* ============================================================
+          ===== 搜索框（在导航栏和内容之间） =====
+          ============================================================ */}
+      <div style={{
+        marginBottom: '1.25rem',
+        width: '100%',
+      }}>
+        <form action="/posts" method="GET" style={{ position: 'relative', width: '100%' }}>
+          <input
+            type="text"
+            name="search"
+            placeholder="🔍 搜索帖子... 输入 #圈子名 + 关键字 搜索圈内内容"
+            defaultValue={searchQuery || ''}
+            style={{
+              width: '100%',
+              padding: '0.6rem 1rem',
+              borderRadius: '12px',
+              border: '1px solid rgba(0,0,0,0.08)',
+              background: 'rgba(255,255,255,0.6)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              fontSize: '0.9rem',
+              color: '#333',
+              outline: 'none',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = 'var(--primary)';
+              e.target.style.boxShadow = '0 0 0 3px rgba(var(--primary-rgb, 66, 133, 244), 0.15)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = 'rgba(0,0,0,0.08)';
+              e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              position: 'absolute',
+              right: '0.5rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              padding: '0.3rem 1rem',
+              borderRadius: '8px',
+              border: 'none',
+              background: 'var(--primary)',
+              color: 'white',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
+          >
+            搜索
+          </button>
+        </form>
+        {/* 搜索提示 */}
+        <div style={{
+          marginTop: '0.3rem',
+          fontSize: '0.7rem',
+          color: '#999',
+          display: 'flex',
+          gap: '1rem',
+          flexWrap: 'wrap',
+        }}>
+          <span>💡 普通搜索：输入关键字搜索全部帖子</span>
+          <span>🎯 圈内搜索：输入 <code style={{ background: '#f0f0f0', padding: '0.05rem 0.4rem', borderRadius: '4px' }}>#圈子名 + 关键字</code></span>
+        </div>
+        {searchQuery && (
+          <div style={{
+            marginTop: '0.5rem',
+            padding: '0.3rem 0.8rem',
+            background: 'rgba(var(--primary-rgb, 66, 133, 244), 0.08)',
+            borderRadius: '8px',
+            fontSize: '0.85rem',
+            color: 'var(--primary)',
+          }}>
+            🔍 搜索: “{searchQuery}” 
+            {posts.length === 0 ? ' — 没有找到相关帖子' : ` — 找到 ${posts.length} 个结果`}
+            <a href="/posts" style={{ marginLeft: '0.8rem', fontSize: '0.75rem', color: '#999', textDecoration: 'none' }}>清除搜索</a>
+          </div>
+        )}
+      </div>
       {/* ===== 漂流瓶 & 情绪容器快捷入口（响应式） ===== */}
       <div style={{
         display: 'grid',
@@ -604,7 +704,9 @@ index.get("/posts", async (c) => {
         <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>✍️ 发帖</a>
         {tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>📌 当前标签: {tagName}</span>}
         {username && !tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>👤 用户: {username}</span>}
+        {searchQuery && !tagName && !username && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>🔍 搜索: {searchQuery}</span>}
       </div>
+
       {/* ===== 帖子列表（响应式网格 + 用户头像） ===== */}
       {posts.length > 0 ? (
         <ul style={{
@@ -727,7 +829,7 @@ index.get("/posts", async (c) => {
         </ul>
       ) : (
         <p style={{ textAlign: 'center', color: '#999', padding: '3rem 0' }}>
-          {tagName ? `该标签下暂无帖子` : username ? `该用户暂无帖子` : `还没有帖子，来发布第一个吧`}
+          {tagName ? `该标签下暂无帖子` : username ? `该用户暂无帖子` : searchQuery ? `没有找到与“${searchQuery}”相关的内容` : `还没有帖子，来发布第一个吧`}
         </p>
       )}
     </div>,
