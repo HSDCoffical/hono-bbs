@@ -36,7 +36,6 @@ index.get("/posts", async (c) => {
         posts = await postService.searchPosts(searchQuery);
       }
     } catch (e) {
-      console.error("搜索失败:", e);
       posts = [];
     }
   } else {
@@ -474,7 +473,7 @@ index.get("/posts", async (c) => {
         `
       }} />
 
-      {/* ===== 搜索框（使用 form + onSubmit，手机兼容） ===== */}
+      {/* ===== 搜索框 ===== */}
       <div style={{
         marginBottom: '1.25rem',
         width: '100%',
@@ -556,23 +555,6 @@ index.get("/posts", async (c) => {
             <a href="/posts" style={{ marginLeft: '0.8rem', fontSize: '0.75rem', color: '#999', textDecoration: 'none' }}>清除搜索</a>
           </div>
         )}
-        {/* ===== 手机调试信息 ===== */}
-        <div style={{
-          marginTop: '0.3rem',
-          padding: '0.2rem 0.8rem',
-          background: searchQuery ? '#d4edda' : '#f8f9fa',
-          borderRadius: '6px',
-          fontSize: '0.7rem',
-          color: searchQuery ? '#155724' : '#6c757d',
-          border: searchQuery ? '1px solid #c3e6cb' : '1px solid #e9ecef',
-          wordBreak: 'break-all',
-        }}>
-          {searchQuery ? (
-            `✅ 搜索已执行: “${searchQuery}” → 找到 ${posts.length} 条结果`
-          ) : (
-            '💡 输入关键词，按回车或点“搜索”按钮'
-          )}
-        </div>
       </div>
       {/* ===== 漂流瓶 & 情绪容器快捷入口 ===== */}
       <div style={{
