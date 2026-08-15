@@ -225,7 +225,6 @@ circleCreate.get("/", async (c) => {
           </div>
         </main>
 
-        {/* ===== 裁剪模态框 ===== */}
         <div id="cropModal" class="modal-overlay">
           <div class="modal-content">
             <div class="modal-header">
@@ -438,7 +437,7 @@ circleCreate.get("/", async (c) => {
   );
 });
 
-// ===== POST 处理 =====
+// ===== POST 处理（增加超时控制） =====
 circleCreate.post("/", async (c) => {
   const token = getCookie(c, "auth_token");
   if (!token) {
@@ -452,6 +451,8 @@ circleCreate.post("/", async (c) => {
   const name = formData.get('name') as string;
   const description = formData.get('description') as string;
   const iconFile = formData.get('icon') as File | null;
+
+  console.log('📤 [创建圈子] 开始处理:', { name, slug: name?.toLowerCase().replace(/\s+/g, '-') });
 
   // 验证：名称
   if (!name || name.length < 2) {
@@ -493,6 +494,8 @@ circleCreate.post("/", async (c) => {
   try {
     // ===== 1. 上传图标到 GitHub =====
     const GITHUB_TOKEN = c.env.GITHUB_TOKEN;
+    console.log('🔑 [创建圈子] GitHub Token:', GITHUB_TOKEN ? '已配置' : '未配置');
+
     if (!GITHUB_TOKEN) {
       return c.html('<p style="color:red;">服务器未配置 GitHub Token，请联系管理员</p><a href="/circles/create">返回</a>');
     }
@@ -500,6 +503,7 @@ circleCreate.post("/", async (c) => {
     const repo = 'HSDCoffical/workshop';
     const uploadDir = 'workshop';
 
+    console.log('📦 [创建圈子] 读取文件...');
     const arrayBuffer = await iconFile.arrayBuffer();
     const bytes = new Uint8Array(arrayBuffer);
     let binary = '';
@@ -514,18 +518,41 @@ circleCreate.post("/", async (c) => {
     const path = uploadDir ? `${uploadDir}/${filename}` : filename;
 
     const githubUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
-    const uploadResp = await fetch(githubUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'Hono-BBS-App/1.0'
-      },
-      body: JSON.stringify({
-        message: `上传圈子图标: ${iconFile.name}`,
-        content: base64,
-      }),
-    });
+    console.log('📤 [创建圈子] 上传到 GitHub:', githubUrl);
+
+    // 超时控制（30秒）
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      console.log('⏰ [创建圈子] 上传超时');
+      controller.abort();
+    }, 30000);
+
+    let uploadResp;
+    try {
+      uploadResp = await fetch(githubUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'Hono-BBS-App/1.0'
+        },
+        body: JSON.stringify({
+          message: `上传圈子图标: ${iconFile.name}`,
+          content: base64,
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+    } catch (fetchError: any) {
+      clearTimeout(timeout);
+      console.error('❌ [创建圈子] 上传请求失败:', fetchError.message);
+      if (fetchError.name === 'AbortError') {
+        return c.html('<p style="color:red;">上传超时（30秒），请检查网络后重试</p><a href="/circles/create">返回</a>');
+      }
+      throw fetchError;
+    }
+
+    console.log('📥 [创建圈子] GitHub 响应状态:', uploadResp.status);
 
     if (!uploadResp.ok) {
       let detail = await uploadResp.text();
@@ -533,12 +560,15 @@ circleCreate.post("/", async (c) => {
         const json = JSON.parse(detail);
         detail = json.message || json.errors || detail;
       } catch (_) {}
+      console.error('❌ [创建圈子] GitHub 上传失败:', uploadResp.status, detail);
       return c.html(`<p style="color:red;">图标上传失败: ${uploadResp.status} - ${detail}</p><a href="/circles/create">返回</a>`);
     }
 
     const iconUrl = `https://raw.githubusercontent.com/${repo}/main/${path}`;
+    console.log('✅ [创建圈子] 图标上传成功:', iconUrl);
 
     // ===== 2. 创建圈子 =====
+    console.log('💾 [创建圈子] 写入数据库...');
     await db.prepare(`
       INSERT INTO circles (name, slug, description, icon, creator_id)
       VALUES (?, ?, ?, ?, ?)
@@ -547,6 +577,7 @@ circleCreate.post("/", async (c) => {
     const circle = await db.prepare('SELECT id FROM circles WHERE slug = ?').bind(slug).first();
 
     if (!circle || !circle.id) {
+      console.error('❌ [创建圈子] 未找到新创建的圈子');
       return c.html('<p style="color:red;">创建失败，未找到新创建的圈子</p><a href="/circles/create">返回</a>');
     }
 
@@ -557,10 +588,11 @@ circleCreate.post("/", async (c) => {
       VALUES (?, ?, 'admin')
     `).bind(circleId, payload.id).run();
 
+    console.log('✅ [创建圈子] 成功! ID:', circleId);
     return c.redirect(`/circles/${circleId}`);
 
   } catch (error: any) {
-    console.error('创建圈子错误:', error);
+    console.error('❌ [创建圈子] 错误:', error.message);
     return c.html(`<p style="color:red;">创建失败：${error.message || '未知错误'}</p><a href="/circles/create">返回</a>`);
   }
 });
