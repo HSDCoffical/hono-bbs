@@ -130,8 +130,12 @@ index.get("/posts", async (c) => {
     "SELECT COUNT(*) as count FROM moods WHERE date(created_at) = date('now')"
   ).first();
 
+  // 主容器添加滚动优化样式
   return c.render(
-    <div>
+    <div style={{
+      willChange: 'transform',
+      WebkitOverflowScrolling: 'touch',
+    }}>
       <nav style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -479,13 +483,11 @@ index.get("/posts", async (c) => {
         method="GET"
         style={{ marginBottom: '1.25rem', width: '100%' }}
         onSubmit={(e) => {
-          // 防止空提交
           const input = document.getElementById('search-input') as HTMLInputElement;
           if (input && !input.value.trim()) {
             e.preventDefault();
             window.location.href = '/posts';
           }
-          // 否则正常提交
         }}
       >
         <input
@@ -529,7 +531,6 @@ index.get("/posts", async (c) => {
         }}>
           🔍 搜索: “{searchQuery}” 
           {posts.length === 0 ? ' — 没有找到相关帖子' : ` — 找到 ${posts.length} 个结果`}
-          <a href="/posts" style={{ marginLeft: '0.8rem', fontSize: '0.75rem', color: '#999', textDecoration: 'none' }}>清除搜索</a>
         </div>
       )}
       {/* ===== 漂流瓶 & 情绪容器快捷入口 ===== */}
@@ -664,11 +665,12 @@ index.get("/posts", async (c) => {
         )
       )}
 
+      {/* ===== 发帖按钮 ===== */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginBottom: '1rem' }}>
         <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>✍️ 发帖</a>
         {tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>📌 当前标签: {tagName}</span>}
         {username && !tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>👤 用户: {username}</span>}
-        {searchQuery && !tagName && !username && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>🔍 搜索: {searchQuery}</span>}
+        {/* 已删除 searchQuery 显示 */}
       </div>
 
       {posts.length > 0 ? (
@@ -678,6 +680,7 @@ index.get("/posts", async (c) => {
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
           gap: '1rem',
+          willChange: 'transform',
         }}>
           {posts.map((post) => {
             const postAuthor = authors.find(a => a.username === post.author);
@@ -687,7 +690,9 @@ index.get("/posts", async (c) => {
                 borderRadius: '12px',
                 overflow: 'hidden',
                 background: 'white',
-                transition: 'box-shadow 0.2s'
+                transition: 'box-shadow 0.2s',
+                transform: 'translateZ(0)',
+                willChange: 'transform',
               }}>
                 <a href={`/posts/${post.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
                   <div style={{ background: '#f5f5f5', overflow: 'hidden', position: 'relative' }}>
