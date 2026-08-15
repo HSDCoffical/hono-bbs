@@ -126,12 +126,12 @@ index.get("/posts", async (c) => {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '0.5rem',      // 原来 1rem，减少底部间距
+        marginBottom: '0.15rem',      // 原来 1rem，减少底部间距
         flexWrap: 'wrap',
         gap: '0.5rem',
         position: 'relative',
-        paddingTop: '0.3rem',        // 减少顶部空白
-        paddingBottom: '0.3rem',     // 减少底部空白
+        paddingTop: '0.1rem',        // 减少顶部空白
+        paddingBottom: '0.1rem',     // 减少底部空白
       }}>
         {/* ===== Logo 区域：图片 + 文字，靠左，减少间距 ===== */}
         <div style={{
