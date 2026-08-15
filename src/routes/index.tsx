@@ -106,7 +106,6 @@ index.get("/posts", async (c) => {
       LIMIT 6
     `).bind(currentUser.id).all();
     userCircles = result.results || [];
-    console.log('🔍 [首页] 用户圈子数量:', userCircles.length);
   }
 
   // ========== 获取漂流瓶数量 ==========
@@ -134,6 +133,7 @@ index.get("/posts", async (c) => {
         <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
 
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* 首页下拉 */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
               className="outline dropdown-toggle"
@@ -220,6 +220,7 @@ index.get("/posts", async (c) => {
             </div>
           </div>
 
+          {/* 圈子下拉 */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
               className="outline dropdown-toggle"
@@ -280,6 +281,7 @@ index.get("/posts", async (c) => {
             </div>
           </div>
 
+          {/* 情绪下拉 */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
               className="outline dropdown-toggle"
@@ -503,35 +505,59 @@ index.get("/posts", async (c) => {
               <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>📁 我加入的圈子</span>
               <a href="/circles" style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>发现更多 →</a>
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {userCircles.map((circle: any) => {
-                const isIconUrl = circle.icon && circle.icon.startsWith('http');
-                return (
-                  <a key={circle.id} href={`/circles/${circle.id}`} style={{
+            {/* ===== 改成类似漂流瓶的卡片样式（蓝色系） ===== */}
+            {userCircles.map((circle: any) => {
+              const isIconUrl = circle.icon && circle.icon.startsWith('http');
+              return (
+                <a 
+                  key={circle.id} 
+                  href={`/circles/${circle.id}`} 
+                  style={{
                     display: 'flex',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    gap: '0.3rem',
-                    padding: '0.3rem 0.8rem 0.3rem 0.5rem',
-                    background: '#f0f0f0',
-                    borderRadius: '20px',
+                    padding: '0.6rem 1rem',
+                    marginBottom: '0.5rem',
+                    background: 'linear-gradient(135deg, #f0f4ff, #dce8ff)',
+                    borderRadius: '12px',
                     textDecoration: 'none',
-                    fontSize: '0.8rem',
-                    color: '#333'
-                  }}>
+                    color: '#1a3a6b',
+                    fontSize: '0.9rem',
+                    fontWeight: 500,
+                    border: '1px solid rgba(66, 133, 244, 0.15)',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(66, 133, 244, 0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {isIconUrl ? (
                       <img 
                         src={circle.icon} 
                         alt={circle.name} 
-                        style={{ width: '1.2rem', height: '1.2rem', borderRadius: '4px', objectFit: 'cover' }} 
+                        style={{ 
+                          width: '1.8rem', 
+                          height: '1.8rem', 
+                          borderRadius: '6px', 
+                          objectFit: 'cover',
+                          flexShrink: 0,
+                        }} 
                       />
                     ) : (
-                      <span>{circle.icon || '📁'}</span>
+                      <span style={{ fontSize: '1.5rem' }}>{circle.icon || '📁'}</span>
                     )}
-                    {circle.name} ({circle.member_count}人)
-                  </a>
-                );
-              })}
-            </div>
+                    {circle.name}
+                  </span>
+                  <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>{circle.member_count} 人</span>
+                </a>
+              );
+            })}
           </div>
         ) : (
           <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f8f9fa', borderRadius: '12px', textAlign: 'center' }}>
@@ -579,7 +605,7 @@ index.get("/posts", async (c) => {
         )
       )}
 
-      {/* ===== 发帖按钮（独立一行，标签导航已删除，全部集成到首页下拉菜单） ===== */}
+      {/* ===== 发帖按钮 ===== */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginBottom: '1rem' }}>
         <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>✍️ 发帖</a>
         {tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>📌 当前标签: {tagName}</span>}
