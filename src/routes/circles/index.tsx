@@ -3,9 +3,9 @@ import { getCookie } from "hono/cookie";
 import { verify } from "hono/jwt";
 import type { Bindings, Variables } from "../../types";
 
-const circles = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+const circlesPage = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-circles.get("/", async (c) => {
+circlesPage.get("/", async (c) => {
   const db = c.env.DB;
   const token = getCookie(c, "auth_token");
   let user = null;
@@ -52,44 +52,80 @@ circles.get("/", async (c) => {
         <h3>🔥 热门圈子</h3>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem' }}>
-        {hotCircles.results.map((circle: any) => (
-          <a href={`/circles/${circle.id}`} key={circle.id} style={{
-            textAlign: 'center',
-            padding: '1.25rem 0.75rem',
-            borderRadius: '12px',
-            transition: 'all 0.2s',
-            border: '1px solid #e8e8e8',
-            background: 'white',
-            textDecoration: 'none',
-            color: 'inherit'
-          }}>
-            <div style={{ fontSize: '2.5rem' }}>{circle.icon || '📁'}</div>
-            <div style={{ fontWeight: 600, margin: '0.5rem 0 0.25rem' }}>{circle.name}</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--muted-color)' }}>{circle.member_count} 人</div>
-          </a>
-        ))}
+        {hotCircles.results.map((circle: any) => {
+          const isIconUrl = circle.icon && circle.icon.startsWith('http');
+          return (
+            <a href={`/circles/${circle.id}`} key={circle.id} style={{
+              textAlign: 'center',
+              padding: '1.25rem 0.75rem',
+              borderRadius: '12px',
+              transition: 'all 0.2s',
+              border: '1px solid #e8e8e8',
+              background: 'white',
+              textDecoration: 'none',
+              color: 'inherit'
+            }}>
+              {isIconUrl ? (
+                <img 
+                  src={circle.icon} 
+                  alt={circle.name} 
+                  style={{ 
+                    width: '2.5rem', 
+                    height: '2.5rem', 
+                    borderRadius: '8px', 
+                    objectFit: 'cover',
+                    display: 'block',
+                    margin: '0 auto'
+                  }} 
+                />
+              ) : (
+                <div style={{ fontSize: '2.5rem' }}>{circle.icon || '📁'}</div>
+              )}
+              <div style={{ fontWeight: 600, margin: '0.5rem 0 0.25rem' }}>{circle.name}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--muted-color)' }}>{circle.member_count} 人</div>
+            </a>
+          );
+        })}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '1.5rem 0 0.75rem' }}>
         <h3>🆕 最新圈子</h3>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem' }}>
-        {newCircles.results.map((circle: any) => (
-          <a href={`/circles/${circle.id}`} key={circle.id} style={{
-            textAlign: 'center',
-            padding: '1.25rem 0.75rem',
-            borderRadius: '12px',
-            transition: 'all 0.2s',
-            border: '1px solid #e8e8e8',
-            background: 'white',
-            textDecoration: 'none',
-            color: 'inherit'
-          }}>
-            <div style={{ fontSize: '2.5rem' }}>{circle.icon || '📁'}</div>
-            <div style={{ fontWeight: 600, margin: '0.5rem 0 0.25rem' }}>{circle.name}</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--muted-color)' }}>{circle.member_count} 人</div>
-          </a>
-        ))}
+        {newCircles.results.map((circle: any) => {
+          const isIconUrl = circle.icon && circle.icon.startsWith('http');
+          return (
+            <a href={`/circles/${circle.id}`} key={circle.id} style={{
+              textAlign: 'center',
+              padding: '1.25rem 0.75rem',
+              borderRadius: '12px',
+              transition: 'all 0.2s',
+              border: '1px solid #e8e8e8',
+              background: 'white',
+              textDecoration: 'none',
+              color: 'inherit'
+            }}>
+              {isIconUrl ? (
+                <img 
+                  src={circle.icon} 
+                  alt={circle.name} 
+                  style={{ 
+                    width: '2.5rem', 
+                    height: '2.5rem', 
+                    borderRadius: '8px', 
+                    objectFit: 'cover',
+                    display: 'block',
+                    margin: '0 auto'
+                  }} 
+                />
+              ) : (
+                <div style={{ fontSize: '2.5rem' }}>{circle.icon || '📁'}</div>
+              )}
+              <div style={{ fontWeight: 600, margin: '0.5rem 0 0.25rem' }}>{circle.name}</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--muted-color)' }}>{circle.member_count} 人</div>
+            </a>
+          );
+        })}
       </div>
     </div>,
     {
@@ -99,4 +135,4 @@ circles.get("/", async (c) => {
   );
 });
 
-export { circles };
+export { circlesPage };
