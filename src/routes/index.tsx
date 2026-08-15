@@ -12,7 +12,6 @@ const index = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 index.get("/posts", async (c) => {
   const tagName = c.req.query("tag");
   const username = c.req.query("username");
-  // ========== 获取搜索参数 ==========
   const searchQuery = c.req.query("search");
 
   const postService = PostService.getInstance(c.env.DB);
@@ -28,7 +27,6 @@ index.get("/posts", async (c) => {
     posts = await postService.getPostsByTag(tagName);
   } else if (searchQuery) {
     try {
-      // ========== 搜索功能 ==========
       const circleMatch = searchQuery.match(/^#([^\s]+)\s+(.+)/);
       if (circleMatch) {
         const circleName = circleMatch[1];
@@ -103,7 +101,6 @@ index.get("/posts", async (c) => {
     return '晚上好';
   }
 
-  // ========== 获取圈子列表 ==========
   const circles = await c.env.DB.prepare(`
     SELECT c.*, 
       (SELECT COUNT(*) FROM circle_members WHERE circle_id = c.id) as member_count
@@ -112,7 +109,6 @@ index.get("/posts", async (c) => {
     LIMIT 6
   `).all();
 
-  // ========== 获取用户加入的圈子（包括自己创建的） ==========
   let userCircles: any[] = [];
   if (currentUser) {
     const result = await c.env.DB.prepare(`
@@ -127,19 +123,16 @@ index.get("/posts", async (c) => {
     userCircles = result.results || [];
   }
 
-  // ========== 获取漂流瓶数量 ==========
   const bottleCount = await c.env.DB.prepare(
     "SELECT COUNT(*) as count FROM bottles WHERE status = 'drifting'"
   ).first();
 
-  // ========== 获取今日情绪表达数量 ==========
   const moodCount = await c.env.DB.prepare(
     "SELECT COUNT(*) as count FROM moods WHERE date(created_at) = date('now')"
   ).first();
 
   return c.render(
     <div>
-      {/* ===== 顶部导航 ===== */}
       <nav style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -152,7 +145,6 @@ index.get("/posts", async (c) => {
         <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
 
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* 首页下拉 */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
               className="outline dropdown-toggle"
@@ -239,7 +231,6 @@ index.get("/posts", async (c) => {
             </div>
           </div>
 
-          {/* 圈子下拉 */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
               className="outline dropdown-toggle"
@@ -312,7 +303,6 @@ index.get("/posts", async (c) => {
             </div>
           </div>
 
-          {/* 情绪下拉 */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
               className="outline dropdown-toggle"
@@ -439,7 +429,6 @@ index.get("/posts", async (c) => {
         </div>
       </nav>
 
-      {/* ===== 下拉菜单控制脚本 ===== */}
       <script dangerouslySetInnerHTML={{
         __html: `
           function toggleDropdown(e) {
@@ -485,78 +474,49 @@ index.get("/posts", async (c) => {
         `
       }} />
 
-      {/* ============================================================
-          ===== 搜索框（纯 JS 控制，点击不刷新） =====
-          ============================================================ */}
+      {/* ===== 搜索框 ===== */}
       <div style={{
         marginBottom: '1.25rem',
         width: '100%',
       }}>
-        <div style={{ position: 'relative', width: '100%' }}>
-          <input
-            id="search-input"
-            type="text"
-            placeholder="🔍 搜索帖子..."
-            defaultValue={searchQuery || ''}
-            style={{
-              width: '100%',
-              padding: '0.6rem 1rem',
-              borderRadius: '12px',
-              border: '1px solid rgba(0,0,0,0.08)',
-              background: 'rgba(255,255,255,0.6)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              fontSize: '0.9rem',
-              color: '#333',
-              outline: 'none',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = 'var(--primary)';
-              e.target.style.boxShadow = '0 0 0 3px rgba(var(--primary-rgb, 66, 133, 244), 0.15)';
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = 'rgba(0,0,0,0.08)';
-              e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                const value = e.currentTarget.value.trim();
-                if (value) {
-                  window.location.href = `/posts?search=${encodeURIComponent(value)}`;
-                }
-              }
-            }}
-          />
-          <button
-            id="search-btn"
-            style={{
-              position: 'absolute',
-              right: '0.5rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              padding: '0.3rem 1rem',
-              borderRadius: '8px',
-              border: 'none',
-              background: 'var(--primary)',
-              color: 'white',
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              fontWeight: 500,
-            }}
-            onClick={() => {
+        <input
+          id="search-input"
+          type="text"
+          placeholder="🔍 搜索帖子... 按回车搜索"
+          defaultValue={searchQuery || ''}
+          style={{
+            width: '100%',
+            padding: '0.6rem 1rem',
+            borderRadius: '12px',
+            border: '1px solid rgba(0,0,0,0.08)',
+            background: 'rgba(255,255,255,0.6)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            fontSize: '0.9rem',
+            color: '#333',
+            outline: 'none',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = 'var(--primary)';
+            e.target.style.boxShadow = '0 0 0 3px rgba(var(--primary-rgb, 66, 133, 244), 0.15)';
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = 'rgba(0,0,0,0.08)';
+            e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
               const input = document.getElementById('search-input') as HTMLInputElement;
               const value = input?.value?.trim();
               if (value) {
                 window.location.href = `/posts?search=${encodeURIComponent(value)}`;
               }
-            }}
-          >
-            搜索
-          </button>
-        </div>
+            }
+          }}
+        />
         {searchQuery && (
           <div style={{
             marginTop: '0.5rem',
@@ -572,7 +532,7 @@ index.get("/posts", async (c) => {
           </div>
         )}
       </div>
-{/* ===== 漂流瓶 & 情绪容器快捷入口（响应式） ===== */}
+      {/* ===== 漂流瓶 & 情绪容器快捷入口 ===== */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -611,7 +571,6 @@ index.get("/posts", async (c) => {
         </a>
       </div>
 
-      {/* ===== 我加入的圈子（已登录）/ 热门圈子（未登录） ===== */}
       {currentUser ? (
         userCircles.length > 0 ? (
           <div style={{ marginBottom: '1.5rem' }}>
@@ -705,7 +664,6 @@ index.get("/posts", async (c) => {
         )
       )}
 
-      {/* ===== 发帖按钮 ===== */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginBottom: '1rem' }}>
         <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>✍️ 发帖</a>
         {tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>📌 当前标签: {tagName}</span>}
@@ -713,7 +671,6 @@ index.get("/posts", async (c) => {
         {searchQuery && !tagName && !username && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>🔍 搜索: {searchQuery}</span>}
       </div>
 
-      {/* ===== 帖子列表（响应式网格 + 用户头像） ===== */}
       {posts.length > 0 ? (
         <ul style={{
           listStyle: 'none',
@@ -814,19 +771,6 @@ index.get("/posts", async (c) => {
                       </span>
                       <span>{formatDateTime(post.created_at)}</span>
                     </div>
-                    {/* ===== 标签已隐藏 ===== */}
-                    {/* {post.tag && (
-                      <span style={{
-                        display: 'inline-block',
-                        fontSize: '0.6rem',
-                        background: '#f0f0f0',
-                        padding: '0.05rem 0.4rem',
-                        borderRadius: '4px',
-                        marginTop: '0.15rem'
-                      }}>
-                        #{post.tag}
-                      </span>
-                    )} */}
                   </div>
                 </a>
               </li>
