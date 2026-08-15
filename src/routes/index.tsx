@@ -96,11 +96,9 @@ index.get("/posts", async (c) => {
           <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          {/* 只保留首页和圈子 */}
           <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>首页</a>
           <a href="/circles" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>圈子</a>
-          <a href="/bottle" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>漂流瓶</a>
-          <a href="/mood" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>情绪</a>
-          <a href="/capsule" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>时光信</a>
           {currentUser ? (
             <>
               <a href={`/profile/${currentUser.username}`} role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>{currentUser.username}</a>
@@ -115,14 +113,13 @@ index.get("/posts", async (c) => {
         </div>
       </nav>
 
-      {/* ===== 新奇点快捷入口（只保留漂流瓶和情绪容器） ===== */}
+      {/* ===== 新奇点快捷入口 ===== */}
       <div style={{
         display: 'flex',
         gap: '1rem',
         marginBottom: '1.5rem',
         flexWrap: 'wrap',
       }}>
-        {/* 漂流瓶 */}
         <a href="/bottle" style={{
           flex: '1 1 200px',
           display: 'flex',
@@ -140,7 +137,6 @@ index.get("/posts", async (c) => {
           <span>🍶 漂流瓶</span>
           <span style={{ fontSize: '0.85rem', opacity: 0.8 }}>{bottleCount?.count || 0} 个漂着</span>
         </a>
-        {/* 情绪容器 */}
         <a href="/mood" style={{
           flex: '1 1 200px',
           display: 'flex',
@@ -184,8 +180,8 @@ index.get("/posts", async (c) => {
         </div>
       )}
 
-      {/* 标签导航 */}
-      <header class="mb-4">
+      {/* ===== 标签导航 + 发帖按钮 ===== */}
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
         <div class="flex items-center text-sm flex-wrap gap-1">
           <a
             href="/posts"
@@ -207,12 +203,14 @@ index.get("/posts", async (c) => {
             </a>
           ))}
         </div>
+        {/* ===== 发帖按钮 ===== */}
+        <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>✍️ 发帖</a>
       </header>
 
       {tagName && <h6 class="mb-2">标签: {tagName}</h6>}
       {username && <h6 class="mb-2">用户: {username} 的帖子</h6>}
 
-      {/* 帖子列表 */}
+      {/* ===== 帖子列表 ===== */}
       {posts.length > 0 ? (
         <ul class="grid grid-cols-2 gap-4 pl-0">
           {posts.map((post) => {
