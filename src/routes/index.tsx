@@ -12,7 +12,7 @@ const index = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 index.get("/posts", async (c) => {
   const tagName = c.req.query("tag");
   const username = c.req.query("username");
-  // ========== 新增：获取搜索参数 ==========
+  // ========== 获取搜索参数 ==========
   const searchQuery = c.req.query("search");
 
   const postService = PostService.getInstance(c.env.DB);
@@ -27,17 +27,19 @@ index.get("/posts", async (c) => {
   } else if (tagName) {
     posts = await postService.getPostsByTag(tagName);
   } else if (searchQuery) {
-    // ========== 搜索功能 ==========
-    // 检查是否包含圈子搜索指令：#圈子名称 + 关键字
-    const circleMatch = searchQuery.match(/^#([^\s]+)\s+(.+)/);
-    if (circleMatch) {
-      // 圈子内搜索：查询指定圈子 + 关键字
-      const circleName = circleMatch[1];
-      const keyword = circleMatch[2];
-      posts = await postService.searchPostsInCircle(keyword, circleName);
-    } else {
-      // 普通搜索：所有帖子
-      posts = await postService.searchPosts(searchQuery);
+    try {
+      // ========== 搜索功能 ==========
+      const circleMatch = searchQuery.match(/^#([^\s]+)\s+(.+)/);
+      if (circleMatch) {
+        const circleName = circleMatch[1];
+        const keyword = circleMatch[2];
+        posts = await postService.searchPostsInCircle(keyword, circleName);
+      } else {
+        posts = await postService.searchPosts(searchQuery);
+      }
+    } catch (e) {
+      console.error("搜索失败:", e);
+      posts = [];
     }
   } else {
     posts = await postService.getAllPosts();
@@ -463,7 +465,7 @@ index.get("/posts", async (c) => {
               menu.style.padding = '0.3rem 0';
             }
           }
-document.querySelectorAll('.dropdown-toggle, .avatar-toggle').forEach(el => {
+          document.querySelectorAll('.dropdown-toggle, .avatar-toggle').forEach(el => {
             el.addEventListener('click', toggleDropdown);
           });
           document.addEventListener('click', function(e) {
@@ -484,7 +486,7 @@ document.querySelectorAll('.dropdown-toggle, .avatar-toggle').forEach(el => {
       }} />
 
       {/* ============================================================
-          ===== 搜索框（在导航栏和内容之间） =====
+          ===== 搜索框（简洁版，无提示文字） =====
           ============================================================ */}
       <div style={{
         marginBottom: '1.25rem',
@@ -494,7 +496,7 @@ document.querySelectorAll('.dropdown-toggle, .avatar-toggle').forEach(el => {
           <input
             type="text"
             name="search"
-            placeholder="🔍 搜索帖子... 输入 #圈子名 + 关键字 搜索圈内内容"
+            placeholder="🔍 搜索帖子..."
             defaultValue={searchQuery || ''}
             style={{
               width: '100%',
@@ -539,18 +541,6 @@ document.querySelectorAll('.dropdown-toggle, .avatar-toggle').forEach(el => {
             搜索
           </button>
         </form>
-        {/* 搜索提示 */}
-        <div style={{
-          marginTop: '0.3rem',
-          fontSize: '0.7rem',
-          color: '#999',
-          display: 'flex',
-          gap: '1rem',
-          flexWrap: 'wrap',
-        }}>
-          <span>💡 普通搜索：输入关键字搜索全部帖子</span>
-          <span>🎯 圈内搜索：输入 <code style={{ background: '#f0f0f0', padding: '0.05rem 0.4rem', borderRadius: '4px' }}>#圈子名 + 关键字</code></span>
-        </div>
         {searchQuery && (
           <div style={{
             marginTop: '0.5rem',
