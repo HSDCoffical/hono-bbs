@@ -1,153 +1,142 @@
 import { jsxRenderer } from 'hono/jsx-renderer'
 import { ExtendedJWTPayload } from './types';
 
-interface HeaderProps {
-  user?: ExtendedJWTPayload | null;
-}
+// ============================================================
+// 顶部导航已完全注释，由各页面自己接管（index.tsx 已实现）
+// ============================================================
 
-const Header = ({ user }: HeaderProps) => {
-  const isLoggedIn = !!user;
+// interface HeaderProps {
+//   user?: ExtendedJWTPayload | null;
+// }
 
-  return (
-    <header style={{
-      position: 'relative',
-      overflow: 'hidden',
-      backgroundImage: 'url(/static/01.jpg)',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      width: '100%',
-      padding: '0.5rem 1rem',
-      boxSizing: 'border-box',
-    }}>
-      <nav style={{ 
-        position: 'relative',
-        zIndex: 1,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'nowrap',              // 强制一行
-        gap: '0.4rem',
-        overflowX: 'auto',               // 手机版可左右滑动
-        WebkitOverflowScrolling: 'touch',
-        paddingBottom: '0.2rem',         // 给滚动条留点空间
-      }}>
-        {/* Logo */}
-        <a href="/" style={{ 
-          fontWeight: 'bold', 
-          fontSize: '1rem', 
-          textDecoration: 'none', 
-          color: 'white', 
-          textShadow: '0 0 8px rgba(0,0,0,0.7)',
-          whiteSpace: 'nowrap',
-          flexShrink: 0,
-          padding: '0.2rem 0.4rem',
-        }}>☁️ 凉宫社区</a>
+// const Header = ({ user }: HeaderProps) => {
+//   const isLoggedIn = !!user;
+//   return (
+//     <header style={{
+//       position: 'relative',
+//       overflow: 'hidden',
+//       backgroundImage: 'url(/static/01.jpg)',
+//       backgroundSize: 'cover',
+//       backgroundPosition: 'center',
+//       backgroundRepeat: 'no-repeat',
+//       width: '100%',
+//       padding: '0.5rem 1rem',
+//       boxSizing: 'border-box',
+//     }}>
+//       <nav style={{ 
+//         position: 'relative',
+//         zIndex: 1,
+//         display: 'flex',
+//         justifyContent: 'space-between',
+//         alignItems: 'center',
+//         flexWrap: 'nowrap',
+//         gap: '0.4rem',
+//         overflowX: 'auto',
+//         WebkitOverflowScrolling: 'touch',
+//         paddingBottom: '0.2rem',
+//       }}>
+//         <a href="/" style={{ 
+//           fontWeight: 'bold', 
+//           fontSize: '1rem', 
+//           textDecoration: 'none', 
+//           color: 'white', 
+//           textShadow: '0 0 8px rgba(0,0,0,0.7)',
+//           whiteSpace: 'nowrap',
+//           flexShrink: 0,
+//           padding: '0.2rem 0.4rem',
+//         }}>☁️ 凉宫社区</a>
 
-        {/* 导航链接 - 带框 */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '0.3rem', 
-          alignItems: 'center',
-          flexShrink: 0,
-        }}>
-          {['首页', '圈子', '漂流瓶', '情绪', '时光信'].map((label, idx) => {
-            const href = ['/posts', '/circles', '/bottle', '/mood', '/capsule'][idx];
-            return (
-              <a key={label} href={href} style={{
-                color: 'white',
-                fontSize: '0.8rem',
-                textDecoration: 'none',
-                textShadow: '0 0 8px rgba(0,0,0,0.7)',
-                whiteSpace: 'nowrap',
-                padding: '0.2rem 0.6rem',
-                border: '1px solid rgba(255,255,255,0.35)',
-                borderRadius: '4px',
-                background: 'rgba(255,255,255,0.08)',
-                backdropFilter: 'blur(4px)',
-                WebkitBackdropFilter: 'blur(4px)',
-                transition: 'all 0.2s',
-                display: 'inline-block',
-              }}>{label}</a>
-            );
-          })}
-        </div>
+//         <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', flexShrink: 0 }}>
+//           {['首页', '圈子', '漂流瓶', '情绪', '时光信'].map((label, idx) => {
+//             const href = ['/posts', '/circles', '/bottle', '/mood', '/capsule'][idx];
+//             return (
+//               <a key={label} href={href} style={{
+//                 color: 'white',
+//                 fontSize: '0.8rem',
+//                 textDecoration: 'none',
+//                 textShadow: '0 0 8px rgba(0,0,0,0.7)',
+//                 whiteSpace: 'nowrap',
+//                 padding: '0.2rem 0.6rem',
+//                 border: '1px solid rgba(255,255,255,0.35)',
+//                 borderRadius: '4px',
+//                 background: 'rgba(255,255,255,0.08)',
+//                 backdropFilter: 'blur(4px)',
+//                 WebkitBackdropFilter: 'blur(4px)',
+//                 display: 'inline-block',
+//               }}>{label}</a>
+//             );
+//           })}
+//         </div>
 
-        {/* 用户区域 - 也带框 */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '0.3rem', 
-          alignItems: 'center',
-          flexShrink: 0,
-        }}>
-          {isLoggedIn ? (
-            <>
-              <a href={`/profile/${user.username}`} style={{
-                color: 'white',
-                fontSize: '0.8rem',
-                textDecoration: 'none',
-                textShadow: '0 0 8px rgba(0,0,0,0.7)',
-                whiteSpace: 'nowrap',
-                padding: '0.2rem 0.6rem',
-                border: '1px solid rgba(255,255,255,0.35)',
-                borderRadius: '4px',
-                background: 'rgba(255,255,255,0.08)',
-                backdropFilter: 'blur(4px)',
-                WebkitBackdropFilter: 'blur(4px)',
-                display: 'inline-block',
-              }}>{user.username}</a>
-              <a href="/user/logout" style={{
-                color: 'rgba(255,255,255,0.7)',
-                fontSize: '0.7rem',
-                textDecoration: 'none',
-                textShadow: '0 0 8px rgba(0,0,0,0.7)',
-                whiteSpace: 'nowrap',
-                padding: '0.2rem 0.5rem',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '4px',
-                background: 'rgba(255,255,255,0.05)',
-                backdropFilter: 'blur(4px)',
-                WebkitBackdropFilter: 'blur(4px)',
-                display: 'inline-block',
-              }}>退出</a>
-            </>
-          ) : (
-            <>
-              <a href="/user/reg" style={{
-                color: 'white',
-                fontSize: '0.8rem',
-                textDecoration: 'none',
-                textShadow: '0 0 8px rgba(0,0,0,0.7)',
-                whiteSpace: 'nowrap',
-                padding: '0.2rem 0.6rem',
-                border: '1px solid rgba(255,255,255,0.35)',
-                borderRadius: '4px',
-                background: 'rgba(255,255,255,0.08)',
-                backdropFilter: 'blur(4px)',
-                WebkitBackdropFilter: 'blur(4px)',
-                display: 'inline-block',
-              }}>注册</a>
-              <a href="/user/login" style={{
-                color: 'white',
-                fontSize: '0.8rem',
-                textDecoration: 'none',
-                textShadow: '0 0 8px rgba(0,0,0,0.7)',
-                whiteSpace: 'nowrap',
-                padding: '0.2rem 0.6rem',
-                border: '1px solid rgba(255,255,255,0.35)',
-                borderRadius: '4px',
-                background: 'rgba(255,255,255,0.08)',
-                backdropFilter: 'blur(4px)',
-                WebkitBackdropFilter: 'blur(4px)',
-                display: 'inline-block',
-              }}>登录</a>
-            </>
-          )}
-        </div>
-      </nav>
-    </header>
-  )
-}
+//         <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', flexShrink: 0 }}>
+//           {isLoggedIn ? (
+//             <>
+//               <a href={`/profile/${user.username}`} style={{
+//                 color: 'white',
+//                 fontSize: '0.8rem',
+//                 textDecoration: 'none',
+//                 textShadow: '0 0 8px rgba(0,0,0,0.7)',
+//                 whiteSpace: 'nowrap',
+//                 padding: '0.2rem 0.6rem',
+//                 border: '1px solid rgba(255,255,255,0.35)',
+//                 borderRadius: '4px',
+//                 background: 'rgba(255,255,255,0.08)',
+//                 backdropFilter: 'blur(4px)',
+//                 WebkitBackdropFilter: 'blur(4px)',
+//                 display: 'inline-block',
+//               }}>{user.username}</a>
+//               <a href="/user/logout" style={{
+//                 color: 'rgba(255,255,255,0.7)',
+//                 fontSize: '0.7rem',
+//                 textDecoration: 'none',
+//                 textShadow: '0 0 8px rgba(0,0,0,0.7)',
+//                 whiteSpace: 'nowrap',
+//                 padding: '0.2rem 0.5rem',
+//                 border: '1px solid rgba(255,255,255,0.2)',
+//                 borderRadius: '4px',
+//                 background: 'rgba(255,255,255,0.05)',
+//                 backdropFilter: 'blur(4px)',
+//                 WebkitBackdropFilter: 'blur(4px)',
+//                 display: 'inline-block',
+//               }}>退出</a>
+//             </>
+//           ) : (
+//             <>
+//               <a href="/user/reg" style={{
+//                 color: 'white',
+//                 fontSize: '0.8rem',
+//                 textDecoration: 'none',
+//                 textShadow: '0 0 8px rgba(0,0,0,0.7)',
+//                 whiteSpace: 'nowrap',
+//                 padding: '0.2rem 0.6rem',
+//                 border: '1px solid rgba(255,255,255,0.35)',
+//                 borderRadius: '4px',
+//                 background: 'rgba(255,255,255,0.08)',
+//                 backdropFilter: 'blur(4px)',
+//                 WebkitBackdropFilter: 'blur(4px)',
+//                 display: 'inline-block',
+//               }}>注册</a>
+//               <a href="/user/login" style={{
+//                 color: 'white',
+//                 fontSize: '0.8rem',
+//                 textDecoration: 'none',
+//                 textShadow: '0 0 8px rgba(0,0,0,0.7)',
+//                 whiteSpace: 'nowrap',
+//                 padding: '0.2rem 0.6rem',
+//                 border: '1px solid rgba(255,255,255,0.35)',
+//                 borderRadius: '4px',
+//                 background: 'rgba(255,255,255,0.08)',
+//                 backdropFilter: 'blur(4px)',
+//                 WebkitBackdropFilter: 'blur(4px)',
+//                 display: 'inline-block',
+//               }}>登录</a>
+//             </>
+//           )}
+//         </div>
+//       </nav>
+//     </header>
+//   )
+// }
 
 export const renderer = jsxRenderer(({ children, title, user }) => {
   return (
@@ -162,7 +151,9 @@ export const renderer = jsxRenderer(({ children, title, user }) => {
         <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"></script>
       </head>
       <body un-cloak>
-        <Header user={user} />
+        {/* ===== 顶部导航完全由各页面自己渲染 ===== */}
+        {/* <Header user={user} /> */}
+
         <div style={{
           backgroundImage: 'url(/static/02.jpg)',
           backgroundSize: 'cover',
