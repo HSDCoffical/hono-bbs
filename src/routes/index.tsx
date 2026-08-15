@@ -106,6 +106,7 @@ index.get("/posts", async (c) => {
       LIMIT 6
     `).bind(currentUser.id).all();
     userCircles = result.results || [];
+    console.log('🔍 [首页] 用户圈子数量:', userCircles.length);
   }
 
   // ========== 获取漂流瓶数量 ==========
@@ -578,34 +579,12 @@ index.get("/posts", async (c) => {
         )
       )}
 
-      {/* ===== 标签导航 + 发帖按钮 ===== */}
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-        <div class="flex items-center text-sm flex-wrap gap-1">
-          <a
-            href="/posts"
-            class={`py-1 px-2 color-[var(--primary-inverse)] no-underline rounded ${
-              !tagName && !username ? "bg-gray-2" : ""
-            }`}
-          >
-            全部
-          </a>
-          {allTags.map((tag) => (
-            <a
-              key={tag.id}
-              href={`/posts?tag=${tag.name}`}
-              class={`py-1 px-2 color-[var(--primary-inverse)] rounded no-underline ${
-                tagName === tag.name ? "bg-gray-2" : ""
-              }`}
-            >
-              {tag.name}({tag.post_count})
-            </a>
-          ))}
-        </div>
-        <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>✍️ 发帖</a>
-      </header>
-
-      {tagName && <h6 class="mb-2">标签: {tagName}</h6>}
-      {username && <h6 class="mb-2">用户: {username} 的帖子</h6>}
+      {/* ===== 发帖按钮（独立一行，标签导航已删除，全部集成到首页下拉菜单） ===== */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginBottom: '1rem' }}>
+        <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>✍️ 发帖</a>
+        {tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>📌 当前标签: {tagName}</span>}
+        {username && !tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>👤 用户: {username}</span>}
+      </div>
 
       {/* ===== 帖子列表 ===== */}
       {posts.length > 0 ? (
