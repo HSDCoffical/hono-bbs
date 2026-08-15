@@ -32,6 +32,7 @@ export type Bindings = {
   DB: D1Database
   JWT_SECRET: string
   ASSETS?: { fetch: (request: Request) => Promise<Response> }
+  GITHUB_TOKEN: string  // ← 添加这一行
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
