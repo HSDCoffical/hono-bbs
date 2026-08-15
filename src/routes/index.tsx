@@ -134,21 +134,19 @@ index.get("/posts", async (c) => {
             Logo 区域（图片 + 文字）
             调整下方 marginLeft 或 marginRight 可改变 Logo 位置：
             - 默认靠左：注释掉 margin 行或设为 0
-            - 居中：取消注释 marginRight: 'auto'（同时可能需配合父容器）
+            - 居中：取消注释 marginRight: '4px'（同时可能需配合父容器）
             - 靠右：取消注释 marginLeft: 'auto'
             ============================================================ */}
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          // ===== 取消下面两行注释可调整位置 =====
-          // marginRight: 'auto',   // 使 Logo 靠左（默认已经是左对齐，一般不需要）
-          // marginLeft: 'auto',    // 使 Logo 靠右（同时可能需要调整父容器布局）
-        }}>
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  marginTop: '-0.5rem',     // ← 往下移（正数向下，负数向上）
+}}>
           <img 
             src="/lg.png" 
             alt="凉宫社区" 
-            style={{ height: '2.2rem', width: 'auto' }} 
+            style={{ height: '3rem', width: 'auto' }} 
           />
           <span style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'inherit' }}>凉宫社区</span>
         </div>
