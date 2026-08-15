@@ -562,7 +562,6 @@ index.get("/posts", async (c) => {
           <a href="/posts" style={{ marginLeft: '0.8rem', fontSize: '0.75rem', color: '#999', textDecoration: 'none' }}>清除搜索</a>
         </div>
       )}
-    </div>
       {/* ===== 漂流瓶 & 情绪容器快捷入口 ===== */}
       <div style={{
         display: 'grid',
