@@ -9,7 +9,6 @@ import { ExtendedJWTPayload } from "../types";
 
 const index = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-// 统一的帖子列表路由，tag参数可选
 index.get("/posts", async (c) => {
   const tagName = c.req.query("tag");
   const username = c.req.query("username");
@@ -18,7 +17,6 @@ index.get("/posts", async (c) => {
   const userService = UserService.getInstance(c.env.DB);
   const tagService = TagService.getInstance(c.env.DB);
 
-  // 获取所有标签及其帖子数量
   const allTags = await tagService.getAllTagsWithPostCount();
 
   let posts = [];
@@ -30,18 +28,15 @@ index.get("/posts", async (c) => {
     posts = await postService.getAllPosts();
   }
 
-  // 获取所有帖子作者的用户信息
   const authorUsernames = [...new Set(posts.map((post) => post.author))];
   const authors = await userService.getUsersByUsernames(authorUsernames);
 
-  // 创建用户名到头像的映射（可选）
   const usernameToAvatar: Record<string, string> = {};
   authors.forEach((author) => {
     usernameToAvatar[author.username] =
       c.env.GRAVATAR_BASE_URL + author.email_hash + "?d=identicon";
   });
 
-  // 检查用户是否已登录
   const token = getCookie(c, "auth_token");
   let currentUser: ExtendedJWTPayload | null = null;
   if (token) {
@@ -50,14 +45,11 @@ index.get("/posts", async (c) => {
         token,
         c.env.JWT_SECRET
       )) as ExtendedJWTPayload;
-    } catch (e) {
-      // Token 无效，不做任何处理
-    }
+    } catch (e) {}
   }
 
   const isAdmin = currentUser?.role === "admin";
 
-  // 构建页面标题
   let pageTitle = "社区中心-凉宫数据";
   if (tagName) {
     pageTitle = `标签: ${tagName} - 凉宫社区`;
@@ -65,7 +57,6 @@ index.get("/posts", async (c) => {
     pageTitle = `${username} 的帖子 - 凉宫社区`;
   }
 
-  // 格式化时间（精确到秒）
   function formatDateTime(dateStr: string): string {
     const date = new Date(dateStr + "Z");
     return date.toLocaleString('zh-CN', {
@@ -92,6 +83,11 @@ index.get("/posts", async (c) => {
     "SELECT COUNT(*) as count FROM bottles WHERE status = 'drifting'"
   ).first();
 
+  // ========== 获取今日情绪表达数量 ==========
+  const moodCount = await c.env.DB.prepare(
+    "SELECT COUNT(*) as count FROM moods WHERE date(created_at) = date('now')"
+  ).first();
+
   return c.render(
     <div>
       {/* ===== 导航栏 ===== */}
@@ -100,7 +96,6 @@ index.get("/posts", async (c) => {
           <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          {/* 所有导航链接都用 outline 风格，无深色背景 */}
           <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>首页</a>
           <a href="/circles" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>圈子</a>
           <a href="/bottle" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>漂流瓶</a>
@@ -120,57 +115,48 @@ index.get("/posts", async (c) => {
         </div>
       </nav>
 
-      {/* ===== 新奇点快捷入口 ===== */}
+      {/* ===== 新奇点快捷入口（只保留漂流瓶和情绪容器） ===== */}
       <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
-        gap: '0.75rem',
-        marginBottom: '1.5rem'
+        display: 'flex',
+        gap: '1rem',
+        marginBottom: '1.5rem',
+        flexWrap: 'wrap',
       }}>
+        {/* 漂流瓶 */}
         <a href="/bottle" style={{
-          textAlign: 'center',
-          padding: '0.75rem',
+          flex: '1 1 200px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '0.6rem 1rem',
           background: 'linear-gradient(135deg, #e8f5e9, #c8e6c9)',
           borderRadius: '12px',
           textDecoration: 'none',
           color: '#2e7d32',
-          fontSize: '0.85rem'
+          fontSize: '0.9rem',
+          fontWeight: 500,
+          minWidth: '150px',
         }}>
-          🍶 漂流瓶<br />
-          <small style={{ fontSize: '0.7rem', opacity: 0.7 }}>{bottleCount?.count || 0} 个漂着</small>
+          <span>🍶 漂流瓶</span>
+          <span style={{ fontSize: '0.85rem', opacity: 0.8 }}>{bottleCount?.count || 0} 个漂着</span>
         </a>
+        {/* 情绪容器 */}
         <a href="/mood" style={{
-          textAlign: 'center',
-          padding: '0.75rem',
+          flex: '1 1 200px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '0.6rem 1rem',
           background: 'linear-gradient(135deg, #e3f2fd, #bbdefb)',
           borderRadius: '12px',
           textDecoration: 'none',
           color: '#0d47a1',
-          fontSize: '0.85rem'
+          fontSize: '0.9rem',
+          fontWeight: 500,
+          minWidth: '150px',
         }}>
-          🫙 情绪容器
-        </a>
-        <a href="/capsule" style={{
-          textAlign: 'center',
-          padding: '0.75rem',
-          background: 'linear-gradient(135deg, #f3e5f5, #e1bee7)',
-          borderRadius: '12px',
-          textDecoration: 'none',
-          color: '#4a148c',
-          fontSize: '0.85rem'
-        }}>
-          📮 时光信
-        </a>
-        <a href="/circles" style={{
-          textAlign: 'center',
-          padding: '0.75rem',
-          background: 'linear-gradient(135deg, #fff3e0, #ffe0b2)',
-          borderRadius: '12px',
-          textDecoration: 'none',
-          color: '#e65100',
-          fontSize: '0.85rem'
-        }}>
-          📁 圈子
+          <span>🫙 情绪容器</span>
+          <span style={{ fontSize: '0.85rem', opacity: 0.8 }}>{moodCount?.count || 0} 人已表达</span>
         </a>
       </div>
 
@@ -226,7 +212,7 @@ index.get("/posts", async (c) => {
       {tagName && <h6 class="mb-2">标签: {tagName}</h6>}
       {username && <h6 class="mb-2">用户: {username} 的帖子</h6>}
 
-      {/* ===== 网格缩略图列表 ===== */}
+      {/* 帖子列表 */}
       {posts.length > 0 ? (
         <ul class="grid grid-cols-2 gap-4 pl-0">
           {posts.map((post) => {
@@ -268,7 +254,6 @@ index.get("/posts", async (c) => {
                       </span>
                     )}
                   </div>
-
                   <div class="p-2 flex flex-col flex-grow">
                     <h3 class="text-sm font-semibold break-words" title={post.title}>
                       {post.title}
@@ -314,7 +299,6 @@ index.get("/posts", async (c) => {
   );
 });
 
-// 主页路由，重定向到/posts
 index.get("/", (c) => {
   return c.redirect("/posts");
 });
