@@ -99,16 +99,22 @@ index.get("/posts", async (c) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>首页</a>
-          <a href="/circles" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>圈子</a>
-          <a href="/bottle" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>漂流瓶</a>
-          <a href="/mood" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>情绪</a>
-          <a href="/capsule" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>时光信</a>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <a href="/posts" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>首页</a>
+          <a href="/circles" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>圈子</a>
+          <a href="/bottle" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>漂流瓶</a>
+          <a href="/mood" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>情绪</a>
+          <a href="/capsule" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>时光信</a>
           {currentUser ? (
-            <a href={`/user/${currentUser.id}`} role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>{currentUser.username}</a>
+            <>
+              <a href={`/profile/${currentUser.username}`} style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>{currentUser.username}</a>
+              <a href="/user/logout" style={{ color: '#999', fontSize: '0.8rem', textDecoration: 'none' }}>退出</a>
+            </>
           ) : (
-            <a href="/auth/login" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>登录</a>
+            <>
+              <a href="/user/reg" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>注册</a>
+              <a href="/user/login" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>登录</a>
+            </>
           )}
         </div>
       </nav>
