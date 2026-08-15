@@ -473,11 +473,20 @@ index.get("/posts", async (c) => {
         `
       }} />
 
-      {/* ===== 搜索框（仅输入框，回车即搜） ===== */}
-      <div style={{
-        marginBottom: '1.25rem',
-        width: '100%',
-      }}>
+      {/* ===== 搜索框（form + onSubmit，手机回车可靠） ===== */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const input = document.getElementById('search-input') as HTMLInputElement;
+          const value = input?.value?.trim();
+          if (value) {
+            window.location.href = `/posts?search=${encodeURIComponent(value)}`;
+          } else {
+            window.location.href = `/posts`;
+          }
+        }}
+        style={{ marginBottom: '1.25rem', width: '100%' }}
+      >
         <input
           id="search-input"
           type="text"
@@ -505,19 +514,8 @@ index.get("/posts", async (c) => {
             e.target.style.borderColor = 'rgba(0,0,0,0.08)';
             e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
           }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              const value = (e.target as HTMLInputElement).value.trim();
-              if (value) {
-                window.location.href = `/posts?search=${encodeURIComponent(value)}`;
-              } else {
-                window.location.href = `/posts`;
-              }
-            }
-          }}
         />
-      </div>
+      </form>
       {searchQuery && (
         <div style={{
           marginTop: '0.5rem',
