@@ -23,7 +23,7 @@ import { ExtendedJWTPayload } from './types';
 //       padding: '0.5rem 1rem',
 //       boxSizing: 'border-box',
 //     }}>
-//       <nav style={{ 
+//       <nav style={{
 //         position: 'relative',
 //         zIndex: 1,
 //         display: 'flex',
@@ -35,17 +35,17 @@ import { ExtendedJWTPayload } from './types';
 //         WebkitOverflowScrolling: 'touch',
 //         paddingBottom: '0.2rem',
 //       }}>
-//         <a href="/" style={{ 
-//           fontWeight: 'bold', 
-//           fontSize: '1rem', 
-//           textDecoration: 'none', 
-//           color: 'white', 
+//         <a href="/" style={{
+//           fontWeight: 'bold',
+//           fontSize: '1rem',
+//           textDecoration: 'none',
+//           color: 'white',
 //           textShadow: '0 0 8px rgba(0,0,0,0.7)',
 //           whiteSpace: 'nowrap',
 //           flexShrink: 0,
 //           padding: '0.2rem 0.4rem',
 //         }}>☁️ 凉宫社区</a>
-
+//
 //         <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', flexShrink: 0 }}>
 //           {['首页', '圈子', '漂流瓶', '情绪', '时光信'].map((label, idx) => {
 //             const href = ['/posts', '/circles', '/bottle', '/mood', '/capsule'][idx];
@@ -67,7 +67,7 @@ import { ExtendedJWTPayload } from './types';
 //             );
 //           })}
 //         </div>
-
+//
 //         <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', flexShrink: 0 }}>
 //           {isLoggedIn ? (
 //             <>
@@ -183,7 +183,24 @@ export const renderer = jsxRenderer(({ children, title, user }) => {
             {children}
           </div>
         </div>
+
         <script src="/static/js/client.js"></script>
+
+        {/* ===== Service Worker 注册（缓存媒体文件） ===== */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.register('/sw.js')
+                .then(function(reg) {
+                  console.log('✅ Service Worker 注册成功')
+                })
+                .catch(function(err) {
+                  console.log('⚠️ Service Worker 注册失败:', err)
+                })
+            }
+          `
+        }} />
+
       </body>
     </html>
   )
