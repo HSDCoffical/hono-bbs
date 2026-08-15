@@ -39,12 +39,22 @@ index.get("/posts", async (c) => {
 
   const token = getCookie(c, "auth_token");
   let currentUser: ExtendedJWTPayload | null = null;
+  let userAvatar: string | null = null;
   if (token) {
     try {
       currentUser = (await verify(
         token,
         c.env.JWT_SECRET
       )) as ExtendedJWTPayload;
+      // 查询用户头像
+      if (currentUser) {
+        const userRecord = await c.env.DB.prepare(
+          'SELECT avatar, email_hash FROM users WHERE id = ?'
+        ).bind(currentUser.id).first();
+        if (userRecord) {
+          userAvatar = userRecord.avatar || (c.env.GRAVATAR_BASE_URL + userRecord.email_hash + "?d=identicon");
+        }
+      }
     } catch (e) {}
   }
 
@@ -116,10 +126,23 @@ index.get("/posts", async (c) => {
         {/* 左侧 Logo */}
         <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
 
-        {/* 中间导航项 */}
+        {/* 中间导航项（首页、圈子、情绪） */}
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* 首页（与圈子和情绪样式一致） */}
-          <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: 'var(--border-radius)' }}>首页</a>
+          {/* 首页按钮 */}
+          <a
+            href="/posts"
+            role="button"
+            class="outline"
+            style={{
+              padding: '0.3rem 0.8rem',
+              fontSize: '0.85rem',
+              borderRadius: '8px',          // R角
+              minWidth: '3.5rem',
+              textAlign: 'center',
+            }}
+          >
+            首页
+          </a>
 
           {/* 圈子下拉 */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
@@ -130,11 +153,13 @@ index.get("/posts", async (c) => {
                 fontSize: '0.85rem',
                 background: 'transparent',
                 border: '1px solid var(--primary)',
-                borderRadius: 'var(--border-radius)',
+                borderRadius: '8px',        // R角
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.3rem'
+                gap: '0.3rem',
+                minWidth: '3.5rem',
+                justifyContent: 'center',
               }}
               data-target="circles-dropdown"
             >
@@ -189,11 +214,13 @@ index.get("/posts", async (c) => {
                 fontSize: '0.85rem',
                 background: 'transparent',
                 border: '1px solid var(--primary)',
-                borderRadius: 'var(--border-radius)',
+                borderRadius: '8px',        // R角
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.3rem'
+                gap: '0.3rem',
+                minWidth: '3.5rem',
+                justifyContent: 'center',
               }}
               data-target="mood-dropdown"
             >
@@ -203,7 +230,7 @@ index.get("/posts", async (c) => {
               maxHeight: '0',
               opacity: '0',
               overflow: 'hidden',
-              transition: 'max-height 0.3s ease, opacity 0.3s ease',
+              transition: 'maxHeight 0.3s ease, opacity 0.3s ease',
               position: 'absolute',
               top: '100%',
               left: 0,
@@ -225,7 +252,7 @@ index.get("/posts", async (c) => {
           </div>
         </div>
 
-        {/* 右侧用户头像（圆形） */}
+        {/* 右侧用户头像（圆形，显示真实头像） */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {currentUser ? (
             <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
@@ -235,25 +262,41 @@ index.get("/posts", async (c) => {
                   width: '2.2rem',
                   height: '2.2rem',
                   borderRadius: '50%',
-                  background: 'var(--primary)',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 'bold',
+                  overflow: 'hidden',
                   cursor: 'pointer',
-                  fontSize: '1rem',
-                  userSelect: 'none'
+                  border: '2px solid var(--primary)',
+                  flexShrink: 0,
                 }}
                 data-target="user-dropdown"
               >
-                {currentUser.username.charAt(0).toUpperCase()}
+                {userAvatar ? (
+                  <img
+                    src={userAvatar}
+                    alt={currentUser.username}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'var(--primary)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '1rem',
+                    userSelect: 'none'
+                  }}>
+                    {currentUser.username.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
               <div id="user-dropdown" className="dropdown-menu" style={{
                 maxHeight: '0',
                 opacity: '0',
                 overflow: 'hidden',
-                transition: 'max-height 0.3s ease, opacity 0.3s ease',
+                transition: 'maxHeight 0.3s ease, opacity 0.3s ease',
                 position: 'absolute',
                 top: '100%',
                 right: 0,
@@ -273,21 +316,19 @@ index.get("/posts", async (c) => {
               </div>
             </div>
           ) : (
-            <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>登录</a>
+            <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '8px' }}>登录</a>
           )}
         </div>
       </nav>
 
-      {/* ===== 下拉菜单控制脚本（带动画） ===== */}
+      {/* ===== 下拉菜单控制脚本 ===== */}
       <script dangerouslySetInnerHTML={{
         __html: `
-          // 切换下拉菜单（带滑出/收起动画）
           function toggleDropdown(e) {
             e.stopPropagation();
             const targetId = this.dataset.target;
             const menu = document.getElementById(targetId);
             if (!menu) return;
-            // 关闭所有其他下拉
             document.querySelectorAll('.dropdown-menu').forEach(el => {
               if (el.id !== targetId) {
                 el.style.maxHeight = '0';
@@ -295,7 +336,6 @@ index.get("/posts", async (c) => {
                 el.style.padding = '0';
               }
             });
-            // 切换当前
             const isOpen = menu.style.maxHeight && menu.style.maxHeight !== '0px';
             if (isOpen) {
               menu.style.maxHeight = '0';
@@ -307,13 +347,9 @@ index.get("/posts", async (c) => {
               menu.style.padding = '0.3rem 0';
             }
           }
-
-          // 给所有 .dropdown-toggle 和 .avatar-toggle 绑定事件
           document.querySelectorAll('.dropdown-toggle, .avatar-toggle').forEach(el => {
             el.addEventListener('click', toggleDropdown);
           });
-
-          // 点击页面其他区域关闭所有下拉
           document.addEventListener('click', function(e) {
             if (!e.target.closest('.dropdown-wrapper')) {
               document.querySelectorAll('.dropdown-menu').forEach(el => {
@@ -323,8 +359,6 @@ index.get("/posts", async (c) => {
               });
             }
           });
-
-          // 阻止下拉菜单内的点击冒泡，避免触发页面关闭
           document.querySelectorAll('.dropdown-menu').forEach(el => {
             el.addEventListener('click', function(e) {
               e.stopPropagation();
@@ -333,7 +367,7 @@ index.get("/posts", async (c) => {
         `
       }} />
 
-      {/* ===== 漂流瓶 & 情绪容器快捷入口（保留） ===== */}
+      {/* ===== 漂流瓶 & 情绪容器快捷入口 ===== */}
       <div style={{
         display: 'flex',
         gap: '1rem',
@@ -423,7 +457,7 @@ index.get("/posts", async (c) => {
             </a>
           ))}
         </div>
-        <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>✍️ 发帖</a>
+        <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', whiteSpace: 'nowrap', borderRadius: '8px' }}>✍️ 发帖</a>
       </header>
 
       {tagName && <h6 class="mb-2">标签: {tagName}</h6>}
