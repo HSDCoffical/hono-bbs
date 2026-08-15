@@ -26,9 +26,11 @@ const Header = ({ user }: HeaderProps) => {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        flexWrap: 'nowrap',              // 强制一行显示
-        gap: '0.5rem',
-        overflowX: 'auto',               // 如果屏幕太窄允许水平滚动
+        flexWrap: 'nowrap',              // 强制一行
+        gap: '0.4rem',
+        overflowX: 'auto',               // 手机版可左右滑动
+        WebkitOverflowScrolling: 'touch',
+        paddingBottom: '0.2rem',         // 给滚动条留点空间
       }}>
         {/* Logo */}
         <a href="/" style={{ 
@@ -39,99 +41,105 @@ const Header = ({ user }: HeaderProps) => {
           textShadow: '0 0 8px rgba(0,0,0,0.7)',
           whiteSpace: 'nowrap',
           flexShrink: 0,
+          padding: '0.2rem 0.4rem',
         }}>☁️ 凉宫社区</a>
 
-        {/* 导航链接 */}
+        {/* 导航链接 - 带框 */}
         <div style={{ 
           display: 'flex', 
-          gap: '0.4rem', 
+          gap: '0.3rem', 
           alignItems: 'center',
           flexShrink: 0,
         }}>
-          <a href="/posts" style={{ 
-            color: 'white', 
-            fontSize: '0.8rem', 
-            textDecoration: 'none', 
-            opacity: 0.85,
-            textShadow: '0 0 8px rgba(0,0,0,0.7)',
-            whiteSpace: 'nowrap'
-          }}>首页</a>
-          <a href="/circles" style={{ 
-            color: 'white', 
-            fontSize: '0.8rem', 
-            textDecoration: 'none', 
-            opacity: 0.85,
-            textShadow: '0 0 8px rgba(0,0,0,0.7)',
-            whiteSpace: 'nowrap'
-          }}>圈子</a>
-          <a href="/bottle" style={{ 
-            color: 'white', 
-            fontSize: '0.8rem', 
-            textDecoration: 'none', 
-            opacity: 0.85,
-            textShadow: '0 0 8px rgba(0,0,0,0.7)',
-            whiteSpace: 'nowrap'
-          }}>漂流瓶</a>
-          <a href="/mood" style={{ 
-            color: 'white', 
-            fontSize: '0.8rem', 
-            textDecoration: 'none', 
-            opacity: 0.85,
-            textShadow: '0 0 8px rgba(0,0,0,0.7)',
-            whiteSpace: 'nowrap'
-          }}>情绪</a>
-          <a href="/capsule" style={{ 
-            color: 'white', 
-            fontSize: '0.8rem', 
-            textDecoration: 'none', 
-            opacity: 0.85,
-            textShadow: '0 0 8px rgba(0,0,0,0.7)',
-            whiteSpace: 'nowrap'
-          }}>时光信</a>
+          {['首页', '圈子', '漂流瓶', '情绪', '时光信'].map((label, idx) => {
+            const href = ['/posts', '/circles', '/bottle', '/mood', '/capsule'][idx];
+            return (
+              <a key={label} href={href} style={{
+                color: 'white',
+                fontSize: '0.8rem',
+                textDecoration: 'none',
+                textShadow: '0 0 8px rgba(0,0,0,0.7)',
+                whiteSpace: 'nowrap',
+                padding: '0.2rem 0.6rem',
+                border: '1px solid rgba(255,255,255,0.35)',
+                borderRadius: '4px',
+                background: 'rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                transition: 'all 0.2s',
+                display: 'inline-block',
+              }}>{label}</a>
+            );
+          })}
         </div>
 
-        {/* 用户区域 */}
+        {/* 用户区域 - 也带框 */}
         <div style={{ 
           display: 'flex', 
-          gap: '0.4rem', 
+          gap: '0.3rem', 
           alignItems: 'center',
           flexShrink: 0,
         }}>
           {isLoggedIn ? (
             <>
-              <a href={`/profile/${user.username}`} style={{ 
-                color: 'white', 
-                fontSize: '0.8rem', 
-                textDecoration: 'none', 
-                opacity: 0.85,
+              <a href={`/profile/${user.username}`} style={{
+                color: 'white',
+                fontSize: '0.8rem',
+                textDecoration: 'none',
                 textShadow: '0 0 8px rgba(0,0,0,0.7)',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                padding: '0.2rem 0.6rem',
+                border: '1px solid rgba(255,255,255,0.35)',
+                borderRadius: '4px',
+                background: 'rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                display: 'inline-block',
               }}>{user.username}</a>
-              <a href="/user/logout" style={{ 
-                color: 'rgba(255,255,255,0.6)', 
-                fontSize: '0.75rem', 
-                textDecoration: 'none', 
+              <a href="/user/logout" style={{
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: '0.7rem',
+                textDecoration: 'none',
                 textShadow: '0 0 8px rgba(0,0,0,0.7)',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                padding: '0.2rem 0.5rem',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '4px',
+                background: 'rgba(255,255,255,0.05)',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                display: 'inline-block',
               }}>退出</a>
             </>
           ) : (
             <>
-              <a href="/user/reg" style={{ 
-                color: 'white', 
-                fontSize: '0.8rem', 
-                textDecoration: 'none', 
-                opacity: 0.85,
+              <a href="/user/reg" style={{
+                color: 'white',
+                fontSize: '0.8rem',
+                textDecoration: 'none',
                 textShadow: '0 0 8px rgba(0,0,0,0.7)',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                padding: '0.2rem 0.6rem',
+                border: '1px solid rgba(255,255,255,0.35)',
+                borderRadius: '4px',
+                background: 'rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                display: 'inline-block',
               }}>注册</a>
-              <a href="/user/login" style={{ 
-                color: 'white', 
-                fontSize: '0.8rem', 
-                textDecoration: 'none', 
-                opacity: 0.85,
+              <a href="/user/login" style={{
+                color: 'white',
+                fontSize: '0.8rem',
+                textDecoration: 'none',
                 textShadow: '0 0 8px rgba(0,0,0,0.7)',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                padding: '0.2rem 0.6rem',
+                border: '1px solid rgba(255,255,255,0.35)',
+                borderRadius: '4px',
+                background: 'rgba(255,255,255,0.08)',
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                display: 'inline-block',
               }}>登录</a>
             </>
           )}
