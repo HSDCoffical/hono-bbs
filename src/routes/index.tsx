@@ -264,11 +264,23 @@ index.get("/posts", async (c) => {
                   <>
                     <div style={{ padding: '0.2rem 0.8rem', fontSize: '0.75rem', color: '#999', borderTop: '1px solid #eee' }}>我加入的圈子</div>
                     {userCircles.length > 0 ? (
-                      userCircles.map((c: any) => (
-                        <a key={c.id} href={`/circles/${c.id}`} style={{ display: 'block', padding: '0.3rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>
-                          {c.icon || '📁'} {c.name}
-                        </a>
-                      ))
+                      userCircles.map((c: any) => {
+                        const isIconUrl = c.icon && c.icon.startsWith('http');
+                        return (
+                          <a key={c.id} href={`/circles/${c.id}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.3rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>
+                            {isIconUrl ? (
+                              <img 
+                                src={c.icon} 
+                                alt={c.name} 
+                                style={{ width: '1.2rem', height: '1.2rem', borderRadius: '4px', objectFit: 'cover' }} 
+                              />
+                            ) : (
+                              <span>{c.icon || '📁'}</span>
+                            )}
+                            {c.name}
+                          </a>
+                        );
+                      })
                     ) : (
                       <div style={{ padding: '0.2rem 0.8rem', fontSize: '0.8rem', color: '#999' }}>暂无加入的圈子</div>
                     )}
@@ -454,15 +466,14 @@ index.get("/posts", async (c) => {
         `
       }} />
 
-      {/* ===== 漂流瓶 & 情绪容器快捷入口 ===== */}
+      {/* ===== 漂流瓶 & 情绪容器快捷入口（响应式） ===== */}
       <div style={{
-        display: 'flex',
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '1rem',
         marginBottom: '1.5rem',
-        flexWrap: 'wrap',
       }}>
         <a href="/bottle" style={{
-          flex: '1 1 200px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -473,13 +484,11 @@ index.get("/posts", async (c) => {
           color: '#2e7d32',
           fontSize: '0.9rem',
           fontWeight: 500,
-          minWidth: '150px',
         }}>
           <span>🍶 漂流瓶</span>
           <span style={{ fontSize: '0.85rem', opacity: 0.8 }}>{bottleCount?.count || 0} 个漂着</span>
         </a>
         <a href="/mood" style={{
-          flex: '1 1 200px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -490,7 +499,6 @@ index.get("/posts", async (c) => {
           color: '#0d47a1',
           fontSize: '0.9rem',
           fontWeight: 500,
-          minWidth: '150px',
         }}>
           <span>🫙 情绪容器</span>
           <span style={{ fontSize: '0.85rem', opacity: 0.8 }}>{moodCount?.count || 0} 人已表达</span>
@@ -505,59 +513,45 @@ index.get("/posts", async (c) => {
               <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>📁 我加入的圈子</span>
               <a href="/circles" style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>发现更多 →</a>
             </div>
-            {/* ===== 改成类似漂流瓶的卡片样式（蓝色系） ===== */}
-            {userCircles.map((circle: any) => {
-              const isIconUrl = circle.icon && circle.icon.startsWith('http');
-              return (
-                <a 
-                  key={circle.id} 
-                  href={`/circles/${circle.id}`} 
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '0.6rem 1rem',
-                    marginBottom: '0.5rem',
-                    background: 'linear-gradient(135deg, #f0f4ff, #dce8ff)',
-                    borderRadius: '12px',
-                    textDecoration: 'none',
-                    color: '#1a3a6b',
-                    fontSize: '0.9rem',
-                    fontWeight: 500,
-                    border: '1px solid rgba(66, 133, 244, 0.15)',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(66, 133, 244, 0.15)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    {isIconUrl ? (
-                      <img 
-                        src={circle.icon} 
-                        alt={circle.name} 
-                        style={{ 
-                          width: '1.8rem', 
-                          height: '1.8rem', 
-                          borderRadius: '6px', 
-                          objectFit: 'cover',
-                          flexShrink: 0,
-                        }} 
-                      />
-                    ) : (
-                      <span style={{ fontSize: '1.5rem' }}>{circle.icon || '📁'}</span>
-                    )}
-                    {circle.name}
-                  </span>
-                  <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>{circle.member_count} 人</span>
-                </a>
-              );
-            })}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.5rem' }}>
+              {userCircles.map((circle: any) => {
+                const isIconUrl = circle.icon && circle.icon.startsWith('http');
+                return (
+                  <a 
+                    key={circle.id} 
+                    href={`/circles/${circle.id}`} 
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '0.5rem 0.8rem',
+                      background: 'linear-gradient(135deg, #f0f4ff, #dce8ff)',
+                      borderRadius: '10px',
+                      textDecoration: 'none',
+                      color: '#1a3a6b',
+                      fontSize: '0.85rem',
+                      fontWeight: 500,
+                      border: '1px solid rgba(66, 133, 244, 0.12)',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      {isIconUrl ? (
+                        <img 
+                          src={circle.icon} 
+                          alt={circle.name} 
+                          style={{ width: '1.6rem', height: '1.6rem', borderRadius: '6px', objectFit: 'cover' }} 
+                        />
+                      ) : (
+                        <span style={{ fontSize: '1.3rem' }}>{circle.icon || '📁'}</span>
+                      )}
+                      {circle.name}
+                    </span>
+                    <span style={{ fontSize: '0.7rem', opacity: 0.6 }}>{circle.member_count}人</span>
+                  </a>
+                );
+              })}
+            </div>
           </div>
         ) : (
           <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f8f9fa', borderRadius: '12px', textAlign: 'center' }}>
@@ -572,7 +566,7 @@ index.get("/posts", async (c) => {
               <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>🔥 热门圈子</span>
               <a href="/circles" style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>查看更多 →</a>
             </div>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {circles.results.slice(0, 4).map((circle: any) => {
                 const isIconUrl = circle.icon && circle.icon.startsWith('http');
                 return (
@@ -612,67 +606,94 @@ index.get("/posts", async (c) => {
         {username && !tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>👤 用户: {username}</span>}
       </div>
 
-      {/* ===== 帖子列表 ===== */}
+      {/* ===== 帖子列表（响应式网格） ===== */}
       {posts.length > 0 ? (
-        <ul class="grid grid-cols-2 gap-4 pl-0">
+        <ul style={{
+          listStyle: 'none',
+          padding: 0,
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+          gap: '1rem',
+        }}>
           {posts.map((post) => {
             const postAuthor = authors.find(a => a.username === post.author);
             return (
-              <li key={post.id} class="list-none border rounded-xl overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800">
-                <a href={`/posts/${post.id}`} class="block h-full flex flex-col">
-                  <div class="w-full bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
+              <li key={post.id} style={{
+                border: '1px solid #e8e8e8',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                background: 'white',
+                transition: 'box-shadow 0.2s'
+              }}>
+                <a href={`/posts/${post.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                  <div style={{ background: '#f5f5f5', overflow: 'hidden', position: 'relative' }}>
                     {post.file_url ? (
                       post.file_type?.startsWith('image/') ? (
                         <img
                           src={post.file_url}
                           alt={post.title}
-                          class="w-full h-auto object-contain"
+                          style={{ width: '100%', height: 'auto', maxHeight: '180px', objectFit: 'cover' }}
                           loading="lazy"
                         />
                       ) : post.file_type?.startsWith('video/') ? (
                         <video
                           src={post.file_url}
-                          class="w-full h-auto"
+                          style={{ width: '100%', maxHeight: '180px' }}
                           muted
                           loop
                           playsInline
-                          autoplay
+                          autoPlay
                         />
                       ) : (
-                        <div class="flex items-center justify-center h-48 text-gray-400">
-                          <span class="text-sm">📄 文件</span>
-                        </div>
+                        <div style={{ padding: '1.5rem', textAlign: 'center', color: '#999', fontSize: '0.85rem' }}>📄 文件</div>
                       )
                     ) : (
-                      <div class="flex items-center justify-center h-48 text-gray-400">
-                        <span class="text-sm">🖼️ 无预览</span>
-                      </div>
+                      <div style={{ padding: '1.5rem', textAlign: 'center', color: '#ccc', fontSize: '0.85rem' }}>📝 文字</div>
                     )}
-                    {post.comment_count !== undefined && post.comment_count > 0 && (
-                      <span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
+                    {post.comment_count > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        bottom: '0.5rem',
+                        right: '0.5rem',
+                        background: 'rgba(0,0,0,0.6)',
+                        color: 'white',
+                        fontSize: '0.7rem',
+                        padding: '0.1rem 0.5rem',
+                        borderRadius: '12px'
+                      }}>
                         💬 {post.comment_count}
                       </span>
                     )}
                   </div>
-                  <div class="p-2 flex flex-col flex-grow">
-                    <h3 class="text-sm font-semibold break-words" title={post.title}>
-                      {post.title}
-                    </h3>
-                    <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1 flex-wrap gap-x-2">
-                      <span class="truncate max-w-[60%] flex items-center gap-1">
+                  <div style={{ padding: '0.6rem' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.2rem' }}>{post.title}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.7rem', color: '#999' }}>
+                      <span>
                         {post.author}
                         {postAuthor?.badge && (
-                          <span class="inline-block bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded-full align-middle whitespace-nowrap">
+                          <span style={{
+                            background: '#4a90d9',
+                            color: 'white',
+                            fontSize: '0.55rem',
+                            padding: '0.05rem 0.4rem',
+                            borderRadius: '12px',
+                            marginLeft: '0.2rem'
+                          }}>
                             {postAuthor.badge}
                           </span>
                         )}
                       </span>
-                      <span class="whitespace-nowrap">
-                        {formatDateTime(post.created_at)}
-                      </span>
+                      <span>{formatDateTime(post.created_at)}</span>
                     </div>
                     {post.tag && (
-                      <span class="inline-block mt-1 bg-gray-200 dark:bg-gray-700 text-xs px-2 py-0.5 rounded self-start">
+                      <span style={{
+                        display: 'inline-block',
+                        fontSize: '0.6rem',
+                        background: '#f0f0f0',
+                        padding: '0.05rem 0.4rem',
+                        borderRadius: '4px',
+                        marginTop: '0.15rem'
+                      }}>
                         #{post.tag}
                       </span>
                     )}
@@ -683,12 +704,8 @@ index.get("/posts", async (c) => {
           })}
         </ul>
       ) : (
-        <p class="text-center text-gray-500 py-8">
-          {tagName
-            ? `该标签下暂无帖子`
-            : username
-            ? `该用户暂无帖子`
-            : `请发布您的第一个帖子`}
+        <p style={{ textAlign: 'center', color: '#999', padding: '3rem 0' }}>
+          {tagName ? `该标签下暂无帖子` : username ? `该用户暂无帖子` : `还没有帖子，来发布第一个吧`}
         </p>
       )}
     </div>,
