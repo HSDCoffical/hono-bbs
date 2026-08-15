@@ -437,7 +437,7 @@ circleCreate.get("/", async (c) => {
   );
 });
 
-// ===== POST 处理（增加超时控制） =====
+// ===== POST 处理（超时设置为 110 秒） =====
 circleCreate.post("/", async (c) => {
   const token = getCookie(c, "auth_token");
   if (!token) {
@@ -520,12 +520,12 @@ circleCreate.post("/", async (c) => {
     const githubUrl = `https://api.github.com/repos/${repo}/contents/${path}`;
     console.log('📤 [创建圈子] 上传到 GitHub:', githubUrl);
 
-    // 超时控制（30秒）
+    // ===== 超时控制：110 秒（配合 wrangler.jsonc 的 max_duration: 120） =====
     const controller = new AbortController();
     const timeout = setTimeout(() => {
-      console.log('⏰ [创建圈子] 上传超时');
+      console.log('⏰ [创建圈子] 上传超时（110秒）');
       controller.abort();
-    }, 30000);
+    }, 110000);
 
     let uploadResp;
     try {
@@ -547,7 +547,7 @@ circleCreate.post("/", async (c) => {
       clearTimeout(timeout);
       console.error('❌ [创建圈子] 上传请求失败:', fetchError.message);
       if (fetchError.name === 'AbortError') {
-        return c.html('<p style="color:red;">上传超时（30秒），请检查网络后重试</p><a href="/circles/create">返回</a>');
+        return c.html('<p style="color:red;">上传超时（110秒），请检查网络后重试</p><a href="/circles/create">返回</a>');
       }
       throw fetchError;
     }
