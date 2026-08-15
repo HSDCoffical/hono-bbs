@@ -473,22 +473,24 @@ index.get("/posts", async (c) => {
         `
       }} />
 
-      {/* ===== 搜索框（form + onSubmit，手机回车可靠） ===== */}
+      {/* ===== 搜索框（标准表单，自动提交） ===== */}
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const input = document.getElementById('search-input') as HTMLInputElement;
-          const value = input?.value?.trim();
-          if (value) {
-            window.location.href = `/posts?search=${encodeURIComponent(value)}`;
-          } else {
-            window.location.href = `/posts`;
-          }
-        }}
+        action="/posts"
+        method="GET"
         style={{ marginBottom: '1.25rem', width: '100%' }}
+        onSubmit={(e) => {
+          // 防止空提交
+          const input = document.getElementById('search-input') as HTMLInputElement;
+          if (input && !input.value.trim()) {
+            e.preventDefault();
+            window.location.href = '/posts';
+          }
+          // 否则正常提交
+        }}
       >
         <input
           id="search-input"
+          name="search"
           type="text"
           placeholder="🔍 搜索帖子... 按回车搜索"
           defaultValue={searchQuery || ''}
