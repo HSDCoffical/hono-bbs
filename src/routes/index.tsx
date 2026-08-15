@@ -478,69 +478,83 @@ index.get("/posts", async (c) => {
         marginBottom: '1.25rem',
         width: '100%',
       }}>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            const input = document.getElementById('search-input') as HTMLInputElement;
-            const value = input?.value?.trim();
-            if (value) {
-              window.location.href = `/posts?search=${encodeURIComponent(value)}`;
-            } else {
-              window.location.href = `/posts`;
-            }
+        <div
+          onClick={() => {
+            const input = document.getElementById('search-input');
+            if (input) input.focus();
           }}
-          style={{ position: 'relative', width: '100%' }}
+          style={{
+            position: 'relative',
+            width: '100%',
+            cursor: 'text',
+            borderRadius: '12px',
+            border: '1px solid rgba(0,0,0,0.08)',
+            background: 'rgba(255,255,255,0.6)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            padding: '0',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+          }}
         >
-          <input
-            id="search-input"
-            type="search"
-            placeholder="🔍 搜索帖子..."
-            defaultValue={searchQuery || ''}
-            style={{
-              width: '100%',
-              padding: '0.6rem 3.5rem 0.6rem 1rem',
-              borderRadius: '12px',
-              border: '1px solid rgba(0,0,0,0.08)',
-              background: 'rgba(255,255,255,0.6)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              fontSize: '0.9rem',
-              color: '#333',
-              outline: 'none',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-              WebkitAppearance: 'none',
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const input = document.getElementById('search-input') as HTMLInputElement;
+              const value = input?.value?.trim();
+              if (value) {
+                window.location.href = `/posts?search=${encodeURIComponent(value)}`;
+              } else {
+                window.location.href = `/posts`;
+              }
             }}
-            onFocus={(e) => {
-              e.target.style.borderColor = 'var(--primary)';
-              e.target.style.boxShadow = '0 0 0 3px rgba(var(--primary-rgb, 66, 133, 244), 0.15)';
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = 'rgba(0,0,0,0.08)';
-              e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
-            }}
-          />
-          <button
-            type="submit"
-            style={{
-              position: 'absolute',
-              right: '0.4rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              padding: '0.25rem 0.8rem',
-              borderRadius: '8px',
-              border: 'none',
-              background: 'var(--primary)',
-              color: 'white',
-              fontSize: '0.75rem',
-              cursor: 'pointer',
-              fontWeight: 500,
-              whiteSpace: 'nowrap',
-            }}
+            style={{ position: 'relative', width: '100%' }}
           >
-            搜索
-          </button>
-        </form>
+            <input
+              id="search-input"
+              type="search"
+              placeholder="🔍 搜索帖子..."
+              defaultValue={searchQuery || ''}
+              style={{
+                width: '100%',
+                padding: '0.6rem 3.5rem 0.6rem 1rem',
+                border: 'none',
+                background: 'transparent',
+                fontSize: '0.9rem',
+                color: '#333',
+                outline: 'none',
+                boxShadow: 'none',
+                WebkitAppearance: 'none',
+              }}
+              onFocus={(e) => {
+                // 容器焦点样式由父级控制
+              }}
+              onBlur={(e) => {
+                // 容器失去焦点样式由父级控制
+              }}
+            />
+            <button
+              type="submit"
+              style={{
+                position: 'absolute',
+                right: '0.4rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                padding: '0.25rem 0.8rem',
+                borderRadius: '8px',
+                border: 'none',
+                background: 'var(--primary)',
+                color: 'white',
+                fontSize: '0.75rem',
+                cursor: 'pointer',
+                fontWeight: 500,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              搜索
+            </button>
+          </form>
+        </div>
         {searchQuery && (
           <div style={{
             marginTop: '0.5rem',
