@@ -78,9 +78,11 @@ index.get("/posts", async (c) => {
     });
   }
 
-  // ========== 获取当前时段问候语 ==========
+  // ========== 获取当前时段问候语（修复：使用用户本地时间） ==========
   function getTimeGreeting(): string {
-    const hour = new Date().getHours();
+    // 获取用户本地时间的时区偏移，确保使用用户本地的当前时间
+    const now = new Date();
+    const hour = now.getHours();
     if (hour >= 5 && hour < 9) return '早上好';
     if (hour >= 9 && hour < 12) return '上午好';
     if (hour >= 12 && hour < 14) return '中午好';
@@ -333,7 +335,7 @@ index.get("/posts", async (c) => {
           </div>
         </div>
 
-        {/* ===== 右侧：头像 + 问候语 + 用户名（合并为一行显示在头像下方） ===== */}
+        {/* ===== 右侧：头像 + 问候语 ===== */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1rem', flexShrink: 0 }}>
           {/* 头像 */}
           {currentUser ? (
@@ -401,31 +403,19 @@ index.get("/posts", async (c) => {
             <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>登录</a>
           )}
 
-          {/* 问候语 + 用户名（合并为一行） */}
-          {currentUser ? (
-            <span style={{
-              fontSize: '0.7rem',
-              color: '#555',
-              lineHeight: '1.2',
-              maxWidth: '3.5rem',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              textAlign: 'center',
-            }}>
-              {`${currentUser.username}，${getTimeGreeting()}`}
-            </span>
-          ) : (
-            <span style={{
-              fontSize: '0.7rem',
-              color: '#777',
-              lineHeight: '1.2',
-              textAlign: 'center',
-              whiteSpace: 'nowrap',
-            }}>
-              {getTimeGreeting()}
-            </span>
-          )}
+          {/* 问候语：登录显示 "用户名，时段好"，未登录显示 "时段好" */}
+          <span style={{
+            fontSize: '0.7rem',
+            color: '#555',
+            lineHeight: '1.2',
+            maxWidth: '3.8rem',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            textAlign: 'center',
+          }}>
+            {currentUser ? `${currentUser.username}，${getTimeGreeting()}` : getTimeGreeting()}
+          </span>
         </div>
       </nav>
 
