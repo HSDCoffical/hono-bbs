@@ -43,30 +43,19 @@ compileSass()
 const scssWatcherPlugin = (): Plugin => {
   return {
     name: 'vite-plugin-scss-watcher',
-    apply: 'serve' as const, // 使用 as const 确保类型为字面量 'serve'
+    apply: 'serve' as const,
     configureServer(server: ViteDevServer) {
-      // 使用绝对路径
       const scssGlob = path.resolve(__dirname, 'src/styles/**/*.scss')
       
-      // 确保在服务器启动后添加监听器
       server.httpServer?.once('listening', () => {
         console.log('添加 SCSS 文件监听器:', scssGlob)
-        
-        // 使用 Vite 内部的 watcher API
         const watcher = server.watcher
-        
-        // 确保路径格式正确（Windows 上使用正斜杠）
         const normalizedPath = scssGlob.replace(/\\/g, '/')
-        
-        // 添加监听
         watcher.add(normalizedPath)
-        
-        // 监听变化事件
         watcher.on('change', (changedPath) => {
           if (changedPath.endsWith('.scss')) {
             console.log(`SCSS 文件变化: ${changedPath}`)
             if (compileSass()) {
-              // 触发页面刷新
               server.ws.send({
                 type: 'full-reload'
               })
@@ -88,7 +77,6 @@ const scssBuildPlugin = (): Plugin => {
       compileSass()
     },
     writeBundle() {
-      // 确保 CSS 文件被复制到 dist/static 目录
       const srcFile = path.resolve(__dirname, 'public/static/main.css')
       const destDir = path.resolve(__dirname, 'dist/static')
       const destFile = path.join(destDir, 'main.css')
@@ -107,25 +95,70 @@ const scssBuildPlugin = (): Plugin => {
   }
 }
 
+// ===== 新增：复制 sw.js 到 dist 目录 =====
+const copySwPlugin = (): Plugin => {
+  return {
+    name: 'vite-plugin-copy-sw',
+    apply: 'build',
+    writeBundle() {
+      const srcFile = path.resolve(__dirname, 'public/sw.js')
+      const destFile = path.resolve(__dirname, 'dist/sw.js')
+      
+      if (fs.existsSync(srcFile)) {
+        // 确保 dist 目录存在
+        if (!fs.existsSync(path.resolve(__dirname, 'dist'))) {
+          fs.mkdirSync(path.resolve(__dirname, 'dist'), { recursive: true })
+        }
+        fs.copyFileSync(srcFile, destFile)
+        console.log(`✅ sw.js 已复制到 ${destFile}`)
+      } else {
+        console.warn(`⚠️ sw.js 不存在: ${srcFile}，请确保 public/sw.js 文件存在`)
+      }
+    }
+  }
+}
+
+// ===== 新增：复制 _headers 到 dist 目录 =====
+const copyHeadersPlugin = (): Plugin => {
+  return {
+    name: 'vite-plugin-copy-headers',
+    apply: 'build',
+    writeBundle() {
+      const srcFile = path.resolve(__dirname, '_headers')
+      const destFile = path.resolve(__dirname, 'dist/_headers')
+      
+      if (fs.existsSync(srcFile)) {
+        if (!fs.existsSync(path.resolve(__dirname, 'dist'))) {
+          fs.mkdirSync(path.resolve(__dirname, 'dist'), { recursive: true })
+        }
+        fs.copyFileSync(srcFile, destFile)
+        console.log(`✅ _headers 已复制到 ${destFile}`)
+      } else {
+        console.warn(`⚠️ _headers 不存在: ${srcFile}，请确保根目录有 _headers 文件`)
+      }
+    }
+  }
+}
+
 export default defineConfig({
   plugins: [
-    // 添加 SCSS 监听器插件（放在最前面确保优先执行）
     scssWatcherPlugin(),
-    // 添加 SCSS 构建插件
     scssBuildPlugin(),
+    // 新增：复制 sw.js 到 dist
+    copySwPlugin(),
+    // 新增：复制 _headers 到 dist
+    copyHeadersPlugin(),
     devServer({      
-      entry: 'src/app.tsx', // 修改为新的入口文件
+      entry: 'src/app.tsx',
       adapter
     }),
     build({
-      entry: 'src/app.tsx' // 修改为新的入口文件
+      entry: 'src/app.tsx'
     }),
   ],
   
-  // 添加对 SCSS 文件的监听配置
   server: {
     watch: {
-      // 使用 chokidar 选项
       usePolling: true,
       interval: 100
     }
