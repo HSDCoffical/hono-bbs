@@ -606,7 +606,7 @@ index.get("/posts", async (c) => {
         {username && !tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>👤 用户: {username}</span>}
       </div>
 
-      {/* ===== 帖子列表（响应式网格） ===== */}
+      {/* ===== 帖子列表（响应式网格 + 用户头像） ===== */}
       {posts.length > 0 ? (
         <ul style={{
           listStyle: 'none',
@@ -668,7 +668,30 @@ index.get("/posts", async (c) => {
                   <div style={{ padding: '0.6rem' }}>
                     <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.2rem' }}>{post.title}</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.7rem', color: '#999' }}>
-                      <span>
+                      {/* ===== 用户头像 + 名称 ===== */}
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        {postAuthor?.avatar ? (
+                          <img 
+                            src={postAuthor.avatar} 
+                            alt={post.author} 
+                            style={{ width: '1.2rem', height: '1.2rem', borderRadius: '50%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <span style={{ 
+                            display: 'inline-flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center',
+                            width: '1.2rem', 
+                            height: '1.2rem', 
+                            borderRadius: '50%', 
+                            background: '#e0e0e0',
+                            color: '#666',
+                            fontSize: '0.55rem',
+                            fontWeight: 600,
+                          }}>
+                            {post.author.charAt(0).toUpperCase()}
+                          </span>
+                        )}
                         {post.author}
                         {postAuthor?.badge && (
                           <span style={{
@@ -704,20 +727,4 @@ index.get("/posts", async (c) => {
           })}
         </ul>
       ) : (
-        <p style={{ textAlign: 'center', color: '#999', padding: '3rem 0' }}>
-          {tagName ? `该标签下暂无帖子` : username ? `该用户暂无帖子` : `还没有帖子，来发布第一个吧`}
-        </p>
-      )}
-    </div>,
-    {
-      title: pageTitle,
-      user: currentUser,
-    }
-  );
-});
-
-index.get("/", (c) => {
-  return c.redirect("/posts");
-});
-
-export { index };
+        <p style={{ te
