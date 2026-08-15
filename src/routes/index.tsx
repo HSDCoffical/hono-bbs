@@ -78,6 +78,17 @@ index.get("/posts", async (c) => {
     });
   }
 
+  // ========== 获取当前时段问候语 ==========
+  function getTimeGreeting(): string {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 9) return '早上好';
+    if (hour >= 9 && hour < 12) return '上午好';
+    if (hour >= 12 && hour < 14) return '中午好';
+    if (hour >= 14 && hour < 18) return '下午好';
+    if (hour >= 18 && hour < 21) return '傍晚好';
+    return '晚上好';
+  }
+
   // ========== 获取圈子列表 ==========
   const circles = await c.env.DB.prepare(`
     SELECT c.*, 
@@ -112,7 +123,7 @@ index.get("/posts", async (c) => {
 
   return c.render(
     <div>
-      {/* ===== 顶部导航（只保留 Logo + 首页/圈子/情绪 + 头像） ===== */}
+      {/* ===== 顶部导航 ===== */}
       <nav style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -125,7 +136,7 @@ index.get("/posts", async (c) => {
         {/* 左侧 Logo */}
         <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
 
-        {/* 中间导航项（首页下拉、圈子、情绪） - 不带发帖按钮 */}
+        {/* 中间导航项（首页下拉、圈子、情绪） */}
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           {/* 首页下拉（整合全部标签） */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
@@ -166,7 +177,6 @@ index.get("/posts", async (c) => {
               marginTop: '0.2rem',
             }}>
               <div style={{ padding: '0.3rem 0' }}>
-                {/* 创建标签（在全部上面） */}
                 {isAdmin && (
                   <a href="/tags" style={{
                     display: 'block',
@@ -180,7 +190,6 @@ index.get("/posts", async (c) => {
                   </a>
                 )}
                 <div style={{ borderTop: '1px solid #eee', margin: '0.2rem 0' }}></div>
-                {/* 全部 */}
                 <a
                   href="/posts"
                   style={{
@@ -195,7 +204,6 @@ index.get("/posts", async (c) => {
                 >
                   全部
                 </a>
-                {/* 所有标签 */}
                 {allTags.map((tag) => (
                   <a
                     key={tag.id}
@@ -325,8 +333,21 @@ index.get("/posts", async (c) => {
           </div>
         </div>
 
-        {/* 右侧用户头像 + 用户名（最右边） */}
+        {/* ===== 右侧：问候语 + 头像 ===== */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1rem', flexShrink: 0 }}>
+          {/* 问候语：登录显示 "用户名，下午好"，未登录显示 "下午好" */}
+          <span style={{
+            fontSize: '0.75rem',
+            color: '#555',
+            lineHeight: '1.2',
+            fontWeight: 500,
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+          }}>
+            {currentUser ? `${currentUser.username}，${getTimeGreeting()}` : getTimeGreeting()}
+          </span>
+
+          {/* 头像 */}
           {currentUser ? (
             <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
               <div
@@ -390,20 +411,6 @@ index.get("/posts", async (c) => {
             </div>
           ) : (
             <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>登录</a>
-          )}
-          {currentUser && (
-            <span style={{
-              fontSize: '0.7rem',
-              color: '#666',
-              lineHeight: '1.2',
-              maxWidth: '2.8rem',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              textAlign: 'center',
-            }}>
-              {currentUser.username}
-            </span>
           )}
         </div>
       </nav>
@@ -521,7 +528,7 @@ index.get("/posts", async (c) => {
         </div>
       )}
 
-      {/* ===== 发帖按钮（在帖子列表左上方，独立一行） ===== */}
+      {/* ===== 发帖按钮 + 标签提示 ===== */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
         <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>✍️ 发帖</a>
         {tagName && <span style={{ fontSize: '0.8rem', color: '#666' }}>📌 当前标签: {tagName}</span>}
