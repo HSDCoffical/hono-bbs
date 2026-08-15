@@ -26,27 +26,113 @@ const Header = ({ user }: HeaderProps) => {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '0.5rem'
+        flexWrap: 'nowrap',              // 强制一行显示
+        gap: '0.5rem',
+        overflowX: 'auto',               // 如果屏幕太窄允许水平滚动
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none', color: 'white', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>☁️ 凉宫社区</a>
+        {/* Logo */}
+        <a href="/" style={{ 
+          fontWeight: 'bold', 
+          fontSize: '1rem', 
+          textDecoration: 'none', 
+          color: 'white', 
+          textShadow: '0 0 8px rgba(0,0,0,0.7)',
+          whiteSpace: 'nowrap',
+          flexShrink: 0,
+        }}>☁️ 凉宫社区</a>
+
+        {/* 导航链接 */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '0.4rem', 
+          alignItems: 'center',
+          flexShrink: 0,
+        }}>
+          <a href="/posts" style={{ 
+            color: 'white', 
+            fontSize: '0.8rem', 
+            textDecoration: 'none', 
+            opacity: 0.85,
+            textShadow: '0 0 8px rgba(0,0,0,0.7)',
+            whiteSpace: 'nowrap'
+          }}>首页</a>
+          <a href="/circles" style={{ 
+            color: 'white', 
+            fontSize: '0.8rem', 
+            textDecoration: 'none', 
+            opacity: 0.85,
+            textShadow: '0 0 8px rgba(0,0,0,0.7)',
+            whiteSpace: 'nowrap'
+          }}>圈子</a>
+          <a href="/bottle" style={{ 
+            color: 'white', 
+            fontSize: '0.8rem', 
+            textDecoration: 'none', 
+            opacity: 0.85,
+            textShadow: '0 0 8px rgba(0,0,0,0.7)',
+            whiteSpace: 'nowrap'
+          }}>漂流瓶</a>
+          <a href="/mood" style={{ 
+            color: 'white', 
+            fontSize: '0.8rem', 
+            textDecoration: 'none', 
+            opacity: 0.85,
+            textShadow: '0 0 8px rgba(0,0,0,0.7)',
+            whiteSpace: 'nowrap'
+          }}>情绪</a>
+          <a href="/capsule" style={{ 
+            color: 'white', 
+            fontSize: '0.8rem', 
+            textDecoration: 'none', 
+            opacity: 0.85,
+            textShadow: '0 0 8px rgba(0,0,0,0.7)',
+            whiteSpace: 'nowrap'
+          }}>时光信</a>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>首页</a>
-          <a href="/circles" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>圈子</a>
-          <a href="/bottle" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>漂流瓶</a>
-          <a href="/mood" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>情绪</a>
-          <a href="/capsule" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>时光信</a>
+
+        {/* 用户区域 */}
+        <div style={{ 
+          display: 'flex', 
+          gap: '0.4rem', 
+          alignItems: 'center',
+          flexShrink: 0,
+        }}>
           {isLoggedIn ? (
             <>
-              <a href={`/profile/${user.username}`} role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>{user.username}</a>
-              <a href="/user/logout" role="button" class="outline" style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)', borderColor: 'rgba(255,255,255,0.3)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>退出</a>
+              <a href={`/profile/${user.username}`} style={{ 
+                color: 'white', 
+                fontSize: '0.8rem', 
+                textDecoration: 'none', 
+                opacity: 0.85,
+                textShadow: '0 0 8px rgba(0,0,0,0.7)',
+                whiteSpace: 'nowrap'
+              }}>{user.username}</a>
+              <a href="/user/logout" style={{ 
+                color: 'rgba(255,255,255,0.6)', 
+                fontSize: '0.75rem', 
+                textDecoration: 'none', 
+                textShadow: '0 0 8px rgba(0,0,0,0.7)',
+                whiteSpace: 'nowrap'
+              }}>退出</a>
             </>
           ) : (
             <>
-              <a href="/user/reg" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>注册</a>
-              <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', color: 'white', borderColor: 'rgba(255,255,255,0.5)', textShadow: '0 0 8px rgba(0,0,0,0.7)' }}>登录</a>
+              <a href="/user/reg" style={{ 
+                color: 'white', 
+                fontSize: '0.8rem', 
+                textDecoration: 'none', 
+                opacity: 0.85,
+                textShadow: '0 0 8px rgba(0,0,0,0.7)',
+                whiteSpace: 'nowrap'
+              }}>注册</a>
+              <a href="/user/login" style={{ 
+                color: 'white', 
+                fontSize: '0.8rem', 
+                textDecoration: 'none', 
+                opacity: 0.85,
+                textShadow: '0 0 8px rgba(0,0,0,0.7)',
+                whiteSpace: 'nowrap'
+              }}>登录</a>
             </>
           )}
         </div>
