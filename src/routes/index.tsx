@@ -333,20 +333,8 @@ index.get("/posts", async (c) => {
           </div>
         </div>
 
-        {/* ===== 右侧：问候语 + 头像 + 用户名 ===== */}
+        {/* ===== 右侧：头像 + 问候语 + 用户名（合并为一行显示在头像下方） ===== */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1rem', flexShrink: 0 }}>
-          {/* 问候语（只显示时段，如"下午好"） */}
-          <span style={{
-            fontSize: '0.75rem',
-            color: '#555',
-            lineHeight: '1.2',
-            fontWeight: 500,
-            textAlign: 'center',
-            whiteSpace: 'nowrap',
-          }}>
-            {getTimeGreeting()}
-          </span>
-
           {/* 头像 */}
           {currentUser ? (
             <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
@@ -413,19 +401,29 @@ index.get("/posts", async (c) => {
             <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>登录</a>
           )}
 
-          {/* 用户名（在头像下方） */}
-          {currentUser && (
+          {/* 问候语 + 用户名（合并为一行） */}
+          {currentUser ? (
             <span style={{
               fontSize: '0.7rem',
-              color: '#666',
+              color: '#555',
               lineHeight: '1.2',
-              maxWidth: '2.8rem',
+              maxWidth: '3.5rem',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
               textAlign: 'center',
             }}>
-              {currentUser.username}
+              {`${currentUser.username}，${getTimeGreeting()}`}
+            </span>
+          ) : (
+            <span style={{
+              fontSize: '0.7rem',
+              color: '#777',
+              lineHeight: '1.2',
+              textAlign: 'center',
+              whiteSpace: 'nowrap',
+            }}>
+              {getTimeGreeting()}
             </span>
           )}
         </div>
