@@ -486,16 +486,16 @@ index.get("/posts", async (c) => {
       }} />
 
       {/* ============================================================
-          ===== 搜索框（简洁版，无提示文字） =====
+          ===== 搜索框（纯 JS 控制，点击不刷新） =====
           ============================================================ */}
       <div style={{
         marginBottom: '1.25rem',
         width: '100%',
       }}>
-        <form action="/posts" method="GET" style={{ position: 'relative', width: '100%' }}>
+        <div style={{ position: 'relative', width: '100%' }}>
           <input
+            id="search-input"
             type="text"
-            name="search"
             placeholder="🔍 搜索帖子..."
             defaultValue={searchQuery || ''}
             style={{
@@ -520,9 +520,18 @@ index.get("/posts", async (c) => {
               e.target.style.borderColor = 'rgba(0,0,0,0.08)';
               e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const value = e.currentTarget.value.trim();
+                if (value) {
+                  window.location.href = `/posts?search=${encodeURIComponent(value)}`;
+                }
+              }
+            }}
           />
           <button
-            type="submit"
+            id="search-btn"
             style={{
               position: 'absolute',
               right: '0.5rem',
@@ -537,10 +546,17 @@ index.get("/posts", async (c) => {
               cursor: 'pointer',
               fontWeight: 500,
             }}
+            onClick={() => {
+              const input = document.getElementById('search-input') as HTMLInputElement;
+              const value = input?.value?.trim();
+              if (value) {
+                window.location.href = `/posts?search=${encodeURIComponent(value)}`;
+              }
+            }}
           >
             搜索
           </button>
-        </form>
+        </div>
         {searchQuery && (
           <div style={{
             marginTop: '0.5rem',
@@ -556,7 +572,7 @@ index.get("/posts", async (c) => {
           </div>
         )}
       </div>
-      {/* ===== 漂流瓶 & 情绪容器快捷入口（响应式） ===== */}
+{/* ===== 漂流瓶 & 情绪容器快捷入口（响应式） ===== */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
