@@ -100,20 +100,21 @@ index.get("/posts", async (c) => {
           <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <a href="/posts" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>首页</a>
-          <a href="/circles" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>圈子</a>
-          <a href="/bottle" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>漂流瓶</a>
-          <a href="/mood" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>情绪</a>
-          <a href="/capsule" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>时光信</a>
+          {/* 所有导航链接都用 outline 风格，无深色背景 */}
+          <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>首页</a>
+          <a href="/circles" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>圈子</a>
+          <a href="/bottle" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>漂流瓶</a>
+          <a href="/mood" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>情绪</a>
+          <a href="/capsule" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>时光信</a>
           {currentUser ? (
             <>
-              <a href={`/profile/${currentUser.username}`} style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>{currentUser.username}</a>
-              <a href="/user/logout" style={{ color: '#999', fontSize: '0.8rem', textDecoration: 'none' }}>退出</a>
+              <a href={`/profile/${currentUser.username}`} role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>{currentUser.username}</a>
+              <a href="/user/logout" role="button" class="outline" style={{ padding: '0.2rem 0.6rem', fontSize: '0.8rem', color: '#999' }}>退出</a>
             </>
           ) : (
             <>
-              <a href="/user/reg" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>注册</a>
-              <a href="/user/login" style={{ color: 'var(--primary)', fontSize: '0.85rem', textDecoration: 'none' }}>登录</a>
+              <a href="/user/reg" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>注册</a>
+              <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>登录</a>
             </>
           )}
         </div>
@@ -225,16 +226,14 @@ index.get("/posts", async (c) => {
       {tagName && <h6 class="mb-2">标签: {tagName}</h6>}
       {username && <h6 class="mb-2">用户: {username} 的帖子</h6>}
 
-      {/* ===== 网格缩略图列表（固定双列，内容完整显示） ===== */}
+      {/* ===== 网格缩略图列表 ===== */}
       {posts.length > 0 ? (
         <ul class="grid grid-cols-2 gap-4 pl-0">
           {posts.map((post) => {
-            // 查找当前帖子的作者信息（包含 badge）
             const postAuthor = authors.find(a => a.username === post.author);
             return (
               <li key={post.id} class="list-none border rounded-xl overflow-hidden shadow hover:shadow-lg transition-shadow duration-200 bg-white dark:bg-gray-800">
                 <a href={`/posts/${post.id}`} class="block h-full flex flex-col">
-                  {/* 缩略图区域 */}
                   <div class="w-full bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
                     {post.file_url ? (
                       post.file_type?.startsWith('image/') ? (
@@ -263,7 +262,6 @@ index.get("/posts", async (c) => {
                         <span class="text-sm">🖼️ 无预览</span>
                       </div>
                     )}
-                    {/* 评论数角标 */}
                     {post.comment_count !== undefined && post.comment_count > 0 && (
                       <span class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-full">
                         💬 {post.comment_count}
@@ -271,7 +269,6 @@ index.get("/posts", async (c) => {
                     )}
                   </div>
 
-                  {/* 标题和作者信息 - 包含 badge 标签 */}
                   <div class="p-2 flex flex-col flex-grow">
                     <h3 class="text-sm font-semibold break-words" title={post.title}>
                       {post.title}
