@@ -31,12 +31,6 @@ index.get("/posts", async (c) => {
   const authorUsernames = [...new Set(posts.map((post) => post.author))];
   const authors = await userService.getUsersByUsernames(authorUsernames);
 
-  const usernameToAvatar: Record<string, string> = {};
-  authors.forEach((author) => {
-    usernameToAvatar[author.username] =
-      c.env.GRAVATAR_BASE_URL + author.email_hash + "?d=identicon";
-  });
-
   const token = getCookie(c, "auth_token");
   let currentUser: ExtendedJWTPayload | null = null;
   let userAvatar: string | null = null;
@@ -78,10 +72,8 @@ index.get("/posts", async (c) => {
     });
   }
 
-  // ========== 获取当前时段问候语（强制使用中国时区） ==========
   function getTimeGreeting(): string {
     const now = new Date();
-    // 获取中国时区（东八区）的时间
     const chinaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
     const hour = chinaTime.getHours();
     if (hour >= 5 && hour < 9) return '早上好';
@@ -101,15 +93,17 @@ index.get("/posts", async (c) => {
     LIMIT 6
   `).all();
 
-  // 获取用户加入的圈子（登录后）
+  // ========== 获取用户加入的圈子（包括自己创建的） ==========
   let userCircles: any[] = [];
   if (currentUser) {
     const result = await c.env.DB.prepare(`
-      SELECT c.id, c.name, c.icon
+      SELECT c.id, c.name, c.icon,
+        (SELECT COUNT(*) FROM circle_members WHERE circle_id = c.id) as member_count
       FROM circles c
       JOIN circle_members cm ON c.id = cm.circle_id
       WHERE cm.user_id = ?
-      LIMIT 3
+      ORDER BY cm.joined_at DESC
+      LIMIT 6
     `).bind(currentUser.id).all();
     userCircles = result.results || [];
   }
@@ -136,12 +130,9 @@ index.get("/posts", async (c) => {
         gap: '0.5rem',
         position: 'relative',
       }}>
-        {/* 左侧 Logo */}
         <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
 
-        {/* 中间导航项（首页下拉、圈子、情绪） */}
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* 首页下拉 */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
               className="outline dropdown-toggle"
@@ -228,7 +219,6 @@ index.get("/posts", async (c) => {
             </div>
           </div>
 
-          {/* 圈子下拉 */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
               className="outline dropdown-toggle"
@@ -289,7 +279,6 @@ index.get("/posts", async (c) => {
             </div>
           </div>
 
-          {/* 情绪下拉 */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
               className="outline dropdown-toggle"
@@ -336,7 +325,6 @@ index.get("/posts", async (c) => {
           </div>
         </div>
 
-        {/* 右侧：头像 + 问候语 */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1rem', flexShrink: 0 }}>
           {currentUser ? (
             <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
@@ -506,36 +494,118 @@ index.get("/posts", async (c) => {
         </a>
       </div>
 
-      {/* ===== 热门圈子快捷入口 ===== */}
-      {circles.results && circles.results.length > 0 && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>🔥 热门圈子</span>
-            <a href="/circles" style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>查看更多 →</a>
+      {/* ===== 我加入的圈子（已登录）/ 热门圈子（未登录） ===== */}
+      {currentUser ? (
+        userCircles.length > 0 ? (
+          <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>📁 我加入的圈子</span>
+              <a href="/circles" style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>发现更多 →</a>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {userCircles.map((circle: any) => {
+                const isIconUrl = circle.icon && circle.icon.startsWith('http');
+                return (
+                  <a key={circle.id} href={`/circles/${circle.id}`} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    padding: '0.3rem 0.8rem 0.3rem 0.5rem',
+                    background: '#f0f0f0',
+                    borderRadius: '20px',
+                    textDecoration: 'none',
+                    fontSize: '0.8rem',
+                    color: '#333'
+                  }}>
+                    {isIconUrl ? (
+                      <img 
+                        src={circle.icon} 
+                        alt={circle.name} 
+                        style={{ width: '1.2rem', height: '1.2rem', borderRadius: '4px', objectFit: 'cover' }} 
+                      />
+                    ) : (
+                      <span>{circle.icon || '📁'}</span>
+                    )}
+                    {circle.name} ({circle.member_count}人)
+                  </a>
+                );
+              })}
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {circles.results.slice(0, 4).map((circle: any) => (
-              <a key={circle.id} href={`/circles/${circle.id}`} style={{
-                padding: '0.3rem 0.8rem',
-                background: '#f0f0f0',
-                borderRadius: '20px',
-                textDecoration: 'none',
-                fontSize: '0.8rem',
-                color: '#333'
-              }}>
-                {circle.icon || '📁'} {circle.name} ({circle.member_count}人)
-              </a>
-            ))}
+        ) : (
+          <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#f8f9fa', borderRadius: '12px', textAlign: 'center' }}>
+            <span style={{ fontSize: '0.9rem', color: '#999' }}>还没有加入任何圈子</span>
+            <a href="/circles" style={{ display: 'block', marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--primary)' }}>去发现圈子 →</a>
           </div>
-        </div>
+        )
+      ) : (
+        circles.results && circles.results.length > 0 && (
+          <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>🔥 热门圈子</span>
+              <a href="/circles" style={{ fontSize: '0.8rem', color: 'var(--primary)' }}>查看更多 →</a>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {circles.results.slice(0, 4).map((circle: any) => {
+                const isIconUrl = circle.icon && circle.icon.startsWith('http');
+                return (
+                  <a key={circle.id} href={`/circles/${circle.id}`} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    padding: '0.3rem 0.8rem 0.3rem 0.5rem',
+                    background: '#f0f0f0',
+                    borderRadius: '20px',
+                    textDecoration: 'none',
+                    fontSize: '0.8rem',
+                    color: '#333'
+                  }}>
+                    {isIconUrl ? (
+                      <img 
+                        src={circle.icon} 
+                        alt={circle.name} 
+                        style={{ width: '1.2rem', height: '1.2rem', borderRadius: '4px', objectFit: 'cover' }} 
+                      />
+                    ) : (
+                      <span>{circle.icon || '📁'}</span>
+                    )}
+                    {circle.name} ({circle.member_count}人)
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        )
       )}
 
-      {/* ===== 发帖按钮 ===== */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-        <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>✍️ 发帖</a>
-        {tagName && <span style={{ fontSize: '0.8rem', color: '#666' }}>📌 当前标签: {tagName}</span>}
-        {username && !tagName && <span style={{ fontSize: '0.8rem', color: '#666' }}>👤 用户: {username}</span>}
-      </div>
+      {/* ===== 标签导航 + 发帖按钮 ===== */}
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+        <div class="flex items-center text-sm flex-wrap gap-1">
+          <a
+            href="/posts"
+            class={`py-1 px-2 color-[var(--primary-inverse)] no-underline rounded ${
+              !tagName && !username ? "bg-gray-2" : ""
+            }`}
+          >
+            全部
+          </a>
+          {allTags.map((tag) => (
+            <a
+              key={tag.id}
+              href={`/posts?tag=${tag.name}`}
+              class={`py-1 px-2 color-[var(--primary-inverse)] rounded no-underline ${
+                tagName === tag.name ? "bg-gray-2" : ""
+              }`}
+            >
+              {tag.name}({tag.post_count})
+            </a>
+          ))}
+        </div>
+        <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>✍️ 发帖</a>
+      </header>
+
+      {tagName && <h6 class="mb-2">标签: {tagName}</h6>}
+      {username && <h6 class="mb-2">用户: {username} 的帖子</h6>}
 
       {/* ===== 帖子列表 ===== */}
       {posts.length > 0 ? (
