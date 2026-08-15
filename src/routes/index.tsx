@@ -121,32 +121,16 @@ index.get("/posts", async (c) => {
   return c.render(
     <div>
       {/* ===== 顶部导航 ===== */}
-      {/* 修改点：减少上下内边距和底部外边距 */}
       <nav style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '0.15rem',      // 原来 1rem，减少底部间距
+        marginBottom: '1rem',
         flexWrap: 'wrap',
         gap: '0.5rem',
         position: 'relative',
-        paddingTop: '0.1rem',        // 减少顶部空白
-        paddingBottom: '0.1rem',     // 减少底部空白
       }}>
-        {/* ===== Logo 区域：图片 + 文字，靠左，减少间距 ===== */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.3rem',            // 原来 0.5rem，更紧凑
-          marginRight: 'auto',      // 靠左，消除右侧多余空白
-        }}>
-          <img 
-            src="/lg.png" 
-            alt="凉宫社区" 
-            style={{ height: '3rem', width: 'auto' }}   // 图标放大到 3rem
-          />
-          <span style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'inherit' }}>凉宫社区</span>
-        </div>
+        <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
 
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           {/* 首页下拉 */}
@@ -481,6 +465,7 @@ index.get("/posts", async (c) => {
           });
         `
       }} />
+
       {/* ===== 漂流瓶 & 情绪容器快捷入口（响应式） ===== */}
       <div style={{
         display: 'grid',
@@ -620,7 +605,6 @@ index.get("/posts", async (c) => {
         {tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>📌 当前标签: {tagName}</span>}
         {username && !tagName && <span style={{ marginLeft: '1rem', fontSize: '0.8rem', color: '#666' }}>👤 用户: {username}</span>}
       </div>
-
       {/* ===== 帖子列表（响应式网格 + 用户头像） ===== */}
       {posts.length > 0 ? (
         <ul style={{
