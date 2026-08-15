@@ -65,23 +65,37 @@ circleCreate.post("/", async (c) => {
 
   const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
+  // 检查是否已存在同名圈子
   const existing = await db.prepare('SELECT id FROM circles WHERE slug = ?').bind(slug).first();
   if (existing) {
-    return c.html('<p style="color:red;">圈子名称已存在，请换一个</p><a href="/circles/create">返回</a>');
+    return c.html(`<p style="color:red;">圈子名称已存在，请换一个</p><a href="/circles/create">返回</a>`);
   }
 
-  const result = await db.prepare(`
-    INSERT INTO circles (name, slug, description, icon, creator_id)
-    VALUES (?, ?, ?, ?, ?)
-    RETURNING id
-  `).bind(name, slug, description, icon, payload.id).first();
+  try {
+    // 插入新圈子
+    const insertResult = await db.prepare(`
+      INSERT INTO circles (name, slug, description, icon, creator_id)
+      VALUES (?, ?, ?, ?, ?)
+    `).bind(name, slug, description, icon, payload.id).run();
 
-  await db.prepare(`
-    INSERT INTO circle_members (circle_id, user_id, role)
-    VALUES (?, ?, 'admin')
-  `).bind(result.id, payload.id).run();
+    // 获取新插入的 ID
+    const { id } = await db.prepare('SELECT last_insert_rowid() as id').first();
 
-  return c.redirect(`/circles/${result.id}`);
+    if (!id) {
+      return c.html('<p style="color:red;">创建失败，请重试</p><a href="/circles/create">返回</a>');
+    }
+
+    // 将创建者加入圈子（作为管理员）
+    await db.prepare(`
+      INSERT INTO circle_members (circle_id, user_id, role)
+      VALUES (?, ?, 'admin')
+    `).bind(id, payload.id).run();
+
+    return c.redirect(`/circles/${id}`);
+  } catch (error) {
+    console.error('创建圈子错误:', error);
+    return c.html(`<p style="color:red;">创建失败：${error.message}</p><a href="/circles/create">返回</a>`);
+  }
 });
 
 export { circleCreate };
