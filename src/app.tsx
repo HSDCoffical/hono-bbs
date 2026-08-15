@@ -11,13 +11,11 @@ import upload from './routes/api/upload'
 import { profileApi } from './routes/api/profile'
 import { messagesApi } from './routes/api/messages'
 
-// ========== API 路由 ==========
+// ========== 新增：导入新路由 ==========
 import circles from './routes/api/circles'
 import bottles from './routes/api/bottles'
 import moods from './routes/api/moods'
 import capsules from './routes/api/capsules'
-
-// ========== 页面路由 ==========
 import { bottle } from './routes/bottle'
 import { bottleSend } from './routes/bottle/send'
 import { bottlePick } from './routes/bottle/pick'
@@ -66,21 +64,22 @@ app.route('/api', upload)
 app.route('/api/profile', profileApi)
 app.route('/api/messages', messagesApi)
 
-// ========== 新增 API 路由 ==========
+// ========== 新增：挂载新路由 ==========
+// API 路由
 app.route('/api/circles', circles)
 app.route('/api/bottles', bottles)
 app.route('/api/moods', moods)
 app.route('/api/capsules', capsules)
 
-// ========== 新增页面路由 ==========
+// 页面路由 - 注意顺序！/create 必须在 /:id 之前
 app.route('/bottle', bottle)
 app.route('/bottle/send', bottleSend)
 app.route('/bottle/pick', bottlePick)
 app.route('/mood', mood)
 app.route('/capsule', capsule)
 app.route('/capsule/new', capsuleNew)
+app.route('/circles/create', circleCreate)  // 先匹配 /create
 app.route('/circles', circlesPage)
-app.route('/circles', circleDetail)
-app.route('/circles/create', circleCreate)
+app.route('/circles', circleDetail)         // 再匹配 /:id
 
 export default app
