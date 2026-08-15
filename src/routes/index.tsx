@@ -46,7 +46,6 @@ index.get("/posts", async (c) => {
         token,
         c.env.JWT_SECRET
       )) as ExtendedJWTPayload;
-      // 查询用户头像
       if (currentUser) {
         const userRecord = await c.env.DB.prepare(
           'SELECT avatar, email_hash FROM users WHERE id = ?'
@@ -113,7 +112,7 @@ index.get("/posts", async (c) => {
 
   return c.render(
     <div>
-      {/* ===== 新的顶部导航 ===== */}
+      {/* ===== 顶部导航 ===== */}
       <nav style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -136,7 +135,7 @@ index.get("/posts", async (c) => {
             style={{
               padding: '0.3rem 0.8rem',
               fontSize: '0.85rem',
-              borderRadius: '8px',          // R角
+              borderRadius: '4px',          // 轻微 R 角，更板正
               minWidth: '3.5rem',
               textAlign: 'center',
             }}
@@ -153,7 +152,7 @@ index.get("/posts", async (c) => {
                 fontSize: '0.85rem',
                 background: 'transparent',
                 border: '1px solid var(--primary)',
-                borderRadius: '8px',        // R角
+                borderRadius: '4px',        // 轻微 R 角
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -175,7 +174,7 @@ index.get("/posts", async (c) => {
               left: 0,
               background: 'white',
               border: '1px solid #ddd',
-              borderRadius: '8px',
+              borderRadius: '6px',
               minWidth: '180px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
               padding: '0',
@@ -214,7 +213,7 @@ index.get("/posts", async (c) => {
                 fontSize: '0.85rem',
                 background: 'transparent',
                 border: '1px solid var(--primary)',
-                borderRadius: '8px',        // R角
+                borderRadius: '4px',        // 轻微 R 角
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -236,7 +235,7 @@ index.get("/posts", async (c) => {
               left: 0,
               background: 'white',
               border: '1px solid #ddd',
-              borderRadius: '8px',
+              borderRadius: '6px',
               minWidth: '150px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
               padding: '0',
@@ -252,15 +251,15 @@ index.get("/posts", async (c) => {
           </div>
         </div>
 
-        {/* 右侧用户头像（圆形，显示真实头像） */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        {/* 右侧用户头像 + 用户名 */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1rem' }}>
           {currentUser ? (
             <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
               <div
                 className="avatar-toggle"
                 style={{
-                  width: '2.2rem',
-                  height: '2.2rem',
+                  width: '2.4rem',
+                  height: '2.4rem',
                   borderRadius: '50%',
                   overflow: 'hidden',
                   cursor: 'pointer',
@@ -302,7 +301,7 @@ index.get("/posts", async (c) => {
                 right: 0,
                 background: 'white',
                 border: '1px solid #ddd',
-                borderRadius: '8px',
+                borderRadius: '6px',
                 minWidth: '120px',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 padding: '0',
@@ -316,7 +315,22 @@ index.get("/posts", async (c) => {
               </div>
             </div>
           ) : (
-            <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '8px' }}>登录</a>
+            <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>登录</a>
+          )}
+          {/* 用户名显示在头像下方 */}
+          {currentUser && (
+            <span style={{
+              fontSize: '0.7rem',
+              color: '#666',
+              lineHeight: '1.2',
+              maxWidth: '2.8rem',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              textAlign: 'center',
+            }}>
+              {currentUser.username}
+            </span>
           )}
         </div>
       </nav>
@@ -457,7 +471,7 @@ index.get("/posts", async (c) => {
             </a>
           ))}
         </div>
-        <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', whiteSpace: 'nowrap', borderRadius: '8px' }}>✍️ 发帖</a>
+        <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', whiteSpace: 'nowrap', borderRadius: '4px' }}>✍️ 发帖</a>
       </header>
 
       {tagName && <h6 class="mb-2">标签: {tagName}</h6>}
