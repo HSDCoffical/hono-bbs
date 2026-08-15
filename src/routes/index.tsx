@@ -118,13 +118,13 @@ index.get("/posts", async (c) => {
 
         {/* 中间导航项 */}
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* 首页 */}
-          <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>首页</a>
+          {/* 首页（与圈子和情绪样式一致） */}
+          <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: 'var(--border-radius)' }}>首页</a>
 
           {/* 圈子下拉 */}
-          <div style={{ position: 'relative', display: 'inline-block' }} class="dropdown-wrapper">
+          <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
-              class="outline"
+              className="outline dropdown-toggle"
               style={{
                 padding: '0.3rem 0.8rem',
                 fontSize: '0.85rem',
@@ -136,12 +136,15 @@ index.get("/posts", async (c) => {
                 alignItems: 'center',
                 gap: '0.3rem'
               }}
-              onclick="toggleDropdown(event, 'circles-dropdown')"
+              data-target="circles-dropdown"
             >
               圈子 <span style={{ fontSize: '0.7rem' }}>▾</span>
             </button>
-            <div id="circles-dropdown" class="dropdown-menu" style={{
-              display: 'none',
+            <div id="circles-dropdown" className="dropdown-menu" style={{
+              maxHeight: '0',
+              opacity: '0',
+              overflow: 'hidden',
+              transition: 'max-height 0.3s ease, opacity 0.3s ease',
               position: 'absolute',
               top: '100%',
               left: 0,
@@ -150,35 +153,37 @@ index.get("/posts", async (c) => {
               borderRadius: '8px',
               minWidth: '180px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-              padding: '0.3rem 0',
+              padding: '0',
               zIndex: 100,
               marginTop: '0.2rem',
             }}>
-              <a href="/circles" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>圈子首页</a>
-              {currentUser ? (
-                <>
-                  <div style={{ padding: '0.2rem 0.8rem', fontSize: '0.75rem', color: '#999', borderTop: '1px solid #eee' }}>我加入的圈子</div>
-                  {userCircles.length > 0 ? (
-                    userCircles.map((c: any) => (
-                      <a key={c.id} href={`/circles/${c.id}`} style={{ display: 'block', padding: '0.3rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>
-                        {c.icon || '📁'} {c.name}
-                      </a>
-                    ))
-                  ) : (
-                    <div style={{ padding: '0.2rem 0.8rem', fontSize: '0.8rem', color: '#999' }}>暂无加入的圈子</div>
-                  )}
-                  <a href="/circles/create" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: 'var(--primary)', fontSize: '0.85rem', borderTop: '1px solid #eee' }}>＋ 创建圈子</a>
-                </>
-              ) : (
-                <a href="/user/login" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#999', fontSize: '0.85rem' }}>登录后查看我的圈子</a>
-              )}
+              <div style={{ padding: '0.3rem 0' }}>
+                <a href="/circles" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>圈子首页</a>
+                {currentUser ? (
+                  <>
+                    <div style={{ padding: '0.2rem 0.8rem', fontSize: '0.75rem', color: '#999', borderTop: '1px solid #eee' }}>我加入的圈子</div>
+                    {userCircles.length > 0 ? (
+                      userCircles.map((c: any) => (
+                        <a key={c.id} href={`/circles/${c.id}`} style={{ display: 'block', padding: '0.3rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>
+                          {c.icon || '📁'} {c.name}
+                        </a>
+                      ))
+                    ) : (
+                      <div style={{ padding: '0.2rem 0.8rem', fontSize: '0.8rem', color: '#999' }}>暂无加入的圈子</div>
+                    )}
+                    <a href="/circles/create" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: 'var(--primary)', fontSize: '0.85rem', borderTop: '1px solid #eee' }}>＋ 创建圈子</a>
+                  </>
+                ) : (
+                  <a href="/user/login" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#999', fontSize: '0.85rem' }}>登录后查看我的圈子</a>
+                )}
+              </div>
             </div>
           </div>
 
           {/* 情绪下拉 */}
-          <div style={{ position: 'relative', display: 'inline-block' }} class="dropdown-wrapper">
+          <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
-              class="outline"
+              className="outline dropdown-toggle"
               style={{
                 padding: '0.3rem 0.8rem',
                 fontSize: '0.85rem',
@@ -190,12 +195,15 @@ index.get("/posts", async (c) => {
                 alignItems: 'center',
                 gap: '0.3rem'
               }}
-              onclick="toggleDropdown(event, 'mood-dropdown')"
+              data-target="mood-dropdown"
             >
               情绪 <span style={{ fontSize: '0.7rem' }}>▾</span>
             </button>
-            <div id="mood-dropdown" class="dropdown-menu" style={{
-              display: 'none',
+            <div id="mood-dropdown" className="dropdown-menu" style={{
+              maxHeight: '0',
+              opacity: '0',
+              overflow: 'hidden',
+              transition: 'max-height 0.3s ease, opacity 0.3s ease',
               position: 'absolute',
               top: '100%',
               left: 0,
@@ -204,25 +212,28 @@ index.get("/posts", async (c) => {
               borderRadius: '8px',
               minWidth: '150px',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-              padding: '0.3rem 0',
+              padding: '0',
               zIndex: 100,
               marginTop: '0.2rem',
             }}>
-              <a href="/bottle" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>🍶 漂流瓶</a>
-              <a href="/mood" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>🫙 情绪容器</a>
-              <a href="/capsule" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>📮 时光信</a>
+              <div style={{ padding: '0.3rem 0' }}>
+                <a href="/bottle" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>🍶 漂流瓶</a>
+                <a href="/mood" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>🫙 情绪容器</a>
+                <a href="/capsule" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>📮 时光信</a>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 右侧用户头像/登录 */}
+        {/* 右侧用户头像（圆形） */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {currentUser ? (
-            <div style={{ position: 'relative', display: 'inline-block' }} class="dropdown-wrapper">
+            <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
               <div
+                className="avatar-toggle"
                 style={{
-                  width: '2rem',
-                  height: '2rem',
+                  width: '2.2rem',
+                  height: '2.2rem',
                   borderRadius: '50%',
                   background: 'var(--primary)',
                   color: 'white',
@@ -231,14 +242,18 @@ index.get("/posts", async (c) => {
                   justifyContent: 'center',
                   fontWeight: 'bold',
                   cursor: 'pointer',
-                  fontSize: '0.9rem'
+                  fontSize: '1rem',
+                  userSelect: 'none'
                 }}
-                onclick="toggleDropdown(event, 'user-dropdown')"
+                data-target="user-dropdown"
               >
                 {currentUser.username.charAt(0).toUpperCase()}
               </div>
-              <div id="user-dropdown" class="dropdown-menu" style={{
-                display: 'none',
+              <div id="user-dropdown" className="dropdown-menu" style={{
+                maxHeight: '0',
+                opacity: '0',
+                overflow: 'hidden',
+                transition: 'max-height 0.3s ease, opacity 0.3s ease',
                 position: 'absolute',
                 top: '100%',
                 right: 0,
@@ -247,12 +262,14 @@ index.get("/posts", async (c) => {
                 borderRadius: '8px',
                 minWidth: '120px',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                padding: '0.3rem 0',
+                padding: '0',
                 zIndex: 100,
                 marginTop: '0.2rem',
               }}>
-                <a href={`/profile/${currentUser.username}`} style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>查看资料</a>
-                <a href="/user/logout" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#d32f2f', fontSize: '0.85rem' }}>退出</a>
+                <div style={{ padding: '0.3rem 0' }}>
+                  <a href={`/profile/${currentUser.username}`} style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>查看资料</a>
+                  <a href="/user/logout" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#d32f2f', fontSize: '0.85rem' }}>退出</a>
+                </div>
               </div>
             </div>
           ) : (
@@ -261,28 +278,53 @@ index.get("/posts", async (c) => {
         </div>
       </nav>
 
-      {/* ===== 下拉菜单控制脚本 ===== */}
+      {/* ===== 下拉菜单控制脚本（带动画） ===== */}
       <script dangerouslySetInnerHTML={{
         __html: `
-          // 下拉菜单切换
-          function toggleDropdown(e, id) {
+          // 切换下拉菜单（带滑出/收起动画）
+          function toggleDropdown(e) {
             e.stopPropagation();
-            const menu = document.getElementById(id);
+            const targetId = this.dataset.target;
+            const menu = document.getElementById(targetId);
             if (!menu) return;
-            // 关闭其他所有下拉
+            // 关闭所有其他下拉
             document.querySelectorAll('.dropdown-menu').forEach(el => {
-              if (el.id !== id) el.style.display = 'none';
+              if (el.id !== targetId) {
+                el.style.maxHeight = '0';
+                el.style.opacity = '0';
+                el.style.padding = '0';
+              }
             });
             // 切换当前
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            const isOpen = menu.style.maxHeight && menu.style.maxHeight !== '0px';
+            if (isOpen) {
+              menu.style.maxHeight = '0';
+              menu.style.opacity = '0';
+              menu.style.padding = '0';
+            } else {
+              menu.style.maxHeight = '300px';
+              menu.style.opacity = '1';
+              menu.style.padding = '0.3rem 0';
+            }
           }
+
+          // 给所有 .dropdown-toggle 和 .avatar-toggle 绑定事件
+          document.querySelectorAll('.dropdown-toggle, .avatar-toggle').forEach(el => {
+            el.addEventListener('click', toggleDropdown);
+          });
+
           // 点击页面其他区域关闭所有下拉
           document.addEventListener('click', function(e) {
             if (!e.target.closest('.dropdown-wrapper')) {
-              document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
+              document.querySelectorAll('.dropdown-menu').forEach(el => {
+                el.style.maxHeight = '0';
+                el.style.opacity = '0';
+                el.style.padding = '0';
+              });
             }
           });
-          // 阻止下拉菜单内的点击冒泡，防止点击链接时意外关闭（因为链接会跳转，无需额外处理）
+
+          // 阻止下拉菜单内的点击冒泡，避免触发页面关闭
           document.querySelectorAll('.dropdown-menu').forEach(el => {
             el.addEventListener('click', function(e) {
               e.stopPropagation();
@@ -291,7 +333,7 @@ index.get("/posts", async (c) => {
         `
       }} />
 
-      {/* ===== 新奇点快捷入口 ===== */}
+      {/* ===== 漂流瓶 & 情绪容器快捷入口（保留） ===== */}
       <div style={{
         display: 'flex',
         gap: '1rem',
