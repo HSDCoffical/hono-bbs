@@ -56,8 +56,10 @@ circlesPage.get("/", async (c) => {
           const isIconUrl = circle.icon && circle.icon.startsWith('http');
           return (
             <a href={`/circles/${circle.id}`} key={circle.id} style={{
-              textAlign: 'center',
-              padding: '1.25rem 0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '0.75rem 1rem',
               borderRadius: '12px',
               transition: 'all 0.2s',
               border: '1px solid #e8e8e8',
@@ -74,15 +76,16 @@ circlesPage.get("/", async (c) => {
                     height: '2.5rem', 
                     borderRadius: '8px', 
                     objectFit: 'cover',
-                    display: 'block',
-                    margin: '0 auto'
+                    flexShrink: 0
                   }} 
                 />
               ) : (
-                <div style={{ fontSize: '2.5rem' }}>{circle.icon || '📁'}</div>
+                <div style={{ fontSize: '2rem', flexShrink: 0 }}>{circle.icon || '📁'}</div>
               )}
-              <div style={{ fontWeight: 600, margin: '0.5rem 0 0.25rem' }}>{circle.name}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--muted-color)' }}>{circle.member_count} 人</div>
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ fontWeight: 600, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{circle.name}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted-color)' }}>{circle.member_count} 人</div>
+              </div>
             </a>
           );
         })}
@@ -96,8 +99,10 @@ circlesPage.get("/", async (c) => {
           const isIconUrl = circle.icon && circle.icon.startsWith('http');
           return (
             <a href={`/circles/${circle.id}`} key={circle.id} style={{
-              textAlign: 'center',
-              padding: '1.25rem 0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              padding: '0.75rem 1rem',
               borderRadius: '12px',
               transition: 'all 0.2s',
               border: '1px solid #e8e8e8',
@@ -114,15 +119,16 @@ circlesPage.get("/", async (c) => {
                     height: '2.5rem', 
                     borderRadius: '8px', 
                     objectFit: 'cover',
-                    display: 'block',
-                    margin: '0 auto'
+                    flexShrink: 0
                   }} 
                 />
               ) : (
-                <div style={{ fontSize: '2.5rem' }}>{circle.icon || '📁'}</div>
+                <div style={{ fontSize: '2rem', flexShrink: 0 }}>{circle.icon || '📁'}</div>
               )}
-              <div style={{ fontWeight: 600, margin: '0.5rem 0 0.25rem' }}>{circle.name}</div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--muted-color)' }}>{circle.member_count} 人</div>
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ fontWeight: 600, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{circle.name}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted-color)' }}>{circle.member_count} 人</div>
+              </div>
             </a>
           );
         })}
