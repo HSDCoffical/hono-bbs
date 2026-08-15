@@ -473,14 +473,54 @@ index.get("/posts", async (c) => {
         `
       }} />
 
-      {/* ===== 搜索框（简洁版，点击输入框自然聚焦） ===== */}
+      {/* ===== 搜索框（纯 div 结构，无 form） ===== */}
       <div style={{
         marginBottom: '1.25rem',
         width: '100%',
+        position: 'relative',
       }}>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
+        <input
+          id="search-input"
+          type="text"
+          placeholder="🔍 搜索帖子..."
+          defaultValue={searchQuery || ''}
+          style={{
+            width: '100%',
+            padding: '0.6rem 3.5rem 0.6rem 1rem',
+            borderRadius: '12px',
+            border: '1px solid rgba(0,0,0,0.08)',
+            background: 'rgba(255,255,255,0.6)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            fontSize: '0.9rem',
+            color: '#333',
+            outline: 'none',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            WebkitAppearance: 'none',
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = 'var(--primary)';
+            e.target.style.boxShadow = '0 0 0 3px rgba(var(--primary-rgb, 66, 133, 244), 0.15)';
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = 'rgba(0,0,0,0.08)';
+            e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const value = (e.target as HTMLInputElement).value.trim();
+              if (value) {
+                window.location.href = `/posts?search=${encodeURIComponent(value)}`;
+              } else {
+                window.location.href = `/posts`;
+              }
+            }
+          }}
+        />
+        <button
+          onClick={() => {
             const input = document.getElementById('search-input') as HTMLInputElement;
             const value = input?.value?.trim();
             if (value) {
@@ -489,73 +529,40 @@ index.get("/posts", async (c) => {
               window.location.href = `/posts`;
             }
           }}
-          style={{ position: 'relative', width: '100%' }}
-        >
-          <input
-            id="search-input"
-            type="search"
-            placeholder="🔍 搜索帖子..."
-            defaultValue={searchQuery || ''}
-            style={{
-              width: '100%',
-              padding: '0.6rem 3.5rem 0.6rem 1rem',
-              borderRadius: '12px',
-              border: '1px solid rgba(0,0,0,0.08)',
-              background: 'rgba(255,255,255,0.6)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              fontSize: '0.9rem',
-              color: '#333',
-              outline: 'none',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-              WebkitAppearance: 'none',
-            }}
-            onFocus={(e) => {
-              e.target.style.borderColor = 'var(--primary)';
-              e.target.style.boxShadow = '0 0 0 3px rgba(var(--primary-rgb, 66, 133, 244), 0.15)';
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = 'rgba(0,0,0,0.08)';
-              e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
-            }}
-          />
-          <button
-            type="submit"
-            style={{
-              position: 'absolute',
-              right: '0.4rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              padding: '0.25rem 0.8rem',
-              borderRadius: '8px',
-              border: 'none',
-              background: 'var(--primary)',
-              color: 'white',
-              fontSize: '0.75rem',
-              cursor: 'pointer',
-              fontWeight: 500,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            搜索
-          </button>
-        </form>
-        {searchQuery && (
-          <div style={{
-            marginTop: '0.5rem',
-            padding: '0.3rem 0.8rem',
-            background: 'rgba(var(--primary-rgb, 66, 133, 244), 0.08)',
+          style={{
+            position: 'absolute',
+            right: '0.4rem',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            padding: '0.25rem 0.8rem',
             borderRadius: '8px',
-            fontSize: '0.85rem',
-            color: 'var(--primary)',
-          }}>
-            🔍 搜索: “{searchQuery}” 
-            {posts.length === 0 ? ' — 没有找到相关帖子' : ` — 找到 ${posts.length} 个结果`}
-            <a href="/posts" style={{ marginLeft: '0.8rem', fontSize: '0.75rem', color: '#999', textDecoration: 'none' }}>清除搜索</a>
-          </div>
-        )}
+            border: 'none',
+            background: 'var(--primary)',
+            color: 'white',
+            fontSize: '0.75rem',
+            cursor: 'pointer',
+            fontWeight: 500,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          搜索
+        </button>
       </div>
+      {searchQuery && (
+        <div style={{
+          marginTop: '0.5rem',
+          padding: '0.3rem 0.8rem',
+          background: 'rgba(var(--primary-rgb, 66, 133, 244), 0.08)',
+          borderRadius: '8px',
+          fontSize: '0.85rem',
+          color: 'var(--primary)',
+        }}>
+          🔍 搜索: “{searchQuery}” 
+          {posts.length === 0 ? ' — 没有找到相关帖子' : ` — 找到 ${posts.length} 个结果`}
+          <a href="/posts" style={{ marginLeft: '0.8rem', fontSize: '0.75rem', color: '#999', textDecoration: 'none' }}>清除搜索</a>
+        </div>
+      )}
+    </div>
       {/* ===== 漂流瓶 & 情绪容器快捷入口 ===== */}
       <div style={{
         display: 'grid',
