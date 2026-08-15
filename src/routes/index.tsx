@@ -121,31 +121,29 @@ index.get("/posts", async (c) => {
   return c.render(
     <div>
       {/* ===== 顶部导航 ===== */}
+      {/* 修改点：减少上下内边距和底部外边距 */}
       <nav style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '1rem',
+        marginBottom: '0.5rem',      // 原来 1rem，减少底部间距
         flexWrap: 'wrap',
         gap: '0.5rem',
         position: 'relative',
+        paddingTop: '0.3rem',        // 减少顶部空白
+        paddingBottom: '0.3rem',     // 减少底部空白
       }}>
-        {/* ============================================================
-            Logo 区域（图片 + 文字）
-            调整下方 marginLeft 或 marginRight 可改变 Logo 位置：
-            - 默认靠左：注释掉 margin 行或设为 0
-            - 居中：取消注释 marginRight: 'auto'（同时可能需配合父容器）
-            - 靠右：取消注释 marginLeft: 'auto'
-            ============================================================ */}
+        {/* ===== Logo 区域：图片 + 文字，靠左，减少间距 ===== */}
         <div style={{
-  display: 'flex',
-  alignItems: 'center',
-  gap: '0.5rem',
-}}>
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.3rem',            // 原来 0.5rem，更紧凑
+          marginRight: 'auto',      // 靠左，消除右侧多余空白
+        }}>
           <img 
             src="/lg.png" 
             alt="凉宫社区" 
-            style={{ height: '3rem', width: 'auto' }} 
+            style={{ height: '3rem', width: 'auto' }}   // 图标放大到 3rem
           />
           <span style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'inherit' }}>凉宫社区</span>
         </div>
