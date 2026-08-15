@@ -134,14 +134,14 @@ index.get("/posts", async (c) => {
             Logo 区域（图片 + 文字）
             调整下方 marginLeft 或 marginRight 可改变 Logo 位置：
             - 默认靠左：注释掉 margin 行或设为 0
-            - 居中：取消注释 marginRight: '4px'（同时可能需配合父容器）
+            - 居中：取消注释 marginRight: '10px'（同时可能需配合父容器）
             - 靠右：取消注释 marginLeft: 'auto'
             ============================================================ */}
         <div style={{
   display: 'flex',
   alignItems: 'center',
   gap: '0.5rem',
-  marginTop: '-0.5rem',     // ← 往下移（正数向下，负数向上）
+  marginTop: '-0.8rem',     // ← 往下移（正数向下，负数向上）
 }}>
           <img 
             src="/lg.png" 
