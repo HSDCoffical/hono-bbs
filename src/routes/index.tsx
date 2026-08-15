@@ -112,12 +112,12 @@ index.get("/posts", async (c) => {
 
   return c.render(
     <div>
-      {/* ===== 顶部导航 ===== */}
+      {/* ===== 顶部导航（只保留 Logo + 首页/圈子/情绪 + 头像） ===== */}
       <nav style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '1.5rem',
+        marginBottom: '1rem',
         flexWrap: 'wrap',
         gap: '0.5rem',
         position: 'relative',
@@ -125,7 +125,7 @@ index.get("/posts", async (c) => {
         {/* 左侧 Logo */}
         <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
 
-        {/* 中间导航项（首页下拉、圈子、情绪） */}
+        {/* 中间导航项（首页下拉、圈子、情绪） - 不带发帖按钮 */}
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           {/* 首页下拉（整合全部标签） */}
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
@@ -167,16 +167,18 @@ index.get("/posts", async (c) => {
             }}>
               <div style={{ padding: '0.3rem 0' }}>
                 {/* 创建标签（在全部上面） */}
-                <a href="/tags" style={{
-                  display: 'block',
-                  padding: '0.4rem 0.8rem',
-                  textDecoration: 'none',
-                  color: 'var(--primary)',
-                  fontSize: '0.85rem',
-                  fontWeight: 500,
-                }}>
-                  ＋ 创建标签
-                </a>
+                {isAdmin && (
+                  <a href="/tags" style={{
+                    display: 'block',
+                    padding: '0.4rem 0.8rem',
+                    textDecoration: 'none',
+                    color: 'var(--primary)',
+                    fontSize: '0.85rem',
+                    fontWeight: 500,
+                  }}>
+                    ＋ 创建标签
+                  </a>
+                )}
                 <div style={{ borderTop: '1px solid #eee', margin: '0.2rem 0' }}></div>
                 {/* 全部 */}
                 <a
@@ -321,13 +323,10 @@ index.get("/posts", async (c) => {
               </div>
             </div>
           </div>
-
-          {/* 发帖按钮（移到导航行） */}
-          <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px', whiteSpace: 'nowrap' }}>✍️ 发帖</a>
         </div>
 
-        {/* 右侧用户头像 + 用户名 */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1rem' }}>
+        {/* 右侧用户头像 + 用户名（最右边） */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1rem', flexShrink: 0 }}>
           {currentUser ? (
             <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
               <div
@@ -522,10 +521,12 @@ index.get("/posts", async (c) => {
         </div>
       )}
 
-      {/* ===== 标签导航已移除，合并到首页下拉菜单中 ===== */}
-      {/* 保留页面标题显示当前选中的标签 */}
-      {tagName && <h6 style={{ marginBottom: '0.5rem', fontSize: '0.85rem', color: '#666' }}>📌 当前标签: {tagName}</h6>}
-      {username && <h6 style={{ marginBottom: '0.5rem', fontSize: '0.85rem', color: '#666' }}>👤 用户: {username} 的帖子</h6>}
+      {/* ===== 发帖按钮（在帖子列表左上方，独立一行） ===== */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+        <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>✍️ 发帖</a>
+        {tagName && <span style={{ fontSize: '0.8rem', color: '#666' }}>📌 当前标签: {tagName}</span>}
+        {username && !tagName && <span style={{ fontSize: '0.8rem', color: '#666' }}>👤 用户: {username}</span>}
+      </div>
 
       {/* ===== 帖子列表 ===== */}
       {posts.length > 0 ? (
