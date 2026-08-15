@@ -78,11 +78,12 @@ index.get("/posts", async (c) => {
     });
   }
 
-  // ========== 获取当前时段问候语（修复：使用用户本地时间） ==========
+  // ========== 获取当前时段问候语（强制使用中国时区） ==========
   function getTimeGreeting(): string {
-    // 获取用户本地时间的时区偏移，确保使用用户本地的当前时间
     const now = new Date();
-    const hour = now.getHours();
+    // 获取中国时区（东八区）的时间
+    const chinaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
+    const hour = chinaTime.getHours();
     if (hour >= 5 && hour < 9) return '早上好';
     if (hour >= 9 && hour < 12) return '上午好';
     if (hour >= 12 && hour < 14) return '中午好';
@@ -335,9 +336,8 @@ index.get("/posts", async (c) => {
           </div>
         </div>
 
-        {/* ===== 右侧：头像 + 问候语 ===== */}
+        {/* 右侧：头像 + 问候语 */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.1rem', flexShrink: 0 }}>
-          {/* 头像 */}
           {currentUser ? (
             <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
               <div
@@ -402,8 +402,6 @@ index.get("/posts", async (c) => {
           ) : (
             <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', borderRadius: '4px' }}>登录</a>
           )}
-
-          {/* 问候语：登录显示 "用户名，时段好"，未登录显示 "时段好" */}
           <span style={{
             fontSize: '0.7rem',
             color: '#555',
