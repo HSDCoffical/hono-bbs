@@ -148,7 +148,8 @@ index.get("/posts", async (c) => {
       }}>
         <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
 
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        {/* ===== 修改点：marginLeft: '0.8rem' 让三个菜单整体右移 ===== */}
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginLeft: '0.8rem' }}>
           <div className="dropdown-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
             <button
               className="outline dropdown-toggle"
@@ -478,7 +479,7 @@ index.get("/posts", async (c) => {
         `
       }} />
 
-      {/* ===== 搜索框（性能优化版） ===== */}
+      {/* ===== 搜索框 ===== */}
       <form
         action="/posts"
         method="GET"
