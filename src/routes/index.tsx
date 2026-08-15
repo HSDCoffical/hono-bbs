@@ -78,6 +78,19 @@ index.get("/posts", async (c) => {
     LIMIT 6
   `).all();
 
+  // 获取用户加入的圈子（登录后）
+  let userCircles: any[] = [];
+  if (currentUser) {
+    const result = await c.env.DB.prepare(`
+      SELECT c.id, c.name, c.icon
+      FROM circles c
+      JOIN circle_members cm ON c.id = cm.circle_id
+      WHERE cm.user_id = ?
+      LIMIT 3
+    `).bind(currentUser.id).all();
+    userCircles = result.results || [];
+  }
+
   // ========== 获取漂流瓶数量 ==========
   const bottleCount = await c.env.DB.prepare(
     "SELECT COUNT(*) as count FROM bottles WHERE status = 'drifting'"
@@ -90,28 +103,193 @@ index.get("/posts", async (c) => {
 
   return c.render(
     <div>
-      {/* ===== 导航栏 ===== */}
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          {/* 只保留首页和圈子 */}
+      {/* ===== 新的顶部导航 ===== */}
+      <nav style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '1.5rem',
+        flexWrap: 'wrap',
+        gap: '0.5rem',
+        position: 'relative',
+      }}>
+        {/* 左侧 Logo */}
+        <a href="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', textDecoration: 'none' }}>☁️ 凉宫社区</a>
+
+        {/* 中间导航项 */}
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* 首页 */}
           <a href="/posts" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>首页</a>
-          <a href="/circles" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>圈子</a>
+
+          {/* 圈子下拉 */}
+          <div style={{ position: 'relative', display: 'inline-block' }} class="dropdown-wrapper">
+            <button
+              class="outline"
+              style={{
+                padding: '0.3rem 0.8rem',
+                fontSize: '0.85rem',
+                background: 'transparent',
+                border: '1px solid var(--primary)',
+                borderRadius: 'var(--border-radius)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.3rem'
+              }}
+              onclick="toggleDropdown(event, 'circles-dropdown')"
+            >
+              圈子 <span style={{ fontSize: '0.7rem' }}>▾</span>
+            </button>
+            <div id="circles-dropdown" class="dropdown-menu" style={{
+              display: 'none',
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              background: 'white',
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              minWidth: '180px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              padding: '0.3rem 0',
+              zIndex: 100,
+              marginTop: '0.2rem',
+            }}>
+              <a href="/circles" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>圈子首页</a>
+              {currentUser ? (
+                <>
+                  <div style={{ padding: '0.2rem 0.8rem', fontSize: '0.75rem', color: '#999', borderTop: '1px solid #eee' }}>我加入的圈子</div>
+                  {userCircles.length > 0 ? (
+                    userCircles.map((c: any) => (
+                      <a key={c.id} href={`/circles/${c.id}`} style={{ display: 'block', padding: '0.3rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>
+                        {c.icon || '📁'} {c.name}
+                      </a>
+                    ))
+                  ) : (
+                    <div style={{ padding: '0.2rem 0.8rem', fontSize: '0.8rem', color: '#999' }}>暂无加入的圈子</div>
+                  )}
+                  <a href="/circles/create" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: 'var(--primary)', fontSize: '0.85rem', borderTop: '1px solid #eee' }}>＋ 创建圈子</a>
+                </>
+              ) : (
+                <a href="/user/login" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#999', fontSize: '0.85rem' }}>登录后查看我的圈子</a>
+              )}
+            </div>
+          </div>
+
+          {/* 情绪下拉 */}
+          <div style={{ position: 'relative', display: 'inline-block' }} class="dropdown-wrapper">
+            <button
+              class="outline"
+              style={{
+                padding: '0.3rem 0.8rem',
+                fontSize: '0.85rem',
+                background: 'transparent',
+                border: '1px solid var(--primary)',
+                borderRadius: 'var(--border-radius)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.3rem'
+              }}
+              onclick="toggleDropdown(event, 'mood-dropdown')"
+            >
+              情绪 <span style={{ fontSize: '0.7rem' }}>▾</span>
+            </button>
+            <div id="mood-dropdown" class="dropdown-menu" style={{
+              display: 'none',
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              background: 'white',
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              minWidth: '150px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              padding: '0.3rem 0',
+              zIndex: 100,
+              marginTop: '0.2rem',
+            }}>
+              <a href="/bottle" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>🍶 漂流瓶</a>
+              <a href="/mood" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>🫙 情绪容器</a>
+              <a href="/capsule" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>📮 时光信</a>
+            </div>
+          </div>
+        </div>
+
+        {/* 右侧用户头像/登录 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           {currentUser ? (
-            <>
-              <a href={`/profile/${currentUser.username}`} role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>{currentUser.username}</a>
-              <a href="/user/logout" role="button" class="outline" style={{ padding: '0.2rem 0.6rem', fontSize: '0.8rem', color: '#999' }}>退出</a>
-            </>
+            <div style={{ position: 'relative', display: 'inline-block' }} class="dropdown-wrapper">
+              <div
+                style={{
+                  width: '2rem',
+                  height: '2rem',
+                  borderRadius: '50%',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem'
+                }}
+                onclick="toggleDropdown(event, 'user-dropdown')"
+              >
+                {currentUser.username.charAt(0).toUpperCase()}
+              </div>
+              <div id="user-dropdown" class="dropdown-menu" style={{
+                display: 'none',
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                background: 'white',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                minWidth: '120px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                padding: '0.3rem 0',
+                zIndex: 100,
+                marginTop: '0.2rem',
+              }}>
+                <a href={`/profile/${currentUser.username}`} style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#333', fontSize: '0.85rem' }}>查看资料</a>
+                <a href="/user/logout" style={{ display: 'block', padding: '0.4rem 0.8rem', textDecoration: 'none', color: '#d32f2f', fontSize: '0.85rem' }}>退出</a>
+              </div>
+            </div>
           ) : (
-            <>
-              <a href="/user/reg" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>注册</a>
-              <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>登录</a>
-            </>
+            <a href="/user/login" role="button" class="outline" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem' }}>登录</a>
           )}
         </div>
       </nav>
+
+      {/* ===== 下拉菜单控制脚本 ===== */}
+      <script dangerouslySetInnerHTML={{
+        __html: `
+          // 下拉菜单切换
+          function toggleDropdown(e, id) {
+            e.stopPropagation();
+            const menu = document.getElementById(id);
+            if (!menu) return;
+            // 关闭其他所有下拉
+            document.querySelectorAll('.dropdown-menu').forEach(el => {
+              if (el.id !== id) el.style.display = 'none';
+            });
+            // 切换当前
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+          }
+          // 点击页面其他区域关闭所有下拉
+          document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown-wrapper')) {
+              document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
+            }
+          });
+          // 阻止下拉菜单内的点击冒泡，防止点击链接时意外关闭（因为链接会跳转，无需额外处理）
+          document.querySelectorAll('.dropdown-menu').forEach(el => {
+            el.addEventListener('click', function(e) {
+              e.stopPropagation();
+            });
+          });
+        `
+      }} />
 
       {/* ===== 新奇点快捷入口 ===== */}
       <div style={{
@@ -203,7 +381,6 @@ index.get("/posts", async (c) => {
             </a>
           ))}
         </div>
-        {/* ===== 发帖按钮 ===== */}
         <a href="/posts/new" role="button" style={{ padding: '0.3rem 0.8rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>✍️ 发帖</a>
       </header>
 
